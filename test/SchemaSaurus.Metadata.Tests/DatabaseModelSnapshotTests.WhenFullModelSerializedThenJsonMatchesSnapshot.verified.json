@@ -1,0 +1,325 @@
+﻿{
+  "databaseName": "AdventureWorks",
+  "collation": "SQL_Latin1_General_CP1_CI_AS",
+  "defaultSchemaName": "dbo",
+  "provider": "SqlServer",
+  "serverVersion": "16.0.1135.2",
+  "tables": [
+    {
+      "primaryKey": {
+        "name": "PK_Customers",
+        "columns": [
+          {
+            "columnName": "Id"
+          }
+        ],
+        "isClustered": true
+      },
+      "uniqueConstraints": [
+        {
+          "name": "UQ_Customers_Email",
+          "columns": [
+            {
+              "columnName": "Email"
+            }
+          ]
+        }
+      ],
+      "options": {},
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "Customers"
+      },
+      "columns": [
+        {
+          "name": "Id",
+          "ordinalPosition": 1,
+          "isIdentity": true,
+          "identitySeed": 1,
+          "identityIncrement": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "Name",
+          "ordinalPosition": 2,
+          "dbType": "String",
+          "nativeTypeName": "nvarchar(200)",
+          "systemType": "System.String",
+          "maxLength": 200,
+          "isUnicode": true,
+          "isFixedLength": false
+        },
+        {
+          "name": "Email",
+          "ordinalPosition": 3,
+          "isNullable": true,
+          "dbType": "String",
+          "nativeTypeName": "nvarchar(256)",
+          "systemType": "System.String",
+          "maxLength": 256,
+          "isUnicode": true,
+          "isFixedLength": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Customers_Name",
+          "columns": [
+            {
+              "columnName": "Name"
+            }
+          ]
+        }
+      ],
+      "description": "Customer master table"
+    },
+    {
+      "primaryKey": {
+        "name": "PK_Orders",
+        "columns": [
+          {
+            "columnName": "Id"
+          }
+        ],
+        "isClustered": true
+      },
+      "checkConstraints": [
+        {
+          "name": "CK_Orders_TotalAmount",
+          "expression": "([TotalAmount] \u003E= 0)"
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "FK_Orders_Customers",
+          "principalTableName": {
+            "schema": "dbo",
+            "name": "Customers"
+          },
+          "columnMappings": [
+            {
+              "dependentColumnName": "CustomerId",
+              "principalColumnName": "Id"
+            }
+          ],
+          "onDelete": "Cascade"
+        }
+      ],
+      "options": {},
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "Orders"
+      },
+      "columns": [
+        {
+          "name": "Id",
+          "ordinalPosition": 1,
+          "isIdentity": true,
+          "identitySeed": 1,
+          "identityIncrement": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "CustomerId",
+          "ordinalPosition": 2,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "OrderDate",
+          "ordinalPosition": 3,
+          "defaultValueSql": "(getdate())",
+          "dbType": "DateTime",
+          "nativeTypeName": "datetime2",
+          "systemType": "System.DateTime"
+        },
+        {
+          "name": "TotalAmount",
+          "ordinalPosition": 4,
+          "dbType": "Decimal",
+          "nativeTypeName": "decimal(18,2)",
+          "systemType": "System.Decimal",
+          "precision": 18,
+          "scale": 2
+        },
+        {
+          "name": "RowVersion",
+          "ordinalPosition": 5,
+          "isRowVersion": true,
+          "isConcurrencyToken": true,
+          "dbType": "Binary",
+          "nativeTypeName": "rowversion",
+          "systemType": "System.Byte[]"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Orders_CustomerId",
+          "columns": [
+            {
+              "columnName": "CustomerId"
+            },
+            {
+              "isIncludedColumn": true,
+              "columnName": "OrderDate"
+            }
+          ]
+        }
+      ],
+      "triggers": [
+        {
+          "name": "TR_Orders_Audit",
+          "timing": "After",
+          "events": "Insert, Update",
+          "definition": "CREATE TRIGGER TR_Orders_Audit ON dbo.Orders AFTER INSERT, UPDATE AS BEGIN ... END"
+        }
+      ],
+      "description": "Sales order header"
+    }
+  ],
+  "views": [
+    {
+      "definition": "SELECT Id, Name, Email FROM dbo.Customers WHERE Email IS NOT NULL",
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "vw_ActiveCustomers"
+      },
+      "columns": [
+        {
+          "name": "Id",
+          "ordinalPosition": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "Name",
+          "ordinalPosition": 2,
+          "dbType": "String",
+          "nativeTypeName": "nvarchar(200)",
+          "systemType": "System.String"
+        }
+      ]
+    }
+  ],
+  "sequences": [
+    {
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "InvoiceSeq"
+      },
+      "dbType": 12,
+      "systemType": "System.Int64",
+      "startValue": 1000,
+      "increment": 1,
+      "minValue": 1,
+      "maxValue": 9223372036854775807,
+      "cacheSize": 50
+    }
+  ],
+  "storedProcedures": [
+    {
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "uspGetCustomerOrders"
+      },
+      "parameters": [
+        {
+          "name": "@CustomerId",
+          "ordinal": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        }
+      ],
+      "definition": "CREATE PROCEDURE dbo.uspGetCustomerOrders @CustomerId int AS SELECT * FROM Orders WHERE CustomerId = @CustomerId",
+      "description": "Returns all orders for a customer"
+    }
+  ],
+  "scalarFunctions": [
+    {
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "fnGetOrderTotal"
+      },
+      "returnType": {
+        "dbType": "Decimal",
+        "nativeTypeName": "decimal(18,2)",
+        "systemType": "System.Decimal"
+      },
+      "parameters": [
+        {
+          "name": "@OrderId",
+          "ordinal": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        }
+      ],
+      "isDeterministic": true,
+      "definition": "CREATE FUNCTION dbo.fnGetOrderTotal(@OrderId int) RETURNS decimal(18,2) AS BEGIN RETURN 0 END"
+    }
+  ],
+  "tableValuedFunctions": [
+    {
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "fnGetOrdersByDate"
+      },
+      "parameters": [
+        {
+          "name": "@StartDate",
+          "ordinal": 1,
+          "dbType": "DateTime",
+          "nativeTypeName": "datetime2",
+          "systemType": "System.DateTime"
+        }
+      ],
+      "returnColumns": [
+        {
+          "name": "Id",
+          "ordinalPosition": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "OrderDate",
+          "ordinalPosition": 2,
+          "dbType": "DateTime",
+          "nativeTypeName": "datetime2",
+          "systemType": "System.DateTime"
+        },
+        {
+          "name": "TotalAmount",
+          "ordinalPosition": 3,
+          "dbType": "Decimal",
+          "nativeTypeName": "decimal(18,2)",
+          "systemType": "System.Decimal"
+        }
+      ],
+      "definition": "CREATE FUNCTION dbo.fnGetOrdersByDate(@StartDate datetime2) RETURNS TABLE AS RETURN SELECT * FROM Orders WHERE OrderDate \u003E= @StartDate"
+    }
+  ],
+  "userDefinedTypes": [
+    {
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "PhoneNumber"
+      },
+      "dbType": "String",
+      "nativeTypeName": "nvarchar(20)",
+      "systemType": "System.String",
+      "maxLength": 20,
+      "isUnicode": true
+    }
+  ],
+  "annotations": {
+    "compatibility_level": 160
+  }
+}

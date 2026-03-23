@@ -63,7 +63,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddTable(Table table)
     {
         ArgumentNullException.ThrowIfNull(table);
+
         _tables.Add(table);
+        return this;
+    }
+
+    /// <summary>Adds a table to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddTable(Action<TableBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new TableBuilder();
+        configure(builder);
+
+        _tables.Add(builder.Build());
         return this;
     }
 
@@ -71,7 +84,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddView(View view)
     {
         ArgumentNullException.ThrowIfNull(view);
+
         _views.Add(view);
+        return this;
+    }
+
+    /// <summary>Adds a view to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddView(Action<ViewBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new ViewBuilder();
+        configure(builder);
+
+        _views.Add(builder.Build());
         return this;
     }
 
@@ -79,7 +105,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddSequence(Sequence sequence)
     {
         ArgumentNullException.ThrowIfNull(sequence);
+
         _sequences.Add(sequence);
+        return this;
+    }
+
+    /// <summary>Adds a sequence to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddSequence(Action<SequenceBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new SequenceBuilder();
+        configure(builder);
+
+        _sequences.Add(builder.Build());
         return this;
     }
 
@@ -87,7 +126,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddStoredProcedure(StoredProcedure storedProcedure)
     {
         ArgumentNullException.ThrowIfNull(storedProcedure);
+
         _storedProcedures.Add(storedProcedure);
+        return this;
+    }
+
+    /// <summary>Adds a stored procedure to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddStoredProcedure(Action<StoredProcedureBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new StoredProcedureBuilder();
+        configure(builder);
+
+        _storedProcedures.Add(builder.Build());
         return this;
     }
 
@@ -95,7 +147,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddScalarFunction(ScalarFunction function)
     {
         ArgumentNullException.ThrowIfNull(function);
+
         _scalarFunctions.Add(function);
+        return this;
+    }
+
+    /// <summary>Adds a scalar function to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddScalarFunction(Action<ScalarFunctionBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new ScalarFunctionBuilder();
+        configure(builder);
+
+        _scalarFunctions.Add(builder.Build());
         return this;
     }
 
@@ -103,7 +168,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddTableValuedFunction(TableValuedFunction function)
     {
         ArgumentNullException.ThrowIfNull(function);
+
         _tableValuedFunctions.Add(function);
+        return this;
+    }
+
+    /// <summary>Adds a table-valued function to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddTableValuedFunction(Action<TableValuedFunctionBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new TableValuedFunctionBuilder();
+        configure(builder);
+
+        _tableValuedFunctions.Add(builder.Build());
         return this;
     }
 
@@ -111,7 +189,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder AddUserDefinedType(UserDefinedType userDefinedType)
     {
         ArgumentNullException.ThrowIfNull(userDefinedType);
+
         _userDefinedTypes.Add(userDefinedType);
+        return this;
+    }
+
+    /// <summary>Adds a user-defined type to the model using a builder action.</summary>
+    public DatabaseModelBuilder AddUserDefinedType(Action<UserDefinedTypeBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var builder = new UserDefinedTypeBuilder();
+        configure(builder);
+
+        _userDefinedTypes.Add(builder.Build());
         return this;
     }
 
@@ -120,6 +211,7 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
         _annotations[key] = value;
         return this;
     }

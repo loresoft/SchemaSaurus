@@ -4,6 +4,17 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace SchemaSaurus.Metadata;
 
+/// <summary>
+/// Source-generated <see cref="JsonSerializerContext"/> for serializing and deserializing
+/// the <see cref="DatabaseModel"/> object graph.
+/// </summary>
+/// <remarks>
+/// Registers all metadata types for ahead-of-time JSON code generation via
+/// <see cref="JsonSerializableAttribute"/>. The generated serializers use camel-case
+/// property names, indented output, and skip empty collections
+/// (<see cref="IReadOnlyList{T}"/> / <see cref="IReadOnlyDictionary{TKey, TValue}"/>)
+/// to keep the JSON compact.
+/// </remarks>
 [JsonSourceGenerationOptions(
     AllowTrailingCommas = true,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
@@ -33,17 +44,8 @@ namespace SchemaSaurus.Metadata;
 [JsonSerializable(typeof(TypeMapping))]
 [JsonSerializable(typeof(UserDefinedType))]
 [JsonSerializable(typeof(SchemaQualifiedName))]
-/// <summary>
-/// Source-generated <see cref="JsonSerializerContext"/> for serializing and deserializing
-/// the <see cref="DatabaseModel"/> object graph.
-/// </summary>
-/// <remarks>
-/// Registers all metadata types for ahead-of-time JSON code generation via
-/// <see cref="JsonSerializableAttribute"/>. The generated serializers use camel-case
-/// property names, indented output, and skip empty collections
-/// (<see cref="IReadOnlyList{T}"/> / <see cref="IReadOnlyDictionary{TKey, TValue}"/>)
-/// to keep the JSON compact.
-/// </remarks>
+[JsonSerializable(typeof(Dictionary<string, object?>))]
+[JsonSerializable(typeof(JsonElement))]
 public partial class MetadataJsonContext : JsonSerializerContext
 {
     /// <summary>
@@ -62,7 +64,11 @@ public partial class MetadataJsonContext : JsonSerializerContext
     {
         return new JsonSerializerOptions
         {
+            AllowTrailingCommas = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             TypeInfoResolver = Default.WithAddedModifier(SkipEmptyCollections),
+            WriteIndented = true,
         };
     }
 

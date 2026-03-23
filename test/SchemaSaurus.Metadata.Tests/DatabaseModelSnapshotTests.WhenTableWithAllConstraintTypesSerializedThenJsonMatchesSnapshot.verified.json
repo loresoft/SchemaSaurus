@@ -1,0 +1,101 @@
+﻿{
+  "databaseName": "ConstraintDb",
+  "defaultSchemaName": "dbo",
+  "provider": "SqlServer",
+  "tables": [
+    {
+      "primaryKey": {
+        "name": "PK_Products",
+        "columns": [
+          {
+            "columnName": "Id"
+          }
+        ],
+        "isClustered": true
+      },
+      "uniqueConstraints": [
+        {
+          "name": "UQ_Products_Sku",
+          "columns": [
+            {
+              "columnName": "Sku"
+            }
+          ]
+        }
+      ],
+      "checkConstraints": [
+        {
+          "name": "CK_Products_Price",
+          "expression": "([Price] \u003E 0)"
+        }
+      ],
+      "options": {},
+      "schemaQualifiedName": {
+        "schema": "dbo",
+        "name": "Products"
+      },
+      "columns": [
+        {
+          "name": "Id",
+          "ordinalPosition": 1,
+          "isIdentity": true,
+          "identitySeed": 1,
+          "identityIncrement": 1,
+          "dbType": "Int32",
+          "nativeTypeName": "int",
+          "systemType": "System.Int32"
+        },
+        {
+          "name": "Sku",
+          "ordinalPosition": 2,
+          "dbType": "String",
+          "nativeTypeName": "varchar(50)",
+          "systemType": "System.String",
+          "maxLength": 50,
+          "isUnicode": false,
+          "isFixedLength": false
+        },
+        {
+          "name": "Price",
+          "ordinalPosition": 3,
+          "dbType": "Decimal",
+          "nativeTypeName": "decimal(18,2)",
+          "systemType": "System.Decimal",
+          "precision": 18,
+          "scale": 2
+        },
+        {
+          "name": "ComputedTax",
+          "ordinalPosition": 4,
+          "isNullable": true,
+          "isComputed": true,
+          "computedColumnSql": "([Price] * 0.08)",
+          "isStored": true,
+          "dbType": "Decimal",
+          "nativeTypeName": "decimal(18,2)",
+          "systemType": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "IX_Products_Sku",
+          "columns": [
+            {
+              "columnName": "Sku"
+            },
+            {
+              "isIncludedColumn": true,
+              "columnName": "Price"
+            }
+          ],
+          "isUnique": true,
+          "isFiltered": true,
+          "filterExpression": "([Price] \u003E 0)",
+          "indexType": "BTREE",
+          "fillFactor": 90
+        }
+      ],
+      "description": "Product catalog"
+    }
+  ]
+}

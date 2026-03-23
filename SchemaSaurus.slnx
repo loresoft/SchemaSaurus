@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="test/SchemaSaurus.Metadata.Tests/SchemaSaurus.Metadata.Tests.csproj" />
+    <Project Path="test/SchemaSaurus.Migrator/SchemaSaurus.Migrator.csproj" Id="88e18bf4-bfdc-48d8-95bf-ad3eb1d4e49b" />
     <Project Path="test/SchemaSaurus.MySql.Tests/SchemaSaurus.MySql.Tests.csproj" />
     <Project Path="test/SchemaSaurus.Oracle.Tests/SchemaSaurus.Oracle.Tests.csproj" />
     <Project Path="test/SchemaSaurus.PostgreSql.Tests/SchemaSaurus.PostgreSql.Tests.csproj" />

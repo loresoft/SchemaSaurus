@@ -267,14 +267,14 @@ public static class DatabaseModelExtensions
     /// <param name="model">The database model whose back-references should be wired.</param>
     public static void ResolveReferences(this DatabaseModel model)
     {
-        foreach (var table in model.Tables)
+        foreach (var table in model.Tables ?? [])
         {
             table.Database = model;
             WireRelationBase(table);
             WireTable(model, table);
         }
 
-        foreach (var view in model.Views)
+        foreach (var view in model.Views ?? [])
         {
             view.Database = model;
             WireRelationBase(view);
@@ -283,12 +283,12 @@ public static class DatabaseModelExtensions
 
     private static void WireRelationBase(RelationBase relation)
     {
-        foreach (var column in relation.Columns)
+        foreach (var column in relation.Columns ?? [])
             column.Parent = relation;
 
-        foreach (var index in relation.Indexes)
+        foreach (var index in relation.Indexes ?? [])
         {
-            foreach (var col in index.Columns)
+            foreach (var col in index.Columns ?? [])
                 ResolveColumnRef(col, relation);
         }
     }
@@ -297,17 +297,17 @@ public static class DatabaseModelExtensions
     {
         if (table.PrimaryKey is { } pk)
         {
-            foreach (var col in pk.Columns)
+            foreach (var col in pk.Columns ?? [])
                 ResolveColumnRef(col, table);
         }
 
-        foreach (var uc in table.UniqueConstraints)
+        foreach (var uc in table.UniqueConstraints ?? [])
         {
-            foreach (var col in uc.Columns)
+            foreach (var col in uc.Columns ?? [])
                 ResolveColumnRef(col, table);
         }
 
-        foreach (var fk in table.ForeignKeys)
+        foreach (var fk in table.ForeignKeys ?? [])
         {
             fk.DependentTable = table;
 
@@ -315,7 +315,7 @@ public static class DatabaseModelExtensions
             if (principalTable is not null)
             {
                 fk.PrincipalTable = principalTable;
-                foreach (var mapping in fk.ColumnMappings)
+                foreach (var mapping in fk.ColumnMappings ?? [])
                 {
                     mapping.DependentColumn = table.Columns
                         .FirstOrDefault(c => string.Equals(
