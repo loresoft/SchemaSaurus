@@ -5,7 +5,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows
 /// across multiple catalog queries.
 /// </summary>
-public sealed class TableBuilder
+public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private string? _description;

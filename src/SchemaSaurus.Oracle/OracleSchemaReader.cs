@@ -1,3 +1,5 @@
+using System.Data;
+
 using Oracle.ManagedDataAccess.Client;
 
 using SchemaSaurus.Metadata.Builders;
@@ -11,6 +13,8 @@ namespace SchemaSaurus.Oracle;
 /// </summary>
 public sealed class OracleSchemaReader : DatabaseSchemaReader<OracleConnection>
 {
+    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+
     /// <inheritdoc />
     public override string ProviderName => "Oracle";
 
@@ -31,7 +35,7 @@ public sealed class OracleSchemaReader : DatabaseSchemaReader<OracleConnection>
             FROM dual
             """;
 
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
 

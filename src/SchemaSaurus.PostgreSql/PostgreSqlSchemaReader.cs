@@ -1,3 +1,5 @@
+using System.Data;
+
 using Npgsql;
 
 using SchemaSaurus.Metadata.Builders;
@@ -11,6 +13,8 @@ namespace SchemaSaurus.PostgreSQL;
 /// </summary>
 public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnection>
 {
+    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+
     /// <inheritdoc />
     public override string ProviderName => "PostgreSQL";
 
@@ -31,7 +35,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
             WHERE d.datname = current_database()
             """;
 
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
 

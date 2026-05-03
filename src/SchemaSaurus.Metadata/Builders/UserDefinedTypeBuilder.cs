@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="UserDefinedType"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class UserDefinedTypeBuilder
+public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private UserDefinedTypeKind? _kind;

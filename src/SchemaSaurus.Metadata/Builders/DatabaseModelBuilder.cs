@@ -7,7 +7,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Call <see cref="Build"/> to produce the frozen model with all parent back-references
 /// wired.
 /// </summary>
-public sealed class DatabaseModelBuilder
+public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuilder>
 {
     private string? _databaseName;
     private string? _collation;

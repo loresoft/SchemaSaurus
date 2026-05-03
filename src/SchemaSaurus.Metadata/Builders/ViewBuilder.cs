@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="View"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class ViewBuilder
+public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private string? _description;

@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="Column"/> instance,
 /// typically populated from a <see cref="System.Data.Common.DbDataReader"/> row.
 /// </summary>
-public sealed class ColumnBuilder
+public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
 {
     private string? _name;
     private int? _ordinalPosition;

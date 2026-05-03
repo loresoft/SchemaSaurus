@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="TableValuedFunction"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class TableValuedFunctionBuilder
+public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedFunctionBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private string? _definition;

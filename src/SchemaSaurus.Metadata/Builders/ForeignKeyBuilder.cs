@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="ForeignKey"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class ForeignKeyBuilder
+public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
 {
     private string? _name;
     private SchemaQualifiedName? _principalTableName;

@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="Index"/> instance,
 /// typically populated from a <see cref="System.Data.Common.DbDataReader"/> row.
 /// </summary>
-public sealed class IndexBuilder
+public sealed class IndexBuilder : IAnnotationBuilder<IndexBuilder>
 {
     private string? _name;
     private bool _isUnique;

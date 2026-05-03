@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="Sequence"/> instance,
 /// typically populated from a <see cref="System.Data.Common.DbDataReader"/> row.
 /// </summary>
-public sealed class SequenceBuilder
+public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private DbType _dbType = DbType.Int64;

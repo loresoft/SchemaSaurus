@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="ScalarFunction"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class ScalarFunctionBuilder
+public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private TypeMapping? _returnType;

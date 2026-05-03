@@ -15,6 +15,9 @@ namespace SchemaSaurus.Sqlite;
 /// </summary>
 public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
 {
+    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+    private const CommandBehavior SequentialResultBehavior = CommandBehavior.SingleResult | CommandBehavior.SequentialAccess;
+
     /// <inheritdoc />
     public override string ProviderName => "SQLite";
 
@@ -72,7 +75,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT name, sql FROM sqlite_master WHERE type = 'view' ORDER BY name";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -108,7 +111,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
 
         command.Parameters.AddWithValue("$type", type);
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var names = new List<string>();
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -137,7 +140,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         // table_xinfo includes hidden columns and generated columns
         command.CommandText = $"PRAGMA table_xinfo(\"{EscapeIdentifier(tableName)}\")";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -175,7 +178,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         using var command = connection.CreateCommand();
         command.CommandText = $"PRAGMA table_info(\"{EscapeIdentifier(tableName)}\")";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var pkColumns = new SortedList<int, string>(); // pk ordinal -> column name
 
@@ -211,7 +214,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         using var listCommand = connection.CreateCommand();
         listCommand.CommandText = $"PRAGMA index_list(\"{EscapeIdentifier(tableName)}\")";
 
-        using var listReader = await listCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var listReader = await listCommand.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var indexes = new List<(string Name, bool IsUnique, string Origin)>();
         while (await listReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -253,7 +256,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
             using var infoCommand = connection.CreateCommand();
             infoCommand.CommandText = $"PRAGMA index_info(\"{EscapeIdentifier(indexName)}\")";
 
-            using var infoReader = await infoCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            using var infoReader = await infoCommand.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
             while (await infoReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -275,7 +278,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         using var command = connection.CreateCommand();
         command.CommandText = $"PRAGMA foreign_key_list(\"{EscapeIdentifier(tableName)}\")";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         // Group by id since composite FKs share the same id
         var fkMap = new Dictionary<int, (string Table, List<(string From, string To)> Columns, string OnUpdate, string OnDelete)>();
@@ -330,7 +333,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
             """;
         command.Parameters.AddWithValue("$tableName", tableName);
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -360,7 +363,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         using var command = connection.CreateCommand();
         command.CommandText = $"PRAGMA table_info(\"{EscapeIdentifier(viewName)}\")";
 
-        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {

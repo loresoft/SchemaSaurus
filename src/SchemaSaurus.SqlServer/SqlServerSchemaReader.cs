@@ -17,6 +17,11 @@ namespace SchemaSaurus.SqlServer;
 /// </summary>
 public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
 {
+    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+    private const CommandBehavior SequentialResultBehavior = CommandBehavior.SingleResult | CommandBehavior.SequentialAccess;
+
+    private readonly Dictionary<(int Class, int MajorId, int MinorId), List<KeyValuePair<string, object?>>> _extendedProperties = [];
+
     /// <inheritdoc />
     public override string ProviderName => "SqlServer";
 
@@ -26,6 +31,10 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         DatabaseModelBuilder builder,
         CancellationToken cancellationToken)
     {
+        // Read extended properties first so that they can be applied to the relevant metadata elements as we read them,
+        // without needing to do lookups back into the database later.
+        await ReadExtendedPropertiesAsync(connection, cancellationToken).ConfigureAwait(false);
+
         const string sql = """
             SELECT
                 CAST(SERVERPROPERTY('Collation') AS NVARCHAR(256))  AS collation,
@@ -41,7 +50,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
@@ -79,6 +88,9 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         };
 
         builder.WithAnnotation("EngineEdition", engineEditionName);
+
+        // Apply extended properties to the database itself (class=0, major_id=0, minor_id=0).
+        ApplyExtendedProperties((0, 0, 0), builder);
     }
 
     /// <inheritdoc />
@@ -101,11 +113,13 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         await ReadTableForeignKeysAsync(connection, tables, cancellationToken).ConfigureAwait(false);
         await ReadTableTriggersAsync(connection, tables, cancellationToken).ConfigureAwait(false);
 
+        // Build the tables and add them to the DatabaseModelBuilder. We do this at the end after reading all related metadata to
+        // ensure that all properties (including extended properties) are applied to the TableBuilder before it's built.
         foreach (var (_, tb) in tables)
             builder.AddTable(tb.Build());
     }
 
-    private static async Task<Dictionary<int, TableBuilder>> ReadTableDefinitionsAsync(
+    private async Task<Dictionary<int, TableBuilder>> ReadTableDefinitionsAsync(
         SqlConnection connection,
         string tableFilter,
         CancellationToken cancellationToken)
@@ -135,7 +149,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int schemaOrdinal = 1;
@@ -176,13 +190,16 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 .WithDescription(description)
                 .WithOptions(tableOptions);
 
+            // apply extended properties for the table itself (class=1, major_id=object_id, minor_id=0)
+            ApplyExtendedProperties((1, objectId, 0), tb);
+
             tables[objectId] = tb;
         }
 
         return tables;
     }
 
-    private static async Task ReadTableColumnsAsync(
+    private async Task ReadTableColumnsAsync(
         SqlConnection connection,
         Dictionary<int, TableBuilder> tables,
         string tableFilter,
@@ -230,7 +247,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -255,7 +272,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var objectId = reader.GetInt32(objectIdOrdinal);
-            if (!tables.TryGetValue(objectId, out var tb))
+            if (!tables.TryGetValue(objectId, out var tableBuilder))
                 continue;
 
             var columnId = reader.GetInt32(columnIdOrdinal);
@@ -292,33 +309,39 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // Scale is applicable for decimal/numeric, and also for time/datetime2 (where it represents fractional seconds precision). For other types, set to null.
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
-            tb.AddColumn(col => col
-                .WithName(columnName)
-                .WithOrdinalPosition(columnId)
-                .WithIsNullable(isNullable)
-                .WithDefaultValueSql(defaultSql)
-                .WithIsIdentity(isIdentity)
-                .WithIdentitySeed(identitySeed)
-                .WithIdentityIncrement(identityIncrement)
-                .WithIsComputed(isComputed)
-                .WithComputedColumnSql(computedSql)
-                .WithIsStored(isPersisted)
-                .WithIsRowVersion(isRowVersion)
-                .WithIsConcurrencyToken(isRowVersion)
-                .WithCollation(collation)
-                .WithDescription(description)
-                .WithNativeTypeName(nativeTypeName)
-                .WithDbType(dbType)
-                .WithSystemType(systemType)
-                .WithMaxLength(maxLengthValue)
-                .WithPrecision(precisionValue)
-                .WithScale(scaleValue)
-                .WithIsUnicode(isUnicode)
-                .WithIsFixedLength(isFixedLength));
+            tableBuilder.AddColumn(columnBuilder =>
+            {
+                columnBuilder
+                    .WithName(columnName)
+                    .WithOrdinalPosition(columnId)
+                    .WithIsNullable(isNullable)
+                    .WithDefaultValueSql(defaultSql)
+                    .WithIsIdentity(isIdentity)
+                    .WithIdentitySeed(identitySeed)
+                    .WithIdentityIncrement(identityIncrement)
+                    .WithIsComputed(isComputed)
+                    .WithComputedColumnSql(computedSql)
+                    .WithIsStored(isPersisted)
+                    .WithIsRowVersion(isRowVersion)
+                    .WithIsConcurrencyToken(isRowVersion)
+                    .WithCollation(collation)
+                    .WithDescription(description)
+                    .WithNativeTypeName(nativeTypeName)
+                    .WithDbType(dbType)
+                    .WithSystemType(systemType)
+                    .WithMaxLength(maxLengthValue)
+                    .WithPrecision(precisionValue)
+                    .WithScale(scaleValue)
+                    .WithIsUnicode(isUnicode)
+                    .WithIsFixedLength(isFixedLength);
+
+                // Apply extended properties for the column (class=1, major_id=object_id, minor_id=column_id)
+                ApplyExtendedProperties((1, objectId, columnId), columnBuilder);
+            });
         }
     }
 
-    private static async Task ReadKeyConstraintsAsync(
+    private async Task ReadKeyConstraintsAsync(
         SqlConnection connection,
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
@@ -355,7 +378,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int parentOrdinal = 0;
         const int nameOrdinal = 1;
@@ -381,7 +404,6 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             {
                 var type = reader.GetString(typeOrdinal).Trim();
                 var indexType = reader.GetByte(indexTypeOrdinal);
-
                 kc = (type, indexType == 1, []);
 
                 constraints[key] = kc;
@@ -401,20 +423,20 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         // Now that we've read all the constraints and their columns, we can apply them to the corresponding tables.
         foreach (var ((objectId, name), (type, isClustered, columns)) in constraints)
         {
-            var tb = tables[objectId];
+            var tableBuilder = tables[objectId];
 
             // SQL Server represents both primary keys and unique constraints in the sys.key_constraints view,
             // distinguished by the 'type' column ('PK' for primary key, 'UQ' for unique constraint).
             // We need to check the type to determine whether to call WithPrimaryKey or AddUniqueConstraint on the TableBuilder.
 
             if (type == "PK")
-                tb.WithPrimaryKey(name, isClustered, [.. columns]);
+                tableBuilder.WithPrimaryKey(name, isClustered, [.. columns]);
             else
-                tb.AddUniqueConstraint(name, [.. columns]);
+                tableBuilder.AddUniqueConstraint(name, [.. columns]);
         }
     }
 
-    private static async Task ReadTableIndexesAsync(
+    private async Task ReadTableIndexesAsync(
         SqlConnection connection,
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
@@ -456,7 +478,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int indexIdOrdinal = 1;
@@ -489,32 +511,35 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var isUnique = reader.GetBoolean(uniqueOrdinal);
                 var isDisabled = reader.GetBoolean(disabledOrdinal);
 
-                var ib = new IndexBuilder()
+                var indexBuilder = new IndexBuilder()
                     .WithName(indexName)
                     .WithIsUnique(isUnique)
                     .WithIsClustered(indexType == 1)
                     .WithIsDisabled(isDisabled);
 
+                // Apply extended properties for the index (class=7, major_id=object_id, minor_id=index_id)
+                ApplyExtendedProperties((7, objectId, indexId), indexBuilder);
+
                 // If the index has a filter, set the IsFiltered property and the FilterExpression if it's not null.
                 var hasFilter = reader.GetBoolean(filterOrdinal);
                 if (hasFilter)
                 {
-                    ib.WithIsFiltered(true);
+                    indexBuilder.WithIsFiltered(true);
                     if (!reader.IsDBNull(filterDefOrdinal))
                     {
                         var filterExpression = reader.GetString(filterDefOrdinal);
-                        ib.WithFilterExpression(filterExpression);
+                        indexBuilder.WithFilterExpression(filterExpression);
                     }
                 }
 
                 // SQL Server supports different index types: 1 = clustered, 2 = nonclustered, 3 = XML, 4 = spatial, 5 = columnstore, 6 = columnstore_clustered, 7 = hash.
                 // We can map these to the IndexType property on the IndexBuilder.
                 if (indexType is 5 or 6)
-                    ib.WithIndexType("COLUMNSTORE");
+                    indexBuilder.WithIndexType("COLUMNSTORE");
                 else if (indexType == 7)
-                    ib.WithIndexType("HASH");
+                    indexBuilder.WithIndexType("HASH");
 
-                entry = (objectId, ib);
+                entry = (objectId, indexBuilder);
                 indexes[key] = entry;
             }
 
@@ -562,7 +587,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int parentOrdinal = 0;
         const int nameOrdinal = 1;
@@ -622,7 +647,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int parentOrdinal = 0;
         const int nameOrdinal = 1;
@@ -653,14 +678,14 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var onUpdate = MapReferentialAction(reader.GetByte(updateOrdinal));
                 var isDisabled = reader.GetBoolean(disabledOrdinal);
 
-                var fkb = new ForeignKeyBuilder()
+                var foreignKeyBuilder = new ForeignKeyBuilder()
                     .WithName(fkName)
                     .WithPrincipalTableName(principalSchema, principalTable)
                     .WithOnDelete(onDelete)
                     .WithOnUpdate(onUpdate)
                     .WithIsDisabled(isDisabled);
 
-                entry = (objectId, fkb);
+                entry = (objectId, foreignKeyBuilder);
                 foreignKeys[key] = entry;
             }
 
@@ -705,7 +730,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int parentOrdinal = 0;
         const int nameOrdinal = 1;
@@ -798,7 +823,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             builder.AddView(vb.Build());
     }
 
-    private static async Task<Dictionary<int, ViewBuilder>> ReadViewDefinitionsAsync(
+    private async Task<Dictionary<int, ViewBuilder>> ReadViewDefinitionsAsync(
         SqlConnection connection,
         string whereClause,
         CancellationToken cancellationToken)
@@ -829,7 +854,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int schemaOrdinal = 1;
@@ -847,19 +872,22 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
             var isMaterialized = reader.GetInt32(materializedOrdinal) == 1;
 
-            var vb = new ViewBuilder()
+            var viewBuilder = new ViewBuilder()
                 .WithSchemaQualifiedName(schema, name)
                 .WithDefinition(definition)
                 .WithDescription(description)
                 .WithIsMaterialized(isMaterialized);
 
-            views[objectId] = vb;
+            // Apply extended properties for the view itself (class=1, major_id=object_id, minor_id=0)
+            ApplyExtendedProperties((1, objectId, 0), viewBuilder);
+
+            views[objectId] = viewBuilder;
         }
 
         return views;
     }
 
-    private static async Task ReadViewColumnsAsync(
+    private async Task ReadViewColumnsAsync(
         SqlConnection connection,
         Dictionary<int, ViewBuilder> views,
         string whereClause,
@@ -893,7 +921,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -912,7 +940,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // Filter rows based on object_id to avoid processing columns for views we're not including.
             // This is more efficient than filtering in-memory after reading all columns.
             var objectId = reader.GetInt32(objectIdOrdinal);
-            if (!views.TryGetValue(objectId, out var vb))
+            if (!views.TryGetValue(objectId, out var viewBuilder))
                 continue;
 
             var columnId = reader.GetInt32(columnIdOrdinal);
@@ -941,20 +969,26 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // Scale is applicable for decimal/numeric, and also for time/datetime2 (where it represents fractional seconds precision). For other types, set to null.
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
-            vb.AddColumn(col => col
-                .WithName(columnName)
-                .WithOrdinalPosition(columnId)
-                .WithIsNullable(isNullable)
-                .WithCollation(collation)
-                .WithDescription(description)
-                .WithNativeTypeName(nativeTypeName)
-                .WithDbType(dbType)
-                .WithSystemType(systemType)
-                .WithMaxLength(maxLengthValue)
-                .WithPrecision(precisionValue)
-                .WithScale(scaleValue)
-                .WithIsUnicode(isUnicode)
-                .WithIsFixedLength(isFixedLength));
+            viewBuilder.AddColumn(columnBuilder =>
+            {
+                columnBuilder
+                    .WithName(columnName)
+                    .WithOrdinalPosition(columnId)
+                    .WithIsNullable(isNullable)
+                    .WithCollation(collation)
+                    .WithDescription(description)
+                    .WithNativeTypeName(nativeTypeName)
+                    .WithDbType(dbType)
+                    .WithSystemType(systemType)
+                    .WithMaxLength(maxLengthValue)
+                    .WithPrecision(precisionValue)
+                    .WithScale(scaleValue)
+                    .WithIsUnicode(isUnicode)
+                    .WithIsFixedLength(isFixedLength);
+
+                // Apply extended properties for the column (class=1, major_id=object_id, minor_id=column_id)
+                ApplyExtendedProperties((1, objectId, columnId), columnBuilder);
+            });
         }
     }
 
@@ -973,6 +1007,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
 
         var sql = $"""
             SELECT
+                s.object_id,
                 s.name                          AS seq_name,
                 SCHEMA_NAME(s.schema_id)        AS schema_name,
                 TYPE_NAME(s.system_type_id)     AS type_name,
@@ -991,21 +1026,23 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
-        const int nameOrdinal = 0;
-        const int schemaOrdinal = 1;
-        const int typeOrdinal = 2;
-        const int startOrdinal = 3;
-        const int incrOrdinal = 4;
-        const int minOrdinal = 5;
-        const int maxOrdinal = 6;
-        const int cycleOrdinal = 7;
-        const int cacheOrdinal = 8;
-        const int cachedOrdinal = 9;
+        const int objectIdOrdinal = 0;
+        const int nameOrdinal = 1;
+        const int schemaOrdinal = 2;
+        const int typeOrdinal = 3;
+        const int startOrdinal = 4;
+        const int incrOrdinal = 5;
+        const int minOrdinal = 6;
+        const int maxOrdinal = 7;
+        const int cycleOrdinal = 8;
+        const int cacheOrdinal = 9;
+        const int cachedOrdinal = 10;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
+            var objectId = reader.GetInt32(objectIdOrdinal);
             var seqName = reader.GetString(nameOrdinal);
             var schema = reader.GetString(schemaOrdinal);
             var typeName = reader.GetString(typeOrdinal);
@@ -1022,16 +1059,22 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // Map SQL Server system type to DbType and CLR type
             var (dbType, systemType, _, _) = MapSqlServerType(typeName);
 
-            builder.AddSequence(seq => seq
-                .WithSchemaQualifiedName(schema, seqName)
-                .WithDbType(dbType)
-                .WithSystemType(systemType)
-                .WithStartValue(startValue)
-                .WithIncrement(increment)
-                .WithMinValue(minValue)
-                .WithMaxValue(maxValue)
-                .WithIsCycling(isCycling)
-                .WithCacheSize(cacheSize));
+            builder.AddSequence(sequenceBuilder =>
+            {
+                sequenceBuilder
+                    .WithSchemaQualifiedName(schema, seqName)
+                    .WithDbType(dbType)
+                    .WithSystemType(systemType)
+                    .WithStartValue(startValue)
+                    .WithIncrement(increment)
+                    .WithMinValue(minValue)
+                    .WithMaxValue(maxValue)
+                    .WithIsCycling(isCycling)
+                    .WithCacheSize(cacheSize);
+
+                // Apply extended properties for the sequence (class=1, major_id=object_id, minor_id=0)
+                ApplyExtendedProperties((1, objectId, 0), sequenceBuilder);
+            });
         }
     }
 
@@ -1043,7 +1086,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         CancellationToken cancellationToken)
     {
         // Build the WHERE clause for filtering stored procedures based on the specified schemas, and also filter out system objects (is_ms_shipped = 0).
-        var schemaFilter = BuildSchemaFilter(options.Schemas, "SCHEMA_NAME(p.schema_id)");
+        var schemaFilter = BuildSchemaFilter(options.Schemas, "SCHEMA_NAME(parameterBuilder.schema_id)");
 
         // If a schema filter was built, include it in the WHERE clause; otherwise, just filter out system objects.
         var schemaWhere = schemaFilter is not null ? $"\n    AND {schemaFilter}" : "";
@@ -1053,25 +1096,25 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
 
         var sql = $"""
             SELECT
-                p.object_id,
-                SCHEMA_NAME(p.schema_id)            AS schema_name,
-                p.name                              AS proc_name,
+                parameterBuilder.object_id,
+                SCHEMA_NAME(parameterBuilder.schema_id)            AS schema_name,
+                parameterBuilder.name                              AS proc_name,
                 m.definition,
                 CAST(ep.value AS NVARCHAR(4000))    AS description
-            FROM sys.procedures p
-            LEFT JOIN sys.sql_modules m ON p.object_id = m.object_id
+            FROM sys.procedures parameterBuilder
+            LEFT JOIN sys.sql_modules m ON parameterBuilder.object_id = m.object_id
             LEFT JOIN sys.extended_properties ep
-                ON ep.major_id = p.object_id AND ep.minor_id = 0
+                ON ep.major_id = parameterBuilder.object_id AND ep.minor_id = 0
                 AND ep.class = 1 AND ep.name = 'MS_Description'
-            WHERE p.is_ms_shipped = 0{schemaWhere}
-            ORDER BY SCHEMA_NAME(p.schema_id), p.name
+            WHERE parameterBuilder.is_ms_shipped = 0{schemaWhere}
+            ORDER BY SCHEMA_NAME(parameterBuilder.schema_id), parameterBuilder.name
             """;
 
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText = sql;
 
-            using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
             const int objectIdOrdinal = 0;
             const int schemaOrdinal = 1;
@@ -1087,12 +1130,15 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var definition = reader.IsDBNull(definitionOrdinal) ? null : reader.GetString(definitionOrdinal);
                 var description = reader.IsDBNull(descriptionOrdinal) ? null : reader.GetString(descriptionOrdinal);
 
-                var spb = new StoredProcedureBuilder()
+                var storedProcedureBuilder = new StoredProcedureBuilder()
                     .WithSchemaQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description);
 
-                procs[objectId] = spb;
+                // Apply extended properties for the stored procedure (class=1, major_id=object_id, minor_id=0)
+                ApplyExtendedProperties((1, objectId, 0), storedProcedureBuilder);
+
+                procs[objectId] = storedProcedureBuilder;
             }
         }
 
@@ -1122,7 +1168,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         // Dictionary to hold scalar function builders keyed by object_id, so we can populate parameters in a second pass.
         // We use the same ReadParametersAsync method as for stored procedures since the parameter metadata is in the same format,
         // but we need separate builders since stored procedures and functions have different metadata properties (e.g. return type for functions).
-        var funcs = new Dictionary<int, ScalarFunctionBuilder>();
+        var functions = new Dictionary<int, ScalarFunctionBuilder>();
 
         var sql = $"""
             SELECT
@@ -1140,7 +1186,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         {
             cmd.CommandText = sql;
 
-            using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
             const int objectIdOrdinal = 0;
             const int schemaOrdinal = 1;
@@ -1154,25 +1200,28 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.IsDBNull(definitionOrdinal) ? null : reader.GetString(definitionOrdinal);
 
-                var fb = new ScalarFunctionBuilder()
+                var functionBuilder = new ScalarFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
                     .WithDefinition(definition);
 
-                funcs[objectId] = fb;
+                // Apply extended properties for the function itself (class=1, major_id=object_id, minor_id=0)
+                ApplyExtendedProperties((1, objectId, 0), functionBuilder);
+
+                functions[objectId] = functionBuilder;
             }
         }
 
-        if (funcs.Count == 0)
+        if (functions.Count == 0)
             return;
 
-        await ReadScalarFunctionParametersAsync(connection, funcs, cancellationToken).ConfigureAwait(false);
+        await ReadScalarFunctionParametersAsync(connection, functions, cancellationToken).ConfigureAwait(false);
 
         // Now that we've read all the scalar functions and their parameters, we can build them and add them to the builder.
-        foreach (var (_, fb) in funcs)
+        foreach (var (_, fb) in functions)
             builder.AddScalarFunction(fb.Build());
     }
 
-    private static async Task ReadScalarFunctionParametersAsync(
+    private async Task ReadScalarFunctionParametersAsync(
         SqlConnection connection,
         Dictionary<int, ScalarFunctionBuilder> funcs,
         CancellationToken cancellationToken)
@@ -1200,7 +1249,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int nameOrdinal = 1;
@@ -1216,7 +1265,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         {
             // Filter rows based on object_id to avoid processing parameters for functions we're not including.
             var objectId = reader.GetInt32(objectIdOrdinal);
-            if (!funcs.TryGetValue(objectId, out var fb))
+            if (!funcs.TryGetValue(objectId, out var functionBuilder))
                 continue;
 
             var paramId = reader.GetInt32(paramIdOrdinal);
@@ -1245,7 +1294,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // In either case, we use the same metadata to build a TypeMapping for the return type or parameter type.
             if (paramId == 0)
             {
-                fb.WithReturnType(new TypeMapping
+                functionBuilder.WithReturnType(new TypeMapping
                 {
                     DbType = dbType,
                     NativeTypeName = nativeTypeName,
@@ -1262,18 +1311,24 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var paramName = reader.GetString(nameOrdinal);
                 var direction = reader.GetBoolean(outputOrdinal) ? Metadata.ParameterDirection.Output : Metadata.ParameterDirection.Input;
 
-                fb.AddParameter(p => p
-                    .WithName(paramName)
-                    .WithOrdinal(paramId)
-                    .WithDirection(direction)
-                    .WithNativeTypeName(nativeTypeName)
-                    .WithDbType(dbType)
-                    .WithSystemType(systemType)
-                    .WithMaxLength(maxLengthValue)
-                    .WithPrecision(precisionValue)
-                    .WithScale(scaleValue)
-                    .WithIsUnicode(isUnicode)
-                    .WithIsFixedLength(isFixedLength));
+                functionBuilder.AddParameter(parameterBuilder =>
+                {
+                    parameterBuilder
+                        .WithName(paramName)
+                        .WithOrdinal(paramId)
+                        .WithDirection(direction)
+                        .WithNativeTypeName(nativeTypeName)
+                        .WithDbType(dbType)
+                        .WithSystemType(systemType)
+                        .WithMaxLength(maxLengthValue)
+                        .WithPrecision(precisionValue)
+                        .WithScale(scaleValue)
+                        .WithIsUnicode(isUnicode)
+                        .WithIsFixedLength(isFixedLength);
+
+                    // Apply extended properties to the parameter (class=2, major_id=object_id, minor_id=parameter_id)
+                    ApplyExtendedProperties((2, objectId, paramId), parameterBuilder);
+                });
             }
         }
     }
@@ -1292,7 +1347,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         var schemaWhere = schemaFilter is not null ? $"\n    AND {schemaFilter}" : "";
 
         // Dictionary to hold table-valued function builders keyed by object_id, so we can populate parameters and return columns in subsequent passes.
-        var funcs = new Dictionary<int, TableValuedFunctionBuilder>();
+        var functions = new Dictionary<int, TableValuedFunctionBuilder>();
 
         var sql = $"""
             SELECT
@@ -1310,7 +1365,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         {
             cmd.CommandText = sql;
 
-            using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
             const int objectIdOrdinal = 0;
             const int schemaOrdinal = 1;
@@ -1324,25 +1379,28 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.IsDBNull(defOrdinal) ? null : reader.GetString(defOrdinal);
 
-                var fb = new TableValuedFunctionBuilder()
+                var functionBuilder = new TableValuedFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
                     .WithDefinition(definition);
 
-                funcs[objectId] = fb;
+                // Apply extended properties for the function itself (class=1, major_id=object_id, minor_id=0)
+                ApplyExtendedProperties((1, objectId, 0), functionBuilder);
+
+                functions[objectId] = functionBuilder;
             }
         }
 
-        if (funcs.Count == 0)
+        if (functions.Count == 0)
             return;
 
         // Table-valued functions can have both parameters and return columns, so we need to read the parameters first since the return columns metadata doesn't
         // include parameter information (e.g. for inline table-valued functions, the return columns can depend on the parameters).
-        await ReadParametersAsync(connection, funcs, "sys.objects o2", "o.type IN ('TF', 'IF')", cancellationToken).ConfigureAwait(false);
+        await ReadParametersAsync(connection, functions, "sys.objects o2", "o.type IN ('TF', 'IF')", cancellationToken).ConfigureAwait(false);
 
-        await ReadTableValuedFunctionColumnsAsync(connection, funcs, cancellationToken).ConfigureAwait(false);
+        await ReadTableValuedFunctionColumnsAsync(connection, functions, cancellationToken).ConfigureAwait(false);
 
         // Now that we've read all the table-valued functions, their parameters, and their return columns, we can build them and add them to the builder.
-        foreach (var (_, fb) in funcs)
+        foreach (var (_, fb) in functions)
             builder.AddTableValuedFunction(fb.Build());
     }
 
@@ -1374,7 +1432,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -1390,7 +1448,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         {
             // Filter rows based on object_id to avoid processing columns for functions we're not including.
             var objectId = reader.GetInt32(objectIdOrdinal);
-            if (!funcs.TryGetValue(objectId, out var fb))
+            if (!funcs.TryGetValue(objectId, out var functionBuilder))
                 continue;
 
             var systemTypeName = reader.GetString(sysTypeOrdinal);
@@ -1408,7 +1466,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             // Format the native type name with length/precision/scale as appropriate for the type. For user-defined types, include the user type name instead of the system type name.
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
-            fb.AddReturnColumn(
+            functionBuilder.AddReturnColumn(
                 columnName,
                 columnId,
                 dbType,
@@ -1464,7 +1522,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         {
             cmd.CommandText = sql;
 
-            using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
             const int userTypeIdOrdinal = 0;
             const int schemaOrdinal = 1;
@@ -1515,7 +1573,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                 var unicode = isTableType ? null : isUnicode;
                 var fixedLength = isTableType ? null : isFixedLength;
 
-                var ub = new UserDefinedTypeBuilder()
+                var userTypeBuilder = new UserDefinedTypeBuilder()
                     .WithSchemaQualifiedName(schema, typeName)
                     .WithKind(kind)
                     .WithDbType(dbType)
@@ -1527,7 +1585,10 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
                     .WithIsUnicode(unicode)
                     .WithIsFixedLength(fixedLength);
 
-                udts[userTypeId] = ub;
+                // Apply extended properties for the user-defined type (class=6, major_id=user_type_id, minor_id=0)
+                ApplyExtendedProperties((6, userTypeId, 0), userTypeBuilder);
+
+                udts[userTypeId] = userTypeBuilder;
 
                 // If this is a table type, store the mapping from type_table_object_id to user_type_id so we can link the table type columns
                 // to the correct user-defined type builder in the second pass.
@@ -1550,7 +1611,68 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
     }
 
 
-    private static async Task ReadTableTypeColumnsAsync(
+    private async Task ReadExtendedPropertiesAsync(
+        SqlConnection connection,
+        CancellationToken cancellationToken)
+    {
+        _extendedProperties.Clear();
+
+        const string sql = """
+            SELECT
+                ep.class,
+                ep.major_id,
+                ep.minor_id,
+                ep.name,
+                ep.value
+            FROM sys.extended_properties ep
+            WHERE ep.name <> 'MS_Description'
+            ORDER BY ep.class, ep.major_id, ep.minor_id, ep.name
+            """;
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = sql;
+
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
+
+        const int classOrdinal = 0;
+        const int majorIdOrdinal = 1;
+        const int minorIdOrdinal = 2;
+        const int nameOrdinal = 3;
+        const int valueOrdinal = 4;
+
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            var classId = reader.GetByte(classOrdinal);
+            var majorId = reader.GetInt32(majorIdOrdinal);
+            var minorId = reader.GetInt32(minorIdOrdinal);
+
+            var name = reader.GetString(nameOrdinal);
+            var value = reader.IsDBNull(valueOrdinal) ? null : reader.GetValue(valueOrdinal);
+
+            var key = (classId, majorId, minorId);
+            if (!_extendedProperties.TryGetValue(key, out var values))
+            {
+                values = [];
+                _extendedProperties[key] = values;
+            }
+
+            values.Add(new KeyValuePair<string, object?>(name, value));
+        }
+    }
+
+    private void ApplyExtendedProperties<TBuilder>(
+        (int Class, int MajorId, int MinorId) key,
+        TBuilder targetBuilder)
+        where TBuilder : IAnnotationBuilder<TBuilder>
+    {
+        if (!_extendedProperties.TryGetValue(key, out var values))
+            return;
+
+        foreach (var (name, value) in values)
+            targetBuilder.WithAnnotation(name, value);
+    }
+
+    private async Task ReadTableTypeColumnsAsync(
         SqlConnection connection,
         Dictionary<int, UserDefinedTypeBuilder> udts,
         Dictionary<int, int> tableTypeObjectIds,
@@ -1580,7 +1702,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -1619,24 +1741,29 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             var (dbType, systemType, isUnicode, isFixedLength) = MapSqlServerType(systemTypeName);
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
-            ub.AddColumn(col => col
-                .WithName(columnName)
-                .WithOrdinalPosition(columnId)
-                .WithIsNullable(isNullable)
-                .WithIsIdentity(isIdentity)
-                .WithIsComputed(isComputed)
-                .WithNativeTypeName(nativeTypeName)
-                .WithDbType(dbType)
-                .WithSystemType(systemType)
-                .WithMaxLength(maxLengthValue)
-                .WithPrecision(precisionValue)
-                .WithScale(scaleValue)
-                .WithIsUnicode(isUnicode)
-                .WithIsFixedLength(isFixedLength));
+            ub.AddColumn(col =>
+            {
+                col
+                    .WithName(columnName)
+                    .WithOrdinalPosition(columnId)
+                    .WithIsNullable(isNullable)
+                    .WithIsIdentity(isIdentity)
+                    .WithIsComputed(isComputed)
+                    .WithNativeTypeName(nativeTypeName)
+                    .WithDbType(dbType)
+                    .WithSystemType(systemType)
+                    .WithMaxLength(maxLengthValue)
+                    .WithPrecision(precisionValue)
+                    .WithScale(scaleValue)
+                    .WithIsUnicode(isUnicode)
+                    .WithIsFixedLength(isFixedLength);
+
+                ApplyExtendedProperties((8, ttObjectId, columnId), col);
+            });
         }
     }
 
-    private static async Task ReadParametersAsync<TBuilder>(
+    private async Task ReadParametersAsync<TBuilder>(
         SqlConnection connection,
         Dictionary<int, TBuilder> builders,
         string parentTable,
@@ -1646,7 +1773,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         await ReadParametersAsync(connection, builders, parentTable, null, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task ReadParametersAsync<TBuilder>(
+    private async Task ReadParametersAsync<TBuilder>(
         SqlConnection connection,
         Dictionary<int, TBuilder> builders,
         string parentTable,
@@ -1678,7 +1805,7 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int nameOrdinal = 1;
@@ -1713,18 +1840,23 @@ public sealed class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
             var isOutput = reader.GetBoolean(outputOrdinal);
             var direction = isOutput ? Metadata.ParameterDirection.Output : Metadata.ParameterDirection.Input;
 
-            Action<ParameterBuilder> configure = p => p
-                .WithName(paramName)
-                .WithOrdinal(paramOrdinal)
-                .WithDirection(direction)
-                .WithNativeTypeName(nativeTypeName)
-                .WithDbType(dbType)
-                .WithSystemType(systemType)
-                .WithMaxLength(maxLengthValue)
-                .WithPrecision(precisionValue)
-                .WithScale(scaleValue)
-                .WithIsUnicode(isUnicode)
-                .WithIsFixedLength(isFixedLength);
+            Action<ParameterBuilder> configure = p =>
+            {
+                p
+                    .WithName(paramName)
+                    .WithOrdinal(paramOrdinal)
+                    .WithDirection(direction)
+                    .WithNativeTypeName(nativeTypeName)
+                    .WithDbType(dbType)
+                    .WithSystemType(systemType)
+                    .WithMaxLength(maxLengthValue)
+                    .WithPrecision(precisionValue)
+                    .WithScale(scaleValue)
+                    .WithIsUnicode(isUnicode)
+                    .WithIsFixedLength(isFixedLength);
+
+                ApplyExtendedProperties((2, objectId, paramOrdinal), p);
+            };
 
             if (b is StoredProcedureBuilder spb)
                 spb.AddParameter(configure);

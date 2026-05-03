@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="StoredProcedure"/> instance,
 /// typically populated from <see cref="System.Data.Common.DbDataReader"/> rows.
 /// </summary>
-public sealed class StoredProcedureBuilder
+public sealed class StoredProcedureBuilder : IAnnotationBuilder<StoredProcedureBuilder>
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private string? _definition;

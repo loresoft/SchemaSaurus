@@ -4,7 +4,7 @@ namespace SchemaSaurus.Metadata.Builders;
 /// Fluent builder for constructing an immutable <see cref="Parameter"/> instance,
 /// typically populated from a <see cref="System.Data.Common.DbDataReader"/> row.
 /// </summary>
-public sealed class ParameterBuilder
+public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
 {
     private string? _name;
     private int? _ordinal;

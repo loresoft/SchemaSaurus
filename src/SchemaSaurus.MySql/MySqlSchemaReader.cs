@@ -1,3 +1,5 @@
+using System.Data;
+
 using MySqlConnector;
 
 using SchemaSaurus.Metadata.Builders;
@@ -10,6 +12,8 @@ namespace SchemaSaurus.MySql;
 /// </summary>
 public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
 {
+    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+
     /// <inheritdoc />
     public override string ProviderName => "MySQL";
 
@@ -22,7 +26,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT @@version, @@version_comment, @@collation_database";
 
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
 
