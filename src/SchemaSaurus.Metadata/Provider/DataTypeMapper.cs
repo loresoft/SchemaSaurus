@@ -23,7 +23,6 @@ public static class DataTypeMapper
         [DbType.Boolean] = typeof(bool),
         [DbType.Byte] = typeof(byte),
         [DbType.Currency] = typeof(decimal),
-        [DbType.Date] = typeof(DateOnly),
         [DbType.DateTime] = typeof(DateTime),
         [DbType.DateTime2] = typeof(DateTime),
         [DbType.DateTimeOffset] = typeof(DateTimeOffset),
@@ -38,12 +37,15 @@ public static class DataTypeMapper
         [DbType.Single] = typeof(float),
         [DbType.String] = typeof(string),
         [DbType.StringFixedLength] = typeof(string),
-        [DbType.Time] = typeof(TimeOnly),
         [DbType.UInt16] = typeof(ushort),
         [DbType.UInt32] = typeof(uint),
         [DbType.UInt64] = typeof(ulong),
         [DbType.VarNumeric] = typeof(decimal),
         [DbType.Xml] = typeof(string),
+#if NET6_0_OR_GREATER
+        [DbType.Date] = typeof(DateOnly),
+        [DbType.Time] = typeof(TimeOnly),
+#endif
     }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<Type, DbType> _systemToDbType = new Dictionary<Type, DbType>
@@ -57,24 +59,30 @@ public static class DataTypeMapper
         [typeof(uint)] = DbType.UInt32,
         [typeof(long)] = DbType.Int64,
         [typeof(ulong)] = DbType.UInt64,
-        [typeof(Half)] = DbType.Single,
         [typeof(float)] = DbType.Single,
         [typeof(double)] = DbType.Double,
         [typeof(decimal)] = DbType.Decimal,
-        [typeof(Int128)] = DbType.VarNumeric,
-        [typeof(UInt128)] = DbType.VarNumeric,
         [typeof(string)] = DbType.String,
         [typeof(char)] = DbType.StringFixedLength,
         [typeof(Uri)] = DbType.String,
         [typeof(byte[])] = DbType.Binary,
-        [typeof(DateOnly)] = DbType.Date,
-        [typeof(TimeOnly)] = DbType.Time,
         [typeof(DateTime)] = DbType.DateTime,
         [typeof(DateTimeOffset)] = DbType.DateTimeOffset,
         [typeof(TimeSpan)] = DbType.Time,
         [typeof(Guid)] = DbType.Guid,
         [typeof(JsonElement)] = DbType.String,
         [typeof(object)] = DbType.Object,
+#if NET5_0_OR_GREATER
+        [typeof(Half)] = DbType.Single,
+#endif
+#if NET6_0_OR_GREATER
+        [typeof(DateOnly)] = DbType.Date,
+        [typeof(TimeOnly)] = DbType.Time,
+#endif
+#if NET7_0_OR_GREATER
+        [typeof(Int128)] = DbType.VarNumeric,
+        [typeof(UInt128)] = DbType.VarNumeric,
+#endif
     }.ToFrozenDictionary();
 
     /// <summary>

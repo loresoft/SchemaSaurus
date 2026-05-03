@@ -47,7 +47,7 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
 
         options ??= new SchemaReaderOptions();
 
-        await using var connection = CreateConnection(connectionString);
+        using var connection = CreateConnection(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         var builder = new DatabaseModelBuilder();
@@ -98,7 +98,7 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
     /// </summary>
     /// <param name="connection">An open database connection.</param>
     /// <param name="builder">The builder to populate with tables.</param>
-    /// <param name="options">Filtering options (schemas, table names, <see cref="SchemaReaderOptions.IncludeDefinitions"/>).</param>
+    /// <param name="options">Filtering options.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
     protected abstract Task ReadTablesAsync(
         TConnection connection,
@@ -109,11 +109,6 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
     /// <summary>
     /// Reads all views from the database and adds them to the builder.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="SchemaReaderOptions.IncludeDefinitions"/> is <see langword="false"/>,
-    /// implementations should skip querying the SQL definition text and leave
-    /// <see cref="View.Definition"/> as <see langword="null"/>.
-    /// </remarks>
     /// <param name="connection">An open database connection.</param>
     /// <param name="builder">The builder to populate with views.</param>
     /// <param name="options">Filtering options.</param>
@@ -140,11 +135,6 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
     /// <summary>
     /// Reads all stored procedures from the database and adds them to the builder.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="SchemaReaderOptions.IncludeDefinitions"/> is <see langword="false"/>,
-    /// implementations should skip querying the SQL definition text and leave
-    /// <see cref="StoredProcedure.Definition"/> as <see langword="null"/>.
-    /// </remarks>
     /// <param name="connection">An open database connection.</param>
     /// <param name="builder">The builder to populate with stored procedures.</param>
     /// <param name="options">Filtering options.</param>
@@ -158,11 +148,6 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
     /// <summary>
     /// Reads all scalar functions from the database and adds them to the builder.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="SchemaReaderOptions.IncludeDefinitions"/> is <see langword="false"/>,
-    /// implementations should skip querying the SQL definition text and leave
-    /// <see cref="ScalarFunction.Definition"/> as <see langword="null"/>.
-    /// </remarks>
     /// <param name="connection">An open database connection.</param>
     /// <param name="builder">The builder to populate with scalar functions.</param>
     /// <param name="options">Filtering options.</param>
@@ -176,11 +161,6 @@ public abstract class DatabaseSchemaReader<TConnection> : IDatabaseSchemaReader
     /// <summary>
     /// Reads all table-valued functions from the database and adds them to the builder.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="SchemaReaderOptions.IncludeDefinitions"/> is <see langword="false"/>,
-    /// implementations should skip querying the SQL definition text and leave
-    /// <see cref="TableValuedFunction.Definition"/> as <see langword="null"/>.
-    /// </remarks>
     /// <param name="connection">An open database connection.</param>
     /// <param name="builder">The builder to populate with table-valued functions.</param>
     /// <param name="options">Filtering options.</param>

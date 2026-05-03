@@ -15,14 +15,32 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
     public override string ProviderName => "PostgreSQL";
 
     /// <inheritdoc />
-    protected override Task ReadDatabaseMetadataAsync(
+    protected override async Task ReadDatabaseMetadataAsync(
         NpgsqlConnection connection,
         DatabaseModelBuilder builder,
         CancellationToken cancellationToken)
     {
-        // TODO: Query current_database(), current_schema(), version(),
-        //       pg_database.datcollate for collation
-        return Task.CompletedTask;
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT
+                current_schema(),
+                version(),
+                d.datcollate,
+                current_setting('server_version_num', true)
+            FROM pg_database d
+            WHERE d.datname = current_database()
+            """;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            return;
+
+        builder
+            .WithDefaultSchemaName(reader.IsDBNull(0) ? null : reader.GetString(0))
+            .WithServerVersion(reader.IsDBNull(1) ? null : reader.GetString(1))
+            .WithCollation(reader.IsDBNull(2) ? null : reader.GetString(2))
+            .WithEdition("PostgreSQL")
+            .WithCompatibilityLevel(reader.IsDBNull(3) ? null : reader.GetString(3));
     }
 
     /// <inheritdoc />
@@ -35,7 +53,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
         // TODO: Query pg_catalog.pg_class (relkind = 'r'), pg_attribute, pg_index,
         //       pg_constraint, information_schema.columns
         // Use options.Schemas / options.Tables for filtering.
-        // Use options.IncludeDefinitions to control trigger definition loading.
+        // Include trigger definitions.
         return Task.CompletedTask;
     }
 
@@ -47,7 +65,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
         CancellationToken cancellationToken)
     {
         // TODO: Query pg_catalog.pg_class (relkind IN ('v','m')), pg_attribute
-        // When options.IncludeDefinitions is true, use pg_get_viewdef() for definition text.
+        // Use pg_get_viewdef() for definition text.
         return Task.CompletedTask;
     }
 
@@ -70,7 +88,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
         CancellationToken cancellationToken)
     {
         // TODO: Query pg_catalog.pg_proc WHERE prokind = 'p'
-        // When options.IncludeDefinitions is true, use pg_get_functiondef() for definition text.
+        // Use pg_get_functiondef() for definition text.
         return Task.CompletedTask;
     }
 
@@ -82,7 +100,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
         CancellationToken cancellationToken)
     {
         // TODO: Query pg_catalog.pg_proc WHERE prokind = 'f' AND proretset = false
-        // When options.IncludeDefinitions is true, use pg_get_functiondef() for definition text.
+        // Use pg_get_functiondef() for definition text.
         return Task.CompletedTask;
     }
 
@@ -94,7 +112,7 @@ public sealed class PostgreSqlSchemaReader : DatabaseSchemaReader<NpgsqlConnecti
         CancellationToken cancellationToken)
     {
         // TODO: Query pg_catalog.pg_proc WHERE prokind = 'f' AND proretset = true
-        // When options.IncludeDefinitions is true, use pg_get_functiondef() for definition text.
+        // Use pg_get_functiondef() for definition text.
         return Task.CompletedTask;
     }
 

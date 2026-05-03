@@ -14,13 +14,22 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
     public override string ProviderName => "MySQL";
 
     /// <inheritdoc />
-    protected override Task ReadDatabaseMetadataAsync(
+    protected override async Task ReadDatabaseMetadataAsync(
         MySqlConnection connection,
         DatabaseModelBuilder builder,
         CancellationToken cancellationToken)
     {
-        // TODO: Query @@version, @@collation_database, DATABASE()
-        return Task.CompletedTask;
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT @@version, @@version_comment, @@collation_database";
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            return;
+
+        builder
+            .WithServerVersion(reader.IsDBNull(0) ? null : reader.GetString(0))
+            .WithEdition(reader.IsDBNull(1) ? null : reader.GetString(1))
+            .WithCollation(reader.IsDBNull(2) ? null : reader.GetString(2));
     }
 
     /// <inheritdoc />
@@ -33,7 +42,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         // TODO: Query INFORMATION_SCHEMA.TABLES, COLUMNS, STATISTICS, KEY_COLUMN_USAGE,
         //       TABLE_CONSTRAINTS, REFERENTIAL_CONSTRAINTS
         // Use options.Schemas / options.Tables for filtering.
-        // Use options.IncludeDefinitions to control trigger definition loading.
+        // Include trigger definitions.
         return Task.CompletedTask;
     }
 
@@ -45,7 +54,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         CancellationToken cancellationToken)
     {
         // TODO: Query INFORMATION_SCHEMA.VIEWS, COLUMNS
-        // When options.IncludeDefinitions is true, include VIEW_DEFINITION.
+        // Include VIEW_DEFINITION.
         return Task.CompletedTask;
     }
 
@@ -57,7 +66,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         CancellationToken cancellationToken)
     {
         // TODO: Query INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'PROCEDURE', PARAMETERS
-        // When options.IncludeDefinitions is true, include ROUTINE_DEFINITION.
+        // Include ROUTINE_DEFINITION.
         return Task.CompletedTask;
     }
 
@@ -69,7 +78,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         CancellationToken cancellationToken)
     {
         // TODO: Query INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'FUNCTION', PARAMETERS
-        // When options.IncludeDefinitions is true, include ROUTINE_DEFINITION.
+        // Include ROUTINE_DEFINITION.
         return Task.CompletedTask;
     }
 

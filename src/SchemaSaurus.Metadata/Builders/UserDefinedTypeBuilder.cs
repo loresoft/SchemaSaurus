@@ -184,7 +184,7 @@ public sealed class UserDefinedTypeBuilder
             Columns = _columns,
             EnumLabels = _enumLabels,
             DbType = _dbType.Value,
-            NativeTypeName = _nativeTypeName,
+            NativeTypeName = _nativeTypeName!,
             SystemType = _systemType,
             MaxLength = _maxLength,
             Precision = _precision,

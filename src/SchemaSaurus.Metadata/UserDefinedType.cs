@@ -38,7 +38,7 @@ public sealed partial class UserDefinedType : TypeMapping, IAnnotatable
     /// <see cref="UserDefinedTypeKind.Enum"/>).
     /// </remarks>
     [JsonPropertyName("kind")]
-    public required UserDefinedTypeKind Kind { get; init; }
+    public UserDefinedTypeKind Kind { get; init; }
 
     /// <summary>
     /// Column descriptors for table-valued parameter types

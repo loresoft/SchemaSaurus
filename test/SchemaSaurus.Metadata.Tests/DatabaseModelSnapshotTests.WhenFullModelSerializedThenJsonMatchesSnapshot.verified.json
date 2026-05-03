@@ -1,6 +1,8 @@
-﻿{
+{
   "databaseName": "AdventureWorks",
   "collation": "SQL_Latin1_General_CP1_CI_AS",
+  "edition": "Developer Edition",
+  "compatibilityLevel": "160",
   "defaultSchemaName": "dbo",
   "provider": "SqlServer",
   "serverVersion": "16.0.1135.2",
@@ -318,8 +320,5 @@
       "maxLength": 20,
       "isUnicode": true
     }
-  ],
-  "annotations": {
-    "compatibility_level": 160
-  }
+  ]
 }

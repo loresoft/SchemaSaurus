@@ -20,9 +20,10 @@ internal static class DatabaseModelFixtures
             .WithDatabaseName("AdventureWorks")
             .WithProvider("SqlServer")
             .WithCollation("SQL_Latin1_General_CP1_CI_AS")
+            .WithEdition("Developer Edition")
+            .WithCompatibilityLevel("160")
             .WithDefaultSchemaName("dbo")
             .WithServerVersion("16.0.1135.2")
-            .WithAnnotation("compatibility_level", 160)
             .AddTable(t => t
                 .WithSchemaQualifiedName("dbo", "Customers")
                 .WithDescription("Customer master table")

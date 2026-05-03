@@ -28,13 +28,13 @@ public sealed partial class Column : TypeMapping, IAnnotatable
     /// as reported by the database engine.
     /// </summary>
     [JsonPropertyName("ordinalPosition")]
-    public required int OrdinalPosition { get; init; }
+    public int OrdinalPosition { get; init; }
 
     /// <summary>
     /// Indicates whether the column accepts <see langword="null"/> values.
     /// </summary>
     [JsonPropertyName("isNullable")]
-    public required bool IsNullable { get; init; }
+    public bool IsNullable { get; init; }
 
     /// <summary>
     /// Default value expression as a raw SQL string

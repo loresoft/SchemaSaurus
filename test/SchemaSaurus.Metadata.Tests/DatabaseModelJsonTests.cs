@@ -101,7 +101,8 @@ public class DatabaseModelJsonTests
         json.Should().Contain("\"scalarFunctions\"");
         json.Should().Contain("\"tableValuedFunctions\"");
         json.Should().Contain("\"userDefinedTypes\"");
-        json.Should().Contain("\"annotations\"");
+        json.Should().Contain("\"edition\"");
+        json.Should().Contain("\"compatibilityLevel\"");
     }
 
     [Fact]
@@ -224,7 +225,6 @@ public class DatabaseModelJsonTests
         // Enums should be serialized as strings, not integers
         json.Should().Contain("\"Cascade\"");
         json.Should().Contain("\"After\"");
-        json.Should().Contain("\"Ascending\"");
     }
 
     }

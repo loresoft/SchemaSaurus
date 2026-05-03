@@ -41,17 +41,4 @@ public sealed class SchemaReaderOptions
 
     /// <summary>Whether to include <see cref="UserDefinedType"/> objects. Default is <see langword="true"/>.</summary>
     public bool IncludeUserDefinedTypes { get; init; } = true;
-
-    /// <summary>
-    /// Whether to read the SQL definition text for views, stored procedures,
-    /// scalar functions, table-valued functions, and triggers.
-    /// </summary>
-    /// <remarks>
-    /// When <see langword="false"/>, the <c>Definition</c> property on
-    /// <see cref="View"/>, <see cref="StoredProcedure"/>, <see cref="ScalarFunction"/>,
-    /// <see cref="TableValuedFunction"/>, and <see cref="Trigger"/> will be
-    /// <see langword="null"/>, which can significantly reduce query time and memory usage
-    /// for large databases. Default is <see langword="true"/>.
-    /// </remarks>
-    public bool IncludeDefinitions { get; init; } = true;
 }

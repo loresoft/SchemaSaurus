@@ -102,7 +102,7 @@ public sealed class ForeignKeyBuilder
 
         return new ForeignKey
         {
-            Name = _name,
+            Name = _name!,
             PrincipalTableName = _principalTableName.Value,
             ColumnMappings = _columnMappings,
             OnDelete = _onDelete,

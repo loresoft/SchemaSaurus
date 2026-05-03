@@ -31,6 +31,20 @@ public sealed partial class DatabaseModel : IAnnotatable
     public string? Collation { get; init; }
 
     /// <summary>
+    /// Database engine edition or product variant (e.g., <c>"Enterprise Edition"</c>, <c>"Azure SQL Database"</c>).
+    /// <see langword="null"/> when the provider does not expose edition information.
+    /// </summary>
+    [JsonPropertyName("edition")]
+    public string? Edition { get; init; }
+
+    /// <summary>
+    /// Database compatibility level as reported by the engine (e.g., <c>"160"</c> for SQL Server 2022).
+    /// <see langword="null"/> when the provider does not expose compatibility level information.
+    /// </summary>
+    [JsonPropertyName("compatibilityLevel")]
+    public string? CompatibilityLevel { get; init; }
+
+    /// <summary>
     /// Default schema name (e.g., <c>"dbo"</c> for SQL Server, <c>"public"</c> for PostgreSQL).
     /// <see langword="null"/> for providers that do not have a default schema concept (e.g., SQLite).
     /// </summary>

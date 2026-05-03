@@ -156,12 +156,12 @@ public sealed class ParameterBuilder
 
         return new Parameter
         {
-            Name = _name,
+            Name = _name!,
             Ordinal = _ordinal.Value,
             Direction = _direction,
             DefaultValueSql = _defaultValueSql,
             DbType = _dbType.Value,
-            NativeTypeName = _nativeTypeName,
+            NativeTypeName = _nativeTypeName!,
             SystemType = _systemType,
             MaxLength = _maxLength,
             Precision = _precision,

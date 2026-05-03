@@ -243,7 +243,7 @@ public sealed class ColumnBuilder
 
         return new Column
         {
-            Name = _name,
+            Name = _name!,
             OrdinalPosition = _ordinalPosition.Value,
             IsNullable = _isNullable.Value,
             DefaultValueSql = _defaultValueSql,
@@ -258,7 +258,7 @@ public sealed class ColumnBuilder
             Collation = _collation,
             Description = _description,
             DbType = _dbType.Value,
-            NativeTypeName = _nativeTypeName,
+            NativeTypeName = _nativeTypeName!,
             SystemType = _systemType,
             MaxLength = _maxLength,
             Precision = _precision,

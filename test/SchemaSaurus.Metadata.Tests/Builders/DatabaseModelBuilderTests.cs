@@ -32,12 +32,16 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("PostgreSql")
             .WithCollation("en_US.utf8")
+            .WithEdition("PostgreSQL")
+            .WithCompatibilityLevel("160002")
             .WithDefaultSchemaName("public")
             .WithServerVersion("16.2")
             .WithAnnotation("encoding", "UTF8")
             .Build();
 
         model.Collation.Should().Be("en_US.utf8");
+        model.Edition.Should().Be("PostgreSQL");
+        model.CompatibilityLevel.Should().Be("160002");
         model.DefaultSchemaName.Should().Be("public");
         model.ServerVersion.Should().Be("16.2");
         model.Annotations.Should().ContainKey("encoding").WhoseValue.Should().Be("UTF8");

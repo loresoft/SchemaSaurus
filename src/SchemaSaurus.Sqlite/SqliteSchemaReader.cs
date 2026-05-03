@@ -33,7 +33,9 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
 
         command.CommandText = "PRAGMA encoding";
         var encoding = (string?)await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-        builder.WithCollation(encoding);
+        builder
+            .WithCollation(encoding)
+            .WithEdition("SQLite");
     }
 
     /// <inheritdoc />
@@ -54,7 +56,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
             await ReadPrimaryKeyAsync(connection, tableName, tableBuilder, cancellationToken).ConfigureAwait(false);
             await ReadIndexesAsync(connection, tableName, tableBuilder, cancellationToken).ConfigureAwait(false);
             await ReadForeignKeysAsync(connection, tableName, tableBuilder, cancellationToken).ConfigureAwait(false);
-            await ReadTriggersAsync(connection, tableName, options, tableBuilder, cancellationToken).ConfigureAwait(false);
+            await ReadTriggersAsync(connection, tableName, tableBuilder, cancellationToken).ConfigureAwait(false);
 
             builder.AddTable(tableBuilder.Build());
         }
@@ -78,10 +80,8 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
             var sql = reader.IsDBNull(1) ? null : reader.GetString(1);
 
             var viewBuilder = new ViewBuilder()
-                .WithSchemaQualifiedName(schema: null, viewName);
-
-            if (options.IncludeDefinitions)
-                viewBuilder.WithDefinition(sql);
+                .WithSchemaQualifiedName(schema: null, viewName)
+                .WithDefinition(sql);
 
             await ReadViewColumnsAsync(connection, viewName, viewBuilder, cancellationToken).ConfigureAwait(false);
 
@@ -318,7 +318,6 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
     private static async Task ReadTriggersAsync(
         SqliteConnection connection,
         string tableName,
-        SchemaReaderOptions options,
         TableBuilder tableBuilder,
         CancellationToken cancellationToken)
     {
@@ -345,7 +344,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
                 Name = triggerName,
                 Timing = timing,
                 Events = events,
-                Definition = options.IncludeDefinitions ? sql : null,
+                Definition = sql,
             };
 
             tableBuilder.AddTrigger(trigger);
@@ -445,7 +444,7 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
         if (string.IsNullOrWhiteSpace(sql))
             return (TriggerTiming.Before, TriggerEvent.None);
 
-        var upper = sql.ToUpperInvariant();
+        var upper = sql!.ToUpperInvariant();
 
         var timing = TriggerTiming.Before;
         if (upper.Contains("INSTEAD OF"))
@@ -465,5 +464,5 @@ public sealed class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
     }
 
     private static string EscapeIdentifier(string identifier)
-        => identifier.Replace("\"", "\"\"", StringComparison.Ordinal);
+        => identifier.Replace("\"", "\"\"");
 }

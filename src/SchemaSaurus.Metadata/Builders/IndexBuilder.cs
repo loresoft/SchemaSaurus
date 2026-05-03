@@ -123,7 +123,7 @@ public sealed class IndexBuilder
 
         return new Index
         {
-            Name = _name,
+            Name = _name!,
             IsUnique = _isUnique,
             IsClustered = _isClustered,
             IsFiltered = _isFiltered,

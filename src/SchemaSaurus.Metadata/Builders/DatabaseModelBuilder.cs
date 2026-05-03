@@ -11,6 +11,8 @@ public sealed class DatabaseModelBuilder
 {
     private string? _databaseName;
     private string? _collation;
+    private string? _edition;
+    private string? _compatibilityLevel;
     private string? _defaultSchemaName;
     private string? _provider;
     private string? _serverVersion;
@@ -34,6 +36,20 @@ public sealed class DatabaseModelBuilder
     public DatabaseModelBuilder WithCollation(string? collation)
     {
         _collation = collation;
+        return this;
+    }
+
+    /// <summary>Sets the database engine edition or product variant.</summary>
+    public DatabaseModelBuilder WithEdition(string? edition)
+    {
+        _edition = edition;
+        return this;
+    }
+
+    /// <summary>Sets the database compatibility level.</summary>
+    public DatabaseModelBuilder WithCompatibilityLevel(string? compatibilityLevel)
+    {
+        _compatibilityLevel = compatibilityLevel;
         return this;
     }
 
@@ -240,10 +256,12 @@ public sealed class DatabaseModelBuilder
 
         var model = new DatabaseModel
         {
-            DatabaseName = _databaseName,
+            DatabaseName = _databaseName!,
             Collation = _collation,
+            Edition = _edition,
+            CompatibilityLevel = _compatibilityLevel,
             DefaultSchemaName = _defaultSchemaName,
-            Provider = _provider,
+            Provider = _provider!,
             ServerVersion = _serverVersion,
             Tables = _tables,
             Views = _views,
