@@ -33,6 +33,7 @@ public class DatabaseModelBuilderTests
             .WithProvider("PostgreSql")
             .WithCollation("en_US.utf8")
             .WithEdition("PostgreSQL")
+            .WithEngineEdition("Community")
             .WithCompatibilityLevel("160002")
             .WithDefaultSchemaName("public")
             .WithServerVersion("16.2")
@@ -41,6 +42,7 @@ public class DatabaseModelBuilderTests
 
         model.Collation.Should().Be("en_US.utf8");
         model.Edition.Should().Be("PostgreSQL");
+        model.EngineEdition.Should().Be("Community");
         model.CompatibilityLevel.Should().Be("160002");
         model.DefaultSchemaName.Should().Be("public");
         model.ServerVersion.Should().Be("16.2");

@@ -81,6 +81,10 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var idColumn = userTable.Columns.First(c => c.Name == "Id");
         idColumn.DbType.Should().Be(DbType.Int32);
         idColumn.SystemType.Should().Be(typeof(int));
+
+        idColumn
+            .Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType)
+            .WhoseValue.Should().Be("Int");
     }
 
     [Fact]
@@ -94,6 +98,10 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         userNameColumn.IsUnicode.Should().Be(false);
         userNameColumn.MaxLength.Should().Be(50);
         userNameColumn.IsNullable.Should().BeFalse();
+
+        userNameColumn
+            .Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType)
+            .WhoseValue.Should().Be("VarChar");
     }
 
     [Fact]

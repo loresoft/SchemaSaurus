@@ -14,4 +14,22 @@
     <ProjectReference Include="..\SchemaSaurus.Metadata\SchemaSaurus.Metadata.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="SqlServerSchemaReader.Routines.cs">
+      <DependentUpon>SqlServerSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerSchemaReader.Sequences.cs">
+      <DependentUpon>SqlServerSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerSchemaReader.Tables.cs">
+      <DependentUpon>SqlServerSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerSchemaReader.UserDefinedTypes.cs">
+      <DependentUpon>SqlServerSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqlServerSchemaReader.Views.cs">
+      <DependentUpon>SqlServerSchemaReader.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -12,6 +12,7 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     private string? _databaseName;
     private string? _collation;
     private string? _edition;
+    private string? _engineEdition;
     private string? _compatibilityLevel;
     private string? _defaultSchemaName;
     private string? _provider;
@@ -43,6 +44,13 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     public DatabaseModelBuilder WithEdition(string? edition)
     {
         _edition = edition;
+        return this;
+    }
+
+    /// <summary>Sets the database engine edition family or deployment type.</summary>
+    public DatabaseModelBuilder WithEngineEdition(string? engineEdition)
+    {
+        _engineEdition = engineEdition;
         return this;
     }
 
@@ -259,6 +267,7 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
             DatabaseName = _databaseName!,
             Collation = _collation,
             Edition = _edition,
+            EngineEdition = _engineEdition,
             CompatibilityLevel = _compatibilityLevel,
             DefaultSchemaName = _defaultSchemaName,
             Provider = _provider!,

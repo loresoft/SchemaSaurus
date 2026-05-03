@@ -44,4 +44,12 @@ public class DatabaseMetadataTests(DatabaseFixture databaseFixture)
 
         model.ServerVersion.Should().NotBeNullOrWhiteSpace();
     }
+
+    [Fact]
+    public async Task WhenReadingDatabaseThenEngineEditionIsPopulated()
+    {
+        var model = await GetDatabaseModelAsync();
+
+        model.EngineEdition.Should().NotBeNullOrWhiteSpace();
+    }
 }

@@ -38,6 +38,13 @@ public sealed partial class DatabaseModel : IAnnotatable
     public string? Edition { get; init; }
 
     /// <summary>
+    /// Database engine edition family or deployment type (e.g., <c>"Enterprise"</c>, <c>"AzureSQLDatabase"</c>).
+    /// <see langword="null"/> when the provider does not expose engine edition information.
+    /// </summary>
+    [JsonPropertyName("engineEdition")]
+    public string? EngineEdition { get; init; }
+
+    /// <summary>
     /// Database compatibility level as reported by the engine (e.g., <c>"160"</c> for SQL Server 2022).
     /// <see langword="null"/> when the provider does not expose compatibility level information.
     /// </summary>

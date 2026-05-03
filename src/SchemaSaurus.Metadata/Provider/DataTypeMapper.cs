@@ -15,38 +15,42 @@ namespace SchemaSaurus.Metadata.Provider;
 /// </remarks>
 public static class DataTypeMapper
 {
-    private static readonly FrozenDictionary<DbType, Type> _dbTypeToSystem = new Dictionary<DbType, Type>
-    {
-        [DbType.AnsiString] = typeof(string),
-        [DbType.AnsiStringFixedLength] = typeof(string),
-        [DbType.Binary] = typeof(byte[]),
-        [DbType.Boolean] = typeof(bool),
-        [DbType.Byte] = typeof(byte),
-        [DbType.Currency] = typeof(decimal),
-        [DbType.DateTime] = typeof(DateTime),
-        [DbType.DateTime2] = typeof(DateTime),
-        [DbType.DateTimeOffset] = typeof(DateTimeOffset),
-        [DbType.Decimal] = typeof(decimal),
-        [DbType.Double] = typeof(double),
-        [DbType.Guid] = typeof(Guid),
-        [DbType.Int16] = typeof(short),
-        [DbType.Int32] = typeof(int),
-        [DbType.Int64] = typeof(long),
-        [DbType.Object] = typeof(object),
-        [DbType.SByte] = typeof(sbyte),
-        [DbType.Single] = typeof(float),
-        [DbType.String] = typeof(string),
-        [DbType.StringFixedLength] = typeof(string),
-        [DbType.UInt16] = typeof(ushort),
-        [DbType.UInt32] = typeof(uint),
-        [DbType.UInt64] = typeof(ulong),
-        [DbType.VarNumeric] = typeof(decimal),
-        [DbType.Xml] = typeof(string),
-#if NET6_0_OR_GREATER
-        [DbType.Date] = typeof(DateOnly),
-        [DbType.Time] = typeof(TimeOnly),
-#endif
-    }.ToFrozenDictionary();
+    private static readonly FrozenDictionary<DbType, Type> _dbTypeToSystem
+        = new Dictionary<DbType, Type>
+        {
+            [DbType.AnsiString] = typeof(string),
+            [DbType.AnsiStringFixedLength] = typeof(string),
+            [DbType.Binary] = typeof(byte[]),
+            [DbType.Boolean] = typeof(bool),
+            [DbType.Byte] = typeof(byte),
+            [DbType.Currency] = typeof(decimal),
+            [DbType.DateTime] = typeof(DateTime),
+            [DbType.DateTime2] = typeof(DateTime),
+            [DbType.DateTimeOffset] = typeof(DateTimeOffset),
+            [DbType.Decimal] = typeof(decimal),
+            [DbType.Double] = typeof(double),
+            [DbType.Guid] = typeof(Guid),
+            [DbType.Int16] = typeof(short),
+            [DbType.Int32] = typeof(int),
+            [DbType.Int64] = typeof(long),
+            [DbType.Object] = typeof(object),
+            [DbType.SByte] = typeof(sbyte),
+            [DbType.Single] = typeof(float),
+            [DbType.String] = typeof(string),
+            [DbType.StringFixedLength] = typeof(string),
+            [DbType.UInt16] = typeof(ushort),
+            [DbType.UInt32] = typeof(uint),
+            [DbType.UInt64] = typeof(ulong),
+            [DbType.VarNumeric] = typeof(decimal),
+            [DbType.Xml] = typeof(string),
+    #if NET6_0_OR_GREATER
+            [DbType.Date] = typeof(DateOnly),
+            [DbType.Time] = typeof(TimeOnly),
+    #else
+            [DbType.Date] = typeof(DateTime),
+            [DbType.Time] = typeof(TimeSpan),
+    #endif
+        }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<Type, DbType> _systemToDbType = new Dictionary<Type, DbType>
     {
