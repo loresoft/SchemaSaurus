@@ -1,5 +1,7 @@
 using System.Diagnostics;
 
+using SchemaSaurus.Metadata.Converters;
+
 namespace SchemaSaurus.Metadata;
 
 /// <summary>
@@ -14,7 +16,7 @@ namespace SchemaSaurus.Metadata;
 /// </remarks>
 [Equatable]
 [DebuggerDisplay("{Name}")]
-public sealed partial class ReturnColumn : TypeMapping
+public sealed partial class ReturnColumn : TypeMapping, IAnnotatable
 {
     /// <summary>
     /// Column name as declared in the function's <c>RETURNS TABLE</c> definition.
@@ -35,4 +37,10 @@ public sealed partial class ReturnColumn : TypeMapping
     /// </summary>
     [JsonPropertyName("isNullable")]
     public bool IsNullable { get; init; }
+
+    /// <inheritdoc />
+    [DictionaryEquality]
+    [JsonPropertyName("annotations")]
+    [JsonConverter(typeof(ReadOnlyDictionaryConverter<string, object?>))]
+    public IReadOnlyDictionary<string, object?> Annotations { get; init; } = new Dictionary<string, object?>();
 }

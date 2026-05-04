@@ -61,6 +61,37 @@ public class TableValuedFunctionBuilderTests
     }
 
     [Fact]
+    public void WhenReturnColumnFacetsSetThenBuildReturnsFullyPopulatedColumn()
+    {
+        var annotations = new Dictionary<string, object?>
+        {
+            ["SqlServer:SqlDbType"] = "NVarChar",
+        };
+
+        var fn = new TableValuedFunctionBuilder()
+            .WithSchemaQualifiedName("dbo", "fnNames")
+            .AddReturnColumn(
+                "Name",
+                1,
+                DbType.String,
+                "nvarchar(100)",
+                typeof(string),
+                isNullable: true,
+                maxLength: 100,
+                isUnicode: true,
+                isFixedLength: false,
+                annotations: annotations)
+            .Build();
+
+        var column = fn.ReturnColumns.Should().ContainSingle().Subject;
+        column.MaxLength.Should().Be(100);
+        column.IsUnicode.Should().BeTrue();
+        column.IsFixedLength.Should().BeFalse();
+        column.Annotations.Should().ContainKey("SqlServer:SqlDbType")
+            .WhoseValue.Should().Be("NVarChar");
+    }
+
+    [Fact]
     public void WhenParameterAddedViaBuilderActionThenParameterAppearsInFunction()
     {
         var fn = new TableValuedFunctionBuilder()

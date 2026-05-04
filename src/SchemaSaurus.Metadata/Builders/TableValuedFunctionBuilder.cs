@@ -75,12 +75,19 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
         DbType dbType,
         string nativeTypeName,
         Type systemType,
-        bool isNullable = false)
+        bool isNullable = false,
+        int? maxLength = null,
+        int? precision = null,
+        int? scale = null,
+        bool? isUnicode = null,
+        bool? isFixedLength = null,
+        IReadOnlyDictionary<string, object?>? annotations = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentException.ThrowIfNullOrWhiteSpace(nativeTypeName);
         ArgumentNullException.ThrowIfNull(systemType);
-        _returnColumns.Add(new ReturnColumn
+
+        ReturnColumn returnColumn = new()
         {
             Name = name,
             OrdinalPosition = ordinalPosition,
@@ -88,7 +95,15 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
             DbType = dbType,
             NativeTypeName = nativeTypeName,
             SystemType = systemType,
-        });
+            MaxLength = maxLength,
+            Precision = precision,
+            Scale = scale,
+            IsUnicode = isUnicode,
+            IsFixedLength = isFixedLength,
+            Annotations = annotations ?? new Dictionary<string, object?>(),
+        };
+
+        _returnColumns.Add(returnColumn);
         return this;
     }
 
