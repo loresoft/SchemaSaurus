@@ -4,7 +4,7 @@ using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 public sealed partial class PostgreSqlSchemaReader
 {
@@ -61,12 +61,13 @@ public sealed partial class PostgreSqlSchemaReader
                 ns.nspname,
                 proc.proname,
                 pg_get_functiondef(proc.oid),
-                typ.typname,
+                COALESCE(base_typ.typname, typ.typname) AS system_type_name,
                 format_type(proc.prorettype, NULL),
                 des.description
             FROM pg_proc AS proc
             JOIN pg_namespace AS ns ON ns.oid = proc.pronamespace
             JOIN pg_type AS typ ON typ.oid = proc.prorettype
+            LEFT JOIN pg_type AS base_typ ON base_typ.oid = typ.typbasetype
             LEFT JOIN pg_description AS des ON des.objoid = proc.oid AND des.objsubid = 0
             WHERE {routineWhere}
               AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
@@ -116,6 +117,7 @@ public sealed partial class PostgreSqlSchemaReader
                     functionBuilder
                         .WithSchemaQualifiedName(schema, name)
                         .WithDefinition(definition)
+                        .WithDescription(description)
                         .WithReturnType(dbType, nativeTypeName, systemType);
                 });
 
@@ -126,7 +128,8 @@ public sealed partial class PostgreSqlSchemaReader
             {
                 functionBuilder
                     .WithSchemaQualifiedName(schema, name)
-                    .WithDefinition(definition);
+                    .WithDefinition(definition)
+                    .WithDescription(description);
             });
         }
     }

@@ -104,9 +104,13 @@ public sealed partial class SqlServerSchemaReader
                 o.object_id,
                 SCHEMA_NAME(o.schema_id)    AS schema_name,
                 o.name                      AS func_name,
-                m.definition
+                m.definition,
+                CAST(ep.value AS NVARCHAR(4000)) AS description
             FROM sys.objects o
             LEFT JOIN sys.sql_modules m ON o.object_id = m.object_id
+            LEFT JOIN sys.extended_properties ep
+                ON ep.major_id = o.object_id AND ep.minor_id = 0
+                AND ep.class = 1 AND ep.name = 'MS_Description'
             WHERE o.type IN ('FN', 'FS') AND o.is_ms_shipped = 0{schemaWhere}
             ORDER BY SCHEMA_NAME(o.schema_id), o.name
             """;
@@ -121,6 +125,7 @@ public sealed partial class SqlServerSchemaReader
             const int schemaOrdinal = 1;
             const int nameOrdinal = 2;
             const int definitionOrdinal = 3;
+            const int descriptionOrdinal = 4;
 
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -128,10 +133,12 @@ public sealed partial class SqlServerSchemaReader
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.GetStringNull(definitionOrdinal);
+                var description = reader.GetStringNull(descriptionOrdinal);
 
                 var functionBuilder = new ScalarFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
-                    .WithDefinition(definition);
+                    .WithDefinition(definition)
+                    .WithDescription(description);
 
                 // Apply extended properties for the function itself (class=1, major_id=object_id, minor_id=0)
                 ApplyExtendedProperties((1, objectId, 0), functionBuilder);
@@ -289,9 +296,13 @@ public sealed partial class SqlServerSchemaReader
                 o.object_id,
                 SCHEMA_NAME(o.schema_id)    AS schema_name,
                 o.name                      AS func_name,
-                m.definition
+                m.definition,
+                CAST(ep.value AS NVARCHAR(4000)) AS description
             FROM sys.objects o
             LEFT JOIN sys.sql_modules m ON o.object_id = m.object_id
+            LEFT JOIN sys.extended_properties ep
+                ON ep.major_id = o.object_id AND ep.minor_id = 0
+                AND ep.class = 1 AND ep.name = 'MS_Description'
             WHERE o.type IN ('TF', 'IF', 'FT') AND o.is_ms_shipped = 0{schemaWhere}
             ORDER BY SCHEMA_NAME(o.schema_id), o.name
             """;
@@ -306,6 +317,7 @@ public sealed partial class SqlServerSchemaReader
             const int schemaOrdinal = 1;
             const int nameOrdinal = 2;
             const int defOrdinal = 3;
+            const int descriptionOrdinal = 4;
 
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -313,10 +325,12 @@ public sealed partial class SqlServerSchemaReader
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.GetStringNull(defOrdinal);
+                var description = reader.GetStringNull(descriptionOrdinal);
 
                 var functionBuilder = new TableValuedFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
-                    .WithDefinition(definition);
+                    .WithDefinition(definition)
+                    .WithDescription(description);
 
                 // Apply extended properties for the function itself (class=1, major_id=object_id, minor_id=0)
                 ApplyExtendedProperties((1, objectId, 0), functionBuilder);

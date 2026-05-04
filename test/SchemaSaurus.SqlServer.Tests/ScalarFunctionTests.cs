@@ -78,6 +78,15 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingFormatAddressThenDescriptionIsPopulated()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Description.Should().Be("Formats an address.");
+    }
+
+    [Fact]
     public async Task WhenExcludingScalarFunctionsThenNoFunctionsReturned()
     {
         var options = new Metadata.Provider.SchemaReaderOptions

@@ -1,7 +1,7 @@
 using System.Data;
 
 using SchemaSaurus.PostgreSql.Tests.Fixtures;
-using SchemaSaurus.PostgreSQL;
+using SchemaSaurus.PostgreSql;
 
 namespace SchemaSaurus.PostgreSql.Tests;
 

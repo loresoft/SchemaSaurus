@@ -52,6 +52,26 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingFormatAddressThenDescriptionIsPopulated()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Description.Should().Be("Formats an address.");
+    }
+
+    [Fact]
+    public async Task WhenReadingDomainReturningFunctionThenReturnTypeUsesDomainBaseType()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "NormalizeEmailAddress");
+
+        func.ReturnType.DbType.Should().Be(DbType.String);
+        func.ReturnType.SystemType.Should().Be(typeof(string));
+        func.ReturnType.NativeTypeName.Should().Be("EmailAddress");
+    }
+
+    [Fact]
     public async Task WhenExcludingScalarFunctionsThenNoFunctionsReturned()
     {
         var options = new Metadata.Provider.SchemaReaderOptions

@@ -53,6 +53,13 @@ public sealed partial class ScalarFunction : IAnnotatable
     [JsonPropertyName("definition")]
     public string? Definition { get; init; }
 
+    /// <summary>
+    /// Human-readable description or comment for the function.
+    /// <see langword="null"/> when no description has been set.
+    /// </summary>
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
     /// <inheritdoc />
     [DictionaryEquality]
     [JsonPropertyName("annotations")]

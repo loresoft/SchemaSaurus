@@ -1,5 +1,6 @@
 using SchemaSaurus.Metadata;
 using SchemaSaurus.PostgreSql.Tests.Fixtures;
+using SchemaSaurus.PostgreSql;
 
 namespace SchemaSaurus.PostgreSql.Tests;
 
@@ -102,5 +103,30 @@ public class IndexTests(DatabaseFixture databaseFixture)
         var index = taskTable.Indexes.First(i => i.Name == "IX_Task_StatusId");
         var keyColumns = index.Columns.Where(c => !c.IsIncludedColumn).ToList();
         keyColumns.Should().AllSatisfy(c => c.SortDirection.Should().Be(SortDirection.Ascending));
+    }
+
+    [Fact]
+    public async Task WhenReadingDescendingIndexColumnThenSortDirectionIsDescending()
+    {
+        var model = await GetDatabaseModelAsync();
+        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+
+        var index = taskTable.Indexes.First(i => i.Name == "IX_Task_Created_Desc");
+        var keyColumn = index.Columns.Single(c => !c.IsIncludedColumn);
+
+        keyColumn.ColumnName.Should().Be("Created");
+        keyColumn.SortDirection.Should().Be(SortDirection.Descending);
+    }
+
+    [Fact]
+    public async Task WhenReadingExpressionIndexThenIndexIsReturnedWithExpressionAnnotation()
+    {
+        var model = await GetDatabaseModelAsync();
+        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+
+        var index = taskTable.Indexes.First(i => i.Name == "IX_Task_TitleLower");
+
+        index.Columns.Should().BeEmpty();
+        index.Annotations.Should().ContainKey(PostgreSqlAnnotations.IndexExpressions);
     }
 }

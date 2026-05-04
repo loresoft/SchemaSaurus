@@ -3,7 +3,7 @@ using System.Data;
 
 using NpgsqlTypes;
 
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 /// <summary>
 /// Provides mappings from PostgreSQL native data type names to common .NET data type metadata.

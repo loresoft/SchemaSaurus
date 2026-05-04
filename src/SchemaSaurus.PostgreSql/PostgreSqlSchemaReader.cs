@@ -7,7 +7,7 @@ using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 /// <summary>
 /// Reads structural metadata from a PostgreSQL database using <c>pg_catalog</c>

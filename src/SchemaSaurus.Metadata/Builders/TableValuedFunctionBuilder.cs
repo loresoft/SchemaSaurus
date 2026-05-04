@@ -8,6 +8,7 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
 {
     private SchemaQualifiedName? _schemaQualifiedName;
     private string? _definition;
+    private string? _description;
     private readonly List<Parameter> _parameters = [];
     private readonly List<ReturnColumn> _returnColumns = [];
     private readonly Dictionary<string, object?> _annotations = [];
@@ -31,6 +32,13 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     public TableValuedFunctionBuilder WithDefinition(string? definition)
     {
         _definition = definition;
+        return this;
+    }
+
+    /// <summary>Sets the function description.</summary>
+    public TableValuedFunctionBuilder WithDescription(string? description)
+    {
+        _description = description;
         return this;
     }
 
@@ -111,6 +119,7 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
         {
             SchemaQualifiedName = _schemaQualifiedName.Value,
             Definition = _definition,
+            Description = _description,
             Parameters = _parameters,
             ReturnColumns = _returnColumns,
             Annotations = _annotations,

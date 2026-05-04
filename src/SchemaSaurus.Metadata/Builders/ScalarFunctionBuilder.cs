@@ -10,6 +10,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     private TypeMapping? _returnType;
     private bool _isDeterministic;
     private string? _definition;
+    private string? _description;
     private readonly List<Parameter> _parameters = [];
     private readonly Dictionary<string, object?> _annotations = [];
 
@@ -61,6 +62,13 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     public ScalarFunctionBuilder WithDefinition(string? definition)
     {
         _definition = definition;
+        return this;
+    }
+
+    /// <summary>Sets the function description.</summary>
+    public ScalarFunctionBuilder WithDescription(string? description)
+    {
+        _description = description;
         return this;
     }
 
@@ -117,6 +125,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
             ReturnType = _returnType,
             IsDeterministic = _isDeterministic,
             Definition = _definition,
+            Description = _description,
             Parameters = _parameters,
             Annotations = _annotations,
         };

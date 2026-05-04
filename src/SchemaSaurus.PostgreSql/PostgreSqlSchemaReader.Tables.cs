@@ -5,7 +5,7 @@ using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 public sealed partial class PostgreSqlSchemaReader
 {
@@ -220,13 +220,25 @@ public sealed partial class PostgreSqlSchemaReader
                 idx.indisunique,
                 idx.indisprimary,
                 am.amname,
-                idx.indkey,
                 ARRAY(
                     SELECT attr.attname
-                    FROM unnest(idx.indkey) WITH ORDINALITY AS column_key(attnum, ordinal_position)
-                    JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = column_key.attnum
-                    ORDER BY column_key.ordinal_position
-                ),
+                    FROM unnest(idx.indkey, idx.indoption) WITH ORDINALITY AS key_column(attnum, option, ordinal_position)
+                    LEFT JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = key_column.attnum
+                    WHERE key_column.attnum > 0
+                    ORDER BY key_column.ordinal_position
+                ) AS columns,
+                ARRAY(
+                    SELECT (key_column.option & 1) <> 0
+                    FROM unnest(idx.indkey, idx.indoption) WITH ORDINALITY AS key_column(attnum, option, ordinal_position)
+                    WHERE key_column.attnum > 0
+                    ORDER BY key_column.ordinal_position
+                ) AS descending_columns,
+                ARRAY(
+                    SELECT pg_get_indexdef(idx.indexrelid, key_column.ordinal_position::integer, false)
+                    FROM unnest(idx.indkey) WITH ORDINALITY AS key_column(attnum, ordinal_position)
+                    WHERE key_column.attnum = 0
+                    ORDER BY key_column.ordinal_position
+                ) AS expressions,
                 CASE WHEN idx.indpred IS NULL THEN NULL ELSE pg_get_expr(idx.indpred, cls.oid) END AS predicate,
                 idxcls.reloptions
             FROM pg_class AS cls
@@ -252,10 +264,11 @@ public sealed partial class PostgreSqlSchemaReader
         const int nameOrdinal = 2;
         const int uniqueOrdinal = 3;
         const int methodOrdinal = 5;
-        const int keysOrdinal = 6;
-        const int columnsOrdinal = 7;
-        const int predicateOrdinal = 8;
-        const int optionsOrdinal = 9;
+        const int columnsOrdinal = 6;
+        const int descendingOrdinal = 7;
+        const int expressionsOrdinal = 8;
+        const int predicateOrdinal = 9;
+        const int optionsOrdinal = 10;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -266,11 +279,9 @@ public sealed partial class PostgreSqlSchemaReader
             var indexName = reader.GetString(nameOrdinal);
             var isUnique = reader.GetBoolean(uniqueOrdinal);
             var indexType = reader.GetString(methodOrdinal);
-            var columnIds = reader.GetFieldValue<short[]>(keysOrdinal);
-            if (columnIds.Any(columnId => columnId <= 0))
-                continue;
-
             var columns = reader.GetFieldValue<string[]>(columnsOrdinal);
+            var descendingColumns = reader.GetFieldValue<bool[]>(descendingOrdinal);
+            var expressions = reader.GetFieldValue<string[]>(expressionsOrdinal);
             var predicate = reader.GetStringNull(predicateOrdinal);
             var storageParameters = reader.GetFieldValueNull<string[]>(optionsOrdinal);
 
@@ -283,8 +294,17 @@ public sealed partial class PostgreSqlSchemaReader
 
             AddStorageParameterAnnotations(indexBuilder, storageParameters);
 
-            foreach (var columnName in columns)
-                indexBuilder.AddColumn(columnName);
+            for (var i = 0; i < columns.Length; i++)
+            {
+                var sortDirection = descendingColumns[i]
+                    ? SortDirection.Descending
+                    : SortDirection.Ascending;
+
+                indexBuilder.AddColumn(columns[i], sortDirection);
+            }
+
+            if (expressions.Length > 0)
+                indexBuilder.WithAnnotation(PostgreSqlAnnotations.IndexExpressions, expressions);
 
             var tableIndex = indexBuilder.Build();
             tables[objectId].AddIndex(tableIndex);

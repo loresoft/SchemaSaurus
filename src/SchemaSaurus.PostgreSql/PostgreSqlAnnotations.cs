@@ -1,4 +1,4 @@
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 /// <summary>
 /// Provides well-known PostgreSQL annotation names used by SchemaSaurus metadata.
@@ -14,4 +14,9 @@ public static class PostgreSqlAnnotations
     /// Prefix for annotations containing PostgreSQL storage parameter values.
     /// </summary>
     public const string StorageParameterPrefix = "StorageParameter:";
+
+    /// <summary>
+    /// Annotation containing the normalized PostgreSQL expression definitions for expression indexes.
+    /// </summary>
+    public const string IndexExpressions = "IndexExpressions";
 }

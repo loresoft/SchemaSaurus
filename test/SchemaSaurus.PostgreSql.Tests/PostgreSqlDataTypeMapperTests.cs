@@ -2,8 +2,6 @@ using System.Data;
 
 using NpgsqlTypes;
 
-using SchemaSaurus.PostgreSQL;
-
 namespace SchemaSaurus.PostgreSql.Tests;
 
 public class PostgreSqlDataTypeMapperTests

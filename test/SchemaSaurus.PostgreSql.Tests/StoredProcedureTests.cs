@@ -40,6 +40,15 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingStatusPagedThenDescriptionIsPopulated()
+    {
+        var model = await GetDatabaseModelAsync();
+        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+
+        sp.Description.Should().Be("Reads a page of statuses.");
+    }
+
+    [Fact]
     public async Task WhenExcludingStoredProceduresThenNoProceduresReturned()
     {
         var options = new Metadata.Provider.SchemaReaderOptions

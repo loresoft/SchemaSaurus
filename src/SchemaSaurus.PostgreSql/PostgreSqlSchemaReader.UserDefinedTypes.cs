@@ -4,7 +4,7 @@ using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
-namespace SchemaSaurus.PostgreSQL;
+namespace SchemaSaurus.PostgreSql;
 
 public sealed partial class PostgreSqlSchemaReader
 {

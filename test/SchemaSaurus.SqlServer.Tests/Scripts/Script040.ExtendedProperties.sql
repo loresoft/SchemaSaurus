@@ -110,3 +110,21 @@ BEGIN
         @level2type = N'INDEX',
         @level2name = N'UX_User_EmailAddress';
 END;
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.extended_properties ep
+    WHERE ep.[class] = 1
+      AND ep.[major_id] = OBJECT_ID(N'[dbo].[FormatAddress]')
+      AND ep.[minor_id] = 0
+      AND ep.[name] = N'MS_Description'
+)
+BEGIN
+    EXEC sys.sp_addextendedproperty
+        @name = N'MS_Description',
+        @value = N'Formats an address.',
+        @level0type = N'SCHEMA',
+        @level0name = N'dbo',
+        @level1type = N'FUNCTION',
+        @level1name = N'FormatAddress';
+END;
