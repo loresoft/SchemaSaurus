@@ -69,7 +69,7 @@ public sealed partial class SqliteSchemaReader
         command.CommandText = sql;
         command.Parameters.AddWithValue("$view", viewName);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int columnNameOrdinal = 0;
         const int typeNameOrdinal = 1;

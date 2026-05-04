@@ -55,7 +55,7 @@ public sealed partial class SqliteSchemaReader
 
         command.Parameters.AddWithValue("$type", type);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var names = new List<string>();
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))

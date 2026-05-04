@@ -25,7 +25,7 @@ public sealed partial class SqliteSchemaReader
         command.CommandText = sql;
         command.Parameters.AddWithValue("$table", tableName);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int idOrdinal = 0;
         const int referencedTableOrdinal = 1;
@@ -94,7 +94,7 @@ public sealed partial class SqliteSchemaReader
         command.Parameters.AddWithValue("$table", tableName);
         command.Parameters.AddWithValue("$id", id);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var mappings = new List<(string From, string To)>();
         const int sequenceOrdinal = 0;

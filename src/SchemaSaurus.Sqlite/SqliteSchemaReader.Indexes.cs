@@ -26,7 +26,7 @@ public sealed partial class SqliteSchemaReader
         listCommand.CommandText = listSql;
         listCommand.Parameters.AddWithValue("$table", tableName);
 
-        using var listReader = await listCommand.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var listReader = await listCommand.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var indexes = new List<(string Name, bool IsUnique)>();
 
@@ -96,7 +96,7 @@ public sealed partial class SqliteSchemaReader
         command.CommandText = sql;
         command.Parameters.AddWithValue("$index", indexName);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var columns = new List<ColumnReference>();
         const int columnNameOrdinal = 0;

@@ -43,7 +43,7 @@ public sealed partial class SqliteSchemaReader
 
         command.Parameters.AddWithValue("$index", name);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var columnRefs = new List<ColumnReference>();
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -78,7 +78,7 @@ public sealed partial class SqliteSchemaReader
         command.CommandText = sql;
         command.Parameters.AddWithValue("$table", tableName);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
@@ -111,7 +111,7 @@ public sealed partial class SqliteSchemaReader
         command.CommandText = sql;
         command.Parameters.AddWithValue("$table", tableName);
 
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
         var constraintNames = new List<string>();
 
         // Buffer names first because each constraint needs a separate pragma_index_info query.
@@ -194,7 +194,7 @@ public sealed partial class SqliteSchemaReader
         SqliteCommand command,
         CancellationToken cancellationToken)
     {
-        using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
         var values = new List<string>();
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))

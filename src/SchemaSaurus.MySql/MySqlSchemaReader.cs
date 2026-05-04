@@ -13,7 +13,7 @@ namespace SchemaSaurus.MySql;
 /// </summary>
 public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
 {
-    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
+    private const CommandBehavior SequentialResultBehavior = CommandBehavior.SingleResult | CommandBehavior.SequentialAccess;
 
     /// <inheritdoc />
     public override string ProviderName => "MySQL";
@@ -27,7 +27,7 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
         await using var command = connection.CreateCommand();
         command.CommandText = "SELECT @@version, @@version_comment, @@collation_database";
 
-        await using var reader = await command.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        await using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
 

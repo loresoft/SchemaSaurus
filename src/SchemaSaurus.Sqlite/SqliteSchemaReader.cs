@@ -13,7 +13,6 @@ namespace SchemaSaurus.Sqlite;
 /// </summary>
 public sealed partial class SqliteSchemaReader : DatabaseSchemaReader<SqliteConnection>
 {
-    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
     private const CommandBehavior SequentialResultBehavior = CommandBehavior.SingleResult | CommandBehavior.SequentialAccess;
 
     // These are the names of the tables and views created by SpatiaLite, a popular spatial extension for SQLite.
