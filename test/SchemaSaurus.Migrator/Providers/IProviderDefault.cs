@@ -15,4 +15,6 @@ public interface IProviderDefault
     bool SupportChangeTracking { get; set; }
 
     bool SupportSequences { get; set; }
+
+    bool SupportForeignKeys { get; set; }
 }

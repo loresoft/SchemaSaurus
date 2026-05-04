@@ -72,7 +72,7 @@ public sealed partial class SqlServerSchemaReader
                 : null;
 
             // Map SQL Server system type to DbType and CLR type
-            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlDataTypeMapper.MapNativeType(typeName);
+            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(typeName);
 
             builder.AddSequence(sequenceBuilder =>
             {

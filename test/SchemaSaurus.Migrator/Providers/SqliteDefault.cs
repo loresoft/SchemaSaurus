@@ -10,4 +10,5 @@ public class SqliteDefault : IProviderDefault
     public bool SupportChangeTracking { get; set; } = false;
     public bool SupportSchema { get; set; } = false;
     public bool SupportSequences { get; set; } = false;
+    public bool SupportForeignKeys { get; set; } = false;
 }

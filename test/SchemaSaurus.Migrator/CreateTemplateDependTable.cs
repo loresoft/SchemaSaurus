@@ -15,6 +15,7 @@ public class CreateTemplateDependTable : Migration
     }
 
     public string DefaultSchema => _providerDefault.DefaultSchema;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -30,6 +31,9 @@ public class CreateTemplateDependTable : Migration
                 .AsInt32()
                 .NotNullable()
                 .PrimaryKey();
+
+        if (!SupportForeignKeys)
+            return;
 
         Create.ForeignKey("FK_TemplateDepend_Template_LinkID")
             .FromTable("TemplateDepend").InSchema(DefaultSchema).ForeignColumn("LinkID")

@@ -18,6 +18,7 @@ public class CreateTaskExtendedTable : Migration
 
     public string RowVersionType => _providerDefault.RowVersionType;
     public string DateTimeOffsetType => _providerDefault.DateTimeOffsetType;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -62,6 +63,9 @@ public class CreateTaskExtendedTable : Migration
             .WithColumn("RowVersion")
                 .AsCustom(RowVersionType)
                 .NotNullable();
+
+        if (!SupportForeignKeys)
+            return;
 
         Create.ForeignKey("FK_TaskExtended_Task_TaskId")
             .FromTable("TaskExtended").InSchema(DefaultSchema).ForeignColumn("TaskId")

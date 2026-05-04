@@ -166,7 +166,7 @@ public sealed partial class SqlServerSchemaReader
             var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
 
             // Map SQL Server system type to DbType and CLR type, and determine Unicode/fixed-length attributes
-            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlDataTypeMapper.MapNativeType(systemTypeName);
+            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
 
             // Format the native type name with length/precision/scale as appropriate for the type. For user-defined types, include the user type name instead of the system type name.
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);

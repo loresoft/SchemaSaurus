@@ -18,6 +18,7 @@ public class CreateUserLoginTable : Migration
 
     public string RowVersionType => _providerDefault.RowVersionType;
     public string DateTimeOffsetType => _providerDefault.DateTimeOffsetType;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -96,9 +97,12 @@ public class CreateUserLoginTable : Migration
                 .AsCustom(RowVersionType)
                 .NotNullable();
 
-        Create.ForeignKey("FK_UserLogin_User_UserId")
-            .FromTable("UserLogin").InSchema(DefaultSchema).ForeignColumn("UserId")
-            .ToTable("User").InSchema(DefaultSchema).PrimaryColumn("Id");
+        if (SupportForeignKeys)
+        {
+            Create.ForeignKey("FK_UserLogin_User_UserId")
+                .FromTable("UserLogin").InSchema(DefaultSchema).ForeignColumn("UserId")
+                .ToTable("User").InSchema(DefaultSchema).PrimaryColumn("Id");
+        }
 
         Create.Index("IX_UserLogin_EmailAddress")
             .OnTable("UserLogin")

@@ -10,4 +10,5 @@ public class SqlServerDefault : IProviderDefault
     public bool SupportChangeTracking { get; set; } = true;
     public bool SupportSchema { get; set; } = true;
     public bool SupportSequences { get; set; } = true;
+    public bool SupportForeignKeys { get; set; } = true;
 }

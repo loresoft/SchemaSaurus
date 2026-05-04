@@ -15,6 +15,7 @@ public class CreateEmployeesTable : Migration
     }
 
     public string DefaultSchema => _providerDefault.DefaultSchema;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -50,6 +51,9 @@ public class CreateEmployeesTable : Migration
             .WithColumn("UpdatedBy")
                 .AsInt32()
                 .NotNullable();
+
+        if (!SupportForeignKeys)
+            return;
 
         Create.ForeignKey("FK_Employees_Employees_ManagerId")
             .FromTable("Employees").InSchema(DefaultSchema).ForeignColumn("ManagerId")

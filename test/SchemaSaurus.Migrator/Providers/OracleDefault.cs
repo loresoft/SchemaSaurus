@@ -10,4 +10,5 @@ public class OracleDefault : IProviderDefault
     public bool SupportChangeTracking { get; set; } = false;
     public bool SupportSchema { get; set; } = true;
     public bool SupportSequences { get; set; } = true;
+    public bool SupportForeignKeys { get; set; } = true;
 }

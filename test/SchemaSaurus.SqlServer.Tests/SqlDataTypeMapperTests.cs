@@ -13,7 +13,7 @@ public class SqlDataTypeMapperTests
     [InlineData(DbType.Xml, SqlDbType.Xml)]
     public void WhenMappingDbTypeThenSqlDbTypeIsReturned(DbType dbType, SqlDbType expectedSqlDbType)
     {
-        var sqlDbType = SqlDataTypeMapper.ToSqlDbType(dbType);
+        var sqlDbType = SqlServerTypeMapper.ToSqlDbType(dbType);
 
         sqlDbType.Should().Be(expectedSqlDbType);
     }
@@ -29,7 +29,7 @@ public class SqlDataTypeMapperTests
     [InlineData(SqlDbType.Vector, DbType.Object)]
     public void WhenMappingSqlDbTypeThenDbTypeIsReturned(SqlDbType sqlDbType, DbType expectedDbType)
     {
-        var dbType = SqlDataTypeMapper.ToDbType(sqlDbType);
+        var dbType = SqlServerTypeMapper.ToDbType(sqlDbType);
 
         dbType.Should().Be(expectedDbType);
     }
@@ -45,7 +45,7 @@ public class SqlDataTypeMapperTests
         bool? expectedIsUnicode,
         bool? expectedIsFixedLength)
     {
-        var mapping = SqlDataTypeMapper.MapNativeType(typeName);
+        var mapping = SqlServerTypeMapper.MapNativeType(typeName);
 
         mapping.DbType.Should().Be(expectedDbType);
         mapping.SqlDbType.Should().Be(expectedSqlDbType);
@@ -57,7 +57,7 @@ public class SqlDataTypeMapperTests
     [Fact]
     public void WhenMappingUnsupportedDbTypeThenVariantIsReturned()
     {
-        var sqlDbType = SqlDataTypeMapper.ToSqlDbType(DbType.SByte);
+        var sqlDbType = SqlServerTypeMapper.ToSqlDbType(DbType.SByte);
 
         sqlDbType.Should().Be(SqlDbType.Variant);
     }

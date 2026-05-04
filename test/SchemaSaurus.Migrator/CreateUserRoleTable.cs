@@ -15,6 +15,7 @@ public class CreateUserRoleTable : Migration
     }
 
     public string DefaultSchema => _providerDefault.DefaultSchema;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -30,6 +31,9 @@ public class CreateUserRoleTable : Migration
                 .AsInt32()
                 .NotNullable()
                 .PrimaryKey();
+
+        if (!SupportForeignKeys)
+            return;
 
         Create.ForeignKey("FK_UserRole_Role_RoleId")
             .FromTable("UserRole").InSchema(DefaultSchema).ForeignColumn("RoleId")

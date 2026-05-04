@@ -186,7 +186,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
-            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlDataTypeMapper.MapNativeType(systemTypeName);
+            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
             var paramName = reader.GetString(nameOrdinal);

@@ -6,7 +6,7 @@ namespace SchemaSaurus.SqlServer;
 /// <summary>
 /// Provides mappings from SQL Server native data type names to common .NET data type metadata.
 /// </summary>
-public static class SqlDataTypeMapper
+public static class SqlServerTypeMapper
 {
     // Mapping of SQL Server system type names to DbType, SqlDbType, CLR type, and Unicode/fixed-length attributes.
     private static readonly FrozenDictionary<string, (DbType DbType, SqlDbType SqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength)> SqlServerTypeMappings

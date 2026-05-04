@@ -13,4 +13,28 @@
     <ProjectReference Include="..\SchemaSaurus.Metadata\SchemaSaurus.Metadata.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="SqliteSchemaReader.Columns.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.Constraints.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.ForeignKeys.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.Indexes.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.Tables.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.Triggers.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SqliteSchemaReader.Views.cs">
+      <DependentUpon>SqliteSchemaReader.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -79,7 +79,7 @@ public sealed partial class SqlServerSchemaReader
 
                 // Map SQL Server system type to DbType and CLR type, and determine Unicode/fixed-length attributes for the base type of the user-defined type. For table types, the base type is always "table",
                 // which we handle as a special case in the MapNativeType method to return appropriate metadata (e.g. DbType = Object, SystemType = typeof(object), etc.).
-                var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlDataTypeMapper.MapNativeType(baseTypeName);
+                var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(baseTypeName);
 
                 // For table types, we set the kind to TableType and the native type name to "table", and we don't set max length, precision, scale, Unicode, or fixed-length attributes since they don't apply to table types.
                 // For regular user-defined types, we set the kind to Alias and format the native type name based on the base type and its attributes.
@@ -208,7 +208,7 @@ public sealed partial class SqlServerSchemaReader
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
-            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlDataTypeMapper.MapNativeType(systemTypeName);
+            var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
             ub.AddColumn(col =>

@@ -15,6 +15,7 @@ public class CreateTwoForeignKeyTable : Migration
     }
 
     public string DefaultSchema => _providerDefault.DefaultSchema;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -42,6 +43,9 @@ public class CreateTwoForeignKeyTable : Migration
             .WithColumn("Blah")
                 .AsString(50)
                 .Nullable();
+
+        if (!SupportForeignKeys)
+            return;
 
         Create.ForeignKey("FK_TwoForeignKey_TwoKey")
             .FromTable("TwoForeignKey").InSchema(DefaultSchema).ForeignColumns("FirstName", "LastName")

@@ -18,6 +18,7 @@ public class CreateTaskTable : Migration
 
     public string RowVersionType => _providerDefault.RowVersionType;
     public string DateTimeOffsetType => _providerDefault.DateTimeOffsetType;
+    public bool SupportForeignKeys => _providerDefault.SupportForeignKeys;
 
     public override void Up()
     {
@@ -83,17 +84,20 @@ public class CreateTaskTable : Migration
                 .AsCustom(RowVersionType)
                 .NotNullable();
 
-        Create.ForeignKey("FK_Task_Priority_PriorityId")
-            .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("PriorityId")
-            .ToTable("Priority").InSchema(DefaultSchema).PrimaryColumn("Id");
+        if (SupportForeignKeys)
+        {
+            Create.ForeignKey("FK_Task_Priority_PriorityId")
+                .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("PriorityId")
+                .ToTable("Priority").InSchema(DefaultSchema).PrimaryColumn("Id");
 
-        Create.ForeignKey("FK_Task_Status_StatusId")
-            .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("StatusId")
-            .ToTable("Status").InSchema(DefaultSchema).PrimaryColumn("Id");
+            Create.ForeignKey("FK_Task_Status_StatusId")
+                .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("StatusId")
+                .ToTable("Status").InSchema(DefaultSchema).PrimaryColumn("Id");
 
-        Create.ForeignKey("FK_Task_User_AssignedId")
-            .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("AssignedId")
-            .ToTable("User").InSchema(DefaultSchema).PrimaryColumn("Id");
+            Create.ForeignKey("FK_Task_User_AssignedId")
+                .FromTable("Task").InSchema(DefaultSchema).ForeignColumn("AssignedId")
+                .ToTable("User").InSchema(DefaultSchema).PrimaryColumn("Id");
+        }
 
         Create.Index("IX_Task_AssignedId")
             .OnTable("Task")
