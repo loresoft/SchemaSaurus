@@ -1,5 +1,6 @@
 using FluentMigrator;
 
+using SchemaSaurus.Migrator.Extensions;
 using SchemaSaurus.Migrator.Providers;
 
 namespace SchemaSaurus.Migrator;
@@ -15,6 +16,7 @@ public class CreateTableExampleTable : Migration
     }
 
     public string DefaultSchema => _providerDefault.DefaultSchema;
+    public bool SupportIdentity => _providerDefault.SupportIdentity;
 
     public override void Up()
     {
@@ -23,7 +25,7 @@ public class CreateTableExampleTable : Migration
 
             .WithColumn("Table Example ID")
                 .AsInt32()
-                .Identity()
+                .IdentityIf(SupportIdentity)
                 .NotNullable()
                 .PrimaryKey()
 

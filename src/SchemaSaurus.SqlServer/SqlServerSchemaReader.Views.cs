@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -79,8 +80,8 @@ public sealed partial class SqlServerSchemaReader
             var objectId = reader.GetInt32(objectIdOrdinal);
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
-            var definition = reader.IsDBNull(defOrdinal) ? null : reader.GetString(defOrdinal);
-            var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
+            var definition = reader.GetStringNull(defOrdinal);
+            var description = reader.GetStringNull(descOrdinal);
             var isMaterialized = reader.GetInt32(materializedOrdinal) == 1;
 
             var viewBuilder = new ViewBuilder()
@@ -157,13 +158,13 @@ public sealed partial class SqlServerSchemaReader
             var columnId = reader.GetInt32(columnIdOrdinal);
             var columnName = reader.GetString(colNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
-            var collation = reader.IsDBNull(collationOrdinal) ? null : reader.GetString(collationOrdinal);
-            var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
+            var collation = reader.GetStringNull(collationOrdinal);
+            var description = reader.GetStringNull(descOrdinal);
 
             // Map SQL Server system type to DbType and CLR type, and determine Unicode/fixed-length attributes
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);

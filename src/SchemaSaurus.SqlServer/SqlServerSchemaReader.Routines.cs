@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -57,8 +58,8 @@ public sealed partial class SqlServerSchemaReader
                 var objectId = reader.GetInt32(objectIdOrdinal);
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
-                var definition = reader.IsDBNull(definitionOrdinal) ? null : reader.GetString(definitionOrdinal);
-                var description = reader.IsDBNull(descriptionOrdinal) ? null : reader.GetString(descriptionOrdinal);
+                var definition = reader.GetStringNull(definitionOrdinal);
+                var description = reader.GetStringNull(descriptionOrdinal);
 
                 var storedProcedureBuilder = new StoredProcedureBuilder()
                     .WithSchemaQualifiedName(schema, name)
@@ -126,7 +127,7 @@ public sealed partial class SqlServerSchemaReader
                 var objectId = reader.GetInt32(objectIdOrdinal);
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
-                var definition = reader.IsDBNull(definitionOrdinal) ? null : reader.GetString(definitionOrdinal);
+                var definition = reader.GetStringNull(definitionOrdinal);
 
                 var functionBuilder = new ScalarFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
@@ -151,7 +152,7 @@ public sealed partial class SqlServerSchemaReader
 
     private async Task ReadScalarFunctionParametersAsync(
         SqlConnection connection,
-        Dictionary<int, ScalarFunctionBuilder> funcs,
+        Dictionary<int, ScalarFunctionBuilder> functions,
         CancellationToken cancellationToken)
     {
         const string sql = """
@@ -177,7 +178,7 @@ public sealed partial class SqlServerSchemaReader
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int nameOrdinal = 1;
@@ -191,17 +192,24 @@ public sealed partial class SqlServerSchemaReader
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            // Filter rows based on object_id to avoid processing parameters for functions we're not including.
             var objectId = reader.GetInt32(objectIdOrdinal);
-            if (!funcs.TryGetValue(objectId, out var functionBuilder))
+
+            // Filter rows based on object_id to avoid processing parameters for functions we're not including.
+            if (!functions.TryGetValue(objectId, out var functionBuilder))
                 continue;
 
+            var paramName = reader.GetString(nameOrdinal);
             var paramId = reader.GetInt32(paramIdOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
+            var isOutput = reader.GetBoolean(outputOrdinal);
+
+            var direction = isOutput
+                ? Metadata.ParameterDirection.Output
+                : Metadata.ParameterDirection.Input;
 
             // Normalize max length for character types (e.g. -1 for MAX) and binary types, and set to null for types where it doesn't apply
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);
@@ -222,7 +230,7 @@ public sealed partial class SqlServerSchemaReader
             // In either case, we use the same metadata to build a TypeMapping for the return type or parameter type.
             if (paramId == 0)
             {
-                functionBuilder.WithReturnType(new TypeMapping
+                TypeMapping returnType = new()
                 {
                     DbType = dbType,
                     NativeTypeName = nativeTypeName,
@@ -232,13 +240,11 @@ public sealed partial class SqlServerSchemaReader
                     Scale = scaleValue,
                     IsUnicode = isUnicode,
                     IsFixedLength = isFixedLength,
-                });
+                };
+                functionBuilder.WithReturnType(returnType);
             }
             else
             {
-                var paramName = reader.GetString(nameOrdinal);
-                var direction = reader.GetBoolean(outputOrdinal) ? Metadata.ParameterDirection.Output : Metadata.ParameterDirection.Input;
-
                 functionBuilder.AddParameter(parameterBuilder =>
                 {
                     parameterBuilder
@@ -306,7 +312,7 @@ public sealed partial class SqlServerSchemaReader
                 var objectId = reader.GetInt32(objectIdOrdinal);
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
-                var definition = reader.IsDBNull(defOrdinal) ? null : reader.GetString(defOrdinal);
+                var definition = reader.GetStringNull(defOrdinal);
 
                 var functionBuilder = new TableValuedFunctionBuilder()
                     .WithSchemaQualifiedName(schema, name)
@@ -361,7 +367,7 @@ public sealed partial class SqlServerSchemaReader
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -381,7 +387,7 @@ public sealed partial class SqlServerSchemaReader
                 continue;
 
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);

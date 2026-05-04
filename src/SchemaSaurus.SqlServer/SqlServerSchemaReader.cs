@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -16,7 +17,6 @@ namespace SchemaSaurus.SqlServer;
 /// </summary>
 public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConnection>
 {
-    private const CommandBehavior SingleResultBehavior = CommandBehavior.SingleResult;
     private const CommandBehavior SequentialResultBehavior = CommandBehavior.SingleResult | CommandBehavior.SequentialAccess;
 
     private readonly Dictionary<(int Class, int MajorId, int MinorId), List<KeyValuePair<string, object?>>> _extendedProperties = [];
@@ -49,7 +49,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             return;
@@ -61,12 +61,15 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         const int engineOrdinal = 4;
         const int compatOrdinal = 5;
 
-        var collation = reader.IsDBNull(collationOrdinal) ? null : reader.GetString(collationOrdinal);
-        var defaultSchema = reader.IsDBNull(schemaOrdinal) ? null : reader.GetString(schemaOrdinal);
-        var serverVersion = reader.IsDBNull(versionOrdinal) ? null : reader.GetString(versionOrdinal);
-        var edition = reader.IsDBNull(editionOrdinal) ? null : reader.GetString(editionOrdinal);
-        var compatibilityLevel = reader.IsDBNull(compatOrdinal) ? null : reader.GetByte(compatOrdinal).ToString(CultureInfo.InvariantCulture);
-        var engineEdition = reader.IsDBNull(engineOrdinal) ? null : GetEngineEditionName(reader.GetInt32(engineOrdinal));
+        var collation = reader.GetStringNull(collationOrdinal);
+        var defaultSchema = reader.GetStringNull(schemaOrdinal);
+        var serverVersion = reader.GetStringNull(versionOrdinal);
+        var edition = reader.GetStringNull(editionOrdinal);
+        var engineEditionValue = reader.GetInt32Null(engineOrdinal);
+        var compatibilityLevelValue = reader.GetByteNull(compatOrdinal);
+
+        var engineEdition = engineEditionValue is null ? null : GetEngineEditionName(engineEditionValue.Value);
+        var compatibilityLevel = compatibilityLevelValue?.ToString(CultureInfo.InvariantCulture);
 
         builder
             .WithCollation(collation)
@@ -116,7 +119,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             var minorId = reader.GetInt32(minorIdOrdinal);
 
             var name = reader.GetString(nameOrdinal);
-            var value = reader.IsDBNull(valueOrdinal) ? null : reader.GetValue(valueOrdinal);
+            var value = reader.GetValueNull(valueOrdinal);
 
             var key = (classId, majorId, minorId);
             if (!_extendedProperties.TryGetValue(key, out var values))
@@ -159,7 +162,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int nameOrdinal = 1;
@@ -174,14 +177,19 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var objectId = reader.GetInt32(objectIdOrdinal);
+
             if (!builders.TryGetValue(objectId, out var b))
                 continue;
 
+            var paramName = reader.GetString(nameOrdinal);
+            var paramOrdinal = reader.GetInt32(paramIdOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
+            var isOutput = reader.GetBoolean(outputOrdinal);
+
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
@@ -189,12 +197,9 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
-            var paramName = reader.GetString(nameOrdinal);
-            var paramOrdinal = reader.GetInt32(paramIdOrdinal);
-            var isOutput = reader.GetBoolean(outputOrdinal);
             var direction = isOutput ? Metadata.ParameterDirection.Output : Metadata.ParameterDirection.Input;
 
-            void configure(ParameterBuilder parameterBuilder)
+            void Configure(ParameterBuilder parameterBuilder)
             {
                 parameterBuilder
                     .WithName(paramName)
@@ -214,9 +219,9 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             }
 
             if (b is StoredProcedureBuilder spb)
-                spb.AddParameter(configure);
+                spb.AddParameter(Configure);
             else if (b is TableValuedFunctionBuilder tvfb)
-                tvfb.AddParameter(configure);
+                tvfb.AddParameter(Configure);
         }
     }
 

@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.Sqlite;
@@ -38,7 +39,7 @@ public sealed partial class SqliteSchemaReader
                 continue;
             }
 
-            var viewSql = reader.IsDBNull(sqlOrdinal) ? null : reader.GetString(sqlOrdinal);
+            var viewSql = reader.GetStringNull(sqlOrdinal);
 
             var viewBuilder = new ViewBuilder()
                 .WithSchemaQualifiedName(schema: null, viewName)
@@ -80,7 +81,7 @@ public sealed partial class SqliteSchemaReader
         {
             // name | type | notnull
             var columnName = reader.GetString(columnNameOrdinal);
-            var typeName = reader.IsDBNull(typeNameOrdinal) ? "" : reader.GetString(typeNameOrdinal);
+            var typeName = reader.GetStringNull(typeNameOrdinal) ?? "";
             var notNull = reader.GetInt32(notNullOrdinal) != 0;
 
             var (dbType, systemType) = SqliteTypeMapper.MapNativeType(typeName);

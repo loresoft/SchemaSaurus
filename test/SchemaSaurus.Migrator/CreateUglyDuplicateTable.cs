@@ -16,33 +16,32 @@ public class CreateUglyDuplicateTable : Migration
 
     public override void Up()
     {
+        if (!_providerDefault.SupportSchema)
+            return;
 
-        if (_providerDefault.SupportSchema)
-        {
-            Create
-                .Schema("Ugly");
+        Create
+            .Schema("Ugly");
 
-            Create
-                .Table("Duplicate")
-                .InSchema("Ugly")
+        Create
+            .Table("Duplicate")
+            .InSchema("Ugly")
 
-                .WithColumn("DuplicateID")
-                    .AsInt32()
-                    .NotNullable()
-                    .PrimaryKey()
+            .WithColumn("DuplicateID")
+                .AsInt32()
+                .NotNullable()
+                .PrimaryKey()
 
-                .WithColumn("Name")
-                    .AsString(50)
-                    .NotNullable();
-        }
+            .WithColumn("Name")
+                .AsString(50)
+                .NotNullable();
     }
 
     public override void Down()
     {
-        if (_providerDefault.SupportSchema)
-        {
-            Delete.Table("Duplicate").InSchema("Ugly");
-            Delete.Schema("Ugly");
-        }
+        if (!_providerDefault.SupportSchema)
+            return;
+
+        Delete.Table("Duplicate").InSchema("Ugly");
+        Delete.Schema("Ugly");
     }
 }

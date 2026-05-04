@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 
 namespace SchemaSaurus.Sqlite;
 
@@ -38,9 +39,9 @@ public sealed partial class SqliteSchemaReader
         {
             // name | type | notnull | dflt_value | pk | hidden
             var columnName = reader.GetString(columnNameOrdinal);
-            var typeName = reader.IsDBNull(typeNameOrdinal) ? "" : reader.GetString(typeNameOrdinal);
+            var typeName = reader.GetStringNull(typeNameOrdinal) ?? "";
             var notNull = reader.GetInt32(notNullOrdinal) != 0;
-            var defaultValue = reader.IsDBNull(defaultValueOrdinal) ? null : reader.GetString(defaultValueOrdinal);
+            var defaultValue = reader.GetStringNull(defaultValueOrdinal);
             var primaryKeyPosition = reader.GetInt32(primaryKeyOrdinal);
             var hidden = reader.GetInt32(hiddenOrdinal); // 0=normal, 1=hidden, 2=generated virtual, 3=generated stored
 

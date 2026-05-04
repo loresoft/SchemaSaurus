@@ -8,7 +8,9 @@ public class OracleDefault : IProviderDefault
 
     public bool SupportTemporalTable { get; set; } = false;
     public bool SupportChangeTracking { get; set; } = false;
-    public bool SupportSchema { get; set; } = true;
+    public bool SupportSchema { get; set; } = false;
     public bool SupportSequences { get; set; } = true;
     public bool SupportForeignKeys { get; set; } = true;
+    public bool SupportNonPrimaryKeyIdentity { get; set; } = false;
+    public bool SupportIdentity { get; set; } = false;
 }

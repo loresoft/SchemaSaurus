@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -84,9 +85,9 @@ public sealed partial class SqlServerSchemaReader
             var temporalType = reader.GetByte(temporalOrdinal);
             var isMemOpt = reader.GetBoolean(memOptOrdinal);
             var isFileTable = reader.GetBoolean(fileTableOrdinal);
-            var histSchema = reader.IsDBNull(histSchemaOrdinal) ? null : reader.GetString(histSchemaOrdinal);
-            var histName = reader.IsDBNull(histNameOrdinal) ? null : reader.GetString(histNameOrdinal);
-            var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
+            var histSchema = reader.GetStringNull(histSchemaOrdinal);
+            var histName = reader.GetStringNull(histNameOrdinal);
+            var description = reader.GetStringNull(descOrdinal);
 
             SchemaQualifiedName? historyTableName = histSchema is not null && histName is not null
                 ? new SchemaQualifiedName { Schema = histSchema, Name = histName }
@@ -193,7 +194,7 @@ public sealed partial class SqlServerSchemaReader
             var columnId = reader.GetInt32(columnIdOrdinal);
             var columnName = reader.GetString(colNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
@@ -201,13 +202,13 @@ public sealed partial class SqlServerSchemaReader
             var isIdentity = reader.GetBoolean(identityOrdinal);
             var isComputed = reader.GetBoolean(computedOrdinal);
             var isRowVersion = reader.GetBoolean(rowVerOrdinal);
-            var collation = reader.IsDBNull(collationOrdinal) ? null : reader.GetString(collationOrdinal);
-            var identitySeed = reader.IsDBNull(seedOrdinal) ? (long?)null : reader.GetInt64(seedOrdinal);
-            var identityIncrement = reader.IsDBNull(incrOrdinal) ? (long?)null : reader.GetInt64(incrOrdinal);
-            var computedSql = reader.IsDBNull(compSqlOrdinal) ? null : reader.GetString(compSqlOrdinal);
-            var isPersisted = !reader.IsDBNull(persistedOrdinal) && reader.GetBoolean(persistedOrdinal);
-            var defaultSql = reader.IsDBNull(defSqlOrdinal) ? null : reader.GetString(defSqlOrdinal);
-            var description = reader.IsDBNull(descOrdinal) ? null : reader.GetString(descOrdinal);
+            var collation = reader.GetStringNull(collationOrdinal);
+            var identitySeed = reader.GetInt64Null(seedOrdinal);
+            var identityIncrement = reader.GetInt64Null(incrOrdinal);
+            var computedSql = reader.GetStringNull(compSqlOrdinal);
+            var isPersisted = reader.GetBooleanNull(persistedOrdinal) ?? false;
+            var defaultSql = reader.GetStringNull(defSqlOrdinal);
+            var description = reader.GetStringNull(descOrdinal);
 
             // Map SQL Server system type to DbType and CLR type, and determine Unicode/fixed-length attributes
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
@@ -395,7 +396,7 @@ public sealed partial class SqlServerSchemaReader
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int indexIdOrdinal = 1;
@@ -412,24 +413,30 @@ public sealed partial class SqlServerSchemaReader
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            // Filter rows based on object_id to avoid processing indexes for tables we're not including.
             var objectId = reader.GetInt32(objectIdOrdinal);
+
+            // Filter rows based on object_id to avoid processing indexes for tables we're not including.
             if (!objectIds.Contains(objectId))
                 continue;
 
             var indexId = reader.GetInt32(indexIdOrdinal);
+            var indexName = reader.GetString(nameOrdinal);
+            var isUnique = reader.GetBoolean(uniqueOrdinal);
+            var indexType = reader.GetByte(typeOrdinal);
+            var isDisabled = reader.GetBoolean(disabledOrdinal);
+            var hasFilter = reader.GetBoolean(filterOrdinal);
+            var filterExpression = reader.GetStringNull(filterDefOrdinal);
+            var fillFactor = reader.GetByte(fillFactorOrdinal);
+            var columnName = reader.GetString(colNameOrdinal);
+            var isDescending = reader.GetBoolean(descendOrdinal);
+            var isIncluded = reader.GetBoolean(includedOrdinal);
+
             var key = (objectId, indexId);
 
             // If we haven't seen this index before, create a new IndexBuilder and add it to the dictionary.
             // Otherwise, we'll just add columns to the existing builder.
             if (!indexes.TryGetValue(key, out var entry))
             {
-                var indexType = reader.GetByte(typeOrdinal);
-                var indexName = reader.GetString(nameOrdinal);
-                var isUnique = reader.GetBoolean(uniqueOrdinal);
-                var isDisabled = reader.GetBoolean(disabledOrdinal);
-                var fillFactor = reader.GetByte(fillFactorOrdinal);
-
                 var indexBuilder = new IndexBuilder()
                     .WithName(indexName)
                     .WithIsUnique(isUnique)
@@ -441,15 +448,11 @@ public sealed partial class SqlServerSchemaReader
                 ApplyExtendedProperties((7, objectId, indexId), indexBuilder);
 
                 // If the index has a filter, set the IsFiltered property and the FilterExpression if it's not null.
-                var hasFilter = reader.GetBoolean(filterOrdinal);
                 if (hasFilter)
                 {
                     indexBuilder.WithIsFiltered(true);
-                    if (!reader.IsDBNull(filterDefOrdinal))
-                    {
-                        var filterExpression = reader.GetString(filterDefOrdinal);
+                    if (filterExpression is not null)
                         indexBuilder.WithFilterExpression(filterExpression);
-                    }
                 }
 
                 // SQL Server supports different index types: 1 = clustered, 2 = nonclustered, 3 = XML, 4 = spatial, 5 = columnstore, 6 = columnstore_clustered, 7 = hash.
@@ -462,10 +465,6 @@ public sealed partial class SqlServerSchemaReader
                 entry = (objectId, indexBuilder);
                 indexes[key] = entry;
             }
-
-            var columnName = reader.GetString(colNameOrdinal);
-            var isDescending = reader.GetBoolean(descendOrdinal);
-            var isIncluded = reader.GetBoolean(includedOrdinal);
 
             // Included columns are part of the index but not key columns, so they don't have sort direction.
             // We need to call AddIncludedColumn instead of AddColumn for these.
@@ -581,23 +580,26 @@ public sealed partial class SqlServerSchemaReader
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            // Filter rows based on parent_object_id to avoid processing foreign keys for tables we're not including.
             var objectId = reader.GetInt32(parentOrdinal);
+
+            // Filter rows based on parent_object_id to avoid processing foreign keys for tables we're not including.
             if (!objectIds.Contains(objectId))
                 continue;
 
             var fkName = reader.GetString(nameOrdinal);
+            var principalSchema = reader.GetString(pSchemaOrdinal);
+            var principalTable = reader.GetString(pTableOrdinal);
+            var onDelete = MapReferentialAction(reader.GetByte(deleteOrdinal));
+            var onUpdate = MapReferentialAction(reader.GetByte(updateOrdinal));
+            var isDisabled = reader.GetBoolean(disabledOrdinal);
+            var parentColumn = reader.GetString(parentColOrdinal);
+            var referencedColumn = reader.GetString(refColOrdinal);
+
             var key = (objectId, fkName);
 
             // If we haven't seen this foreign key before, create a new ForeignKeyBuilder and add it to the dictionary.
             if (!foreignKeys.TryGetValue(key, out var entry))
             {
-                var principalSchema = reader.GetString(pSchemaOrdinal);
-                var principalTable = reader.GetString(pTableOrdinal);
-                var onDelete = MapReferentialAction(reader.GetByte(deleteOrdinal));
-                var onUpdate = MapReferentialAction(reader.GetByte(updateOrdinal));
-                var isDisabled = reader.GetBoolean(disabledOrdinal);
-
                 var foreignKeyBuilder = new ForeignKeyBuilder()
                     .WithName(fkName)
                     .WithPrincipalTableName(principalSchema, principalTable)
@@ -608,9 +610,6 @@ public sealed partial class SqlServerSchemaReader
                 entry = (objectId, foreignKeyBuilder);
                 foreignKeys[key] = entry;
             }
-
-            var parentColumn = reader.GetString(parentColOrdinal);
-            var referencedColumn = reader.GetString(refColOrdinal);
 
             // Add the column mapping to the ForeignKeyBuilder. Since the query is ordered by constraint_column_id, the columns will be added in the correct order.
             entry.Builder.AddColumnMapping(parentColumn, referencedColumn);
@@ -662,24 +661,25 @@ public sealed partial class SqlServerSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var parentId = reader.GetInt32(parentOrdinal);
+
             if (!objectIds.Contains(parentId))
                 continue;
 
             var name = reader.GetString(nameOrdinal);
+            var isDisabled = reader.GetBoolean(disabledOrdinal);
+            var isInsteadOf = reader.GetBoolean(insteadOrdinal);
+            var definition = reader.GetStringNull(definitionOrdinal);
+            var eventType = reader.GetString(eventOrdinal);
+
             var key = (parentId, name);
 
             // If we haven't seen this trigger before, create a new entry in the dictionary with its disabled/instead_of/definition info.
             if (!triggerData.TryGetValue(key, out var td))
             {
-                var isDisabled = reader.GetBoolean(disabledOrdinal);
-                var isInsteadOf = reader.GetBoolean(insteadOrdinal);
-                var definition = reader.IsDBNull(definitionOrdinal) ? null : reader.GetString(definitionOrdinal);
-
                 td = (isDisabled, isInsteadOf, definition, []);
                 triggerData[key] = td;
             }
 
-            var eventType = reader.GetString(eventOrdinal);
             td.Events.Add(eventType);
         }
 

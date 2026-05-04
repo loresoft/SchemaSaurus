@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
@@ -13,15 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="AwesomeAssertions" />
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="coverlet.MTP" />
     <PackageReference Include="FluentMigrator.Runner.SqlServer" />
     <PackageReference Include="Testcontainers.MsSql" />
-    <PackageReference Include="XUnit.Hosting" />
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
 

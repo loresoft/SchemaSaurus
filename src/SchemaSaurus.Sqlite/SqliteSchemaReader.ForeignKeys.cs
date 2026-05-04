@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 
 namespace SchemaSaurus.Sqlite;
 
@@ -106,9 +107,8 @@ public sealed partial class SqliteSchemaReader
             var fromColumn = reader.GetString(fromColumnOrdinal);
 
             // A null "to" column means the foreign key references the corresponding primary-key column.
-            var toColumn = reader.IsDBNull(toColumnOrdinal)
-                ? await GetPrimaryKeyColumnNameAsync(connection, referencedTableName, sequence, cancellationToken).ConfigureAwait(false)
-                : reader.GetString(toColumnOrdinal);
+            var toColumn = reader.GetStringNull(toColumnOrdinal)
+                ?? await GetPrimaryKeyColumnNameAsync(connection, referencedTableName, sequence, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(toColumn))
                 continue;

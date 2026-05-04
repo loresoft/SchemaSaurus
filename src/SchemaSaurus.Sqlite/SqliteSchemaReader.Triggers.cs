@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 
 namespace SchemaSaurus.Sqlite;
 
@@ -33,7 +34,7 @@ public sealed partial class SqliteSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var triggerName = reader.GetString(triggerNameOrdinal);
-            var triggerSql = reader.IsDBNull(sqlOrdinal) ? null : reader.GetString(sqlOrdinal);
+            var triggerSql = reader.GetStringNull(sqlOrdinal);
 
             // SQLite does not expose timing or events as separate columns, so infer them from the definition.
             var (timing, events) = ParseTriggerSql(triggerSql);

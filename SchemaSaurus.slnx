@@ -6,10 +6,12 @@
   <Project Path="src/SchemaSaurus.Sqlite/SchemaSaurus.Sqlite.csproj" />
   <Project Path="src/SchemaSaurus.SqlServer/SchemaSaurus.SqlServer.csproj" />
   <Folder Name="/Build/">
+    <File Path=".github/workflows/dotnet.yml" />
     <File Path="Directory.Packages.props" />
     <File Path="src/Directory.Build.props" />
   </Folder>
   <Folder Name="/Tests/">
+    <File Path="test/Directory.Build.props" />
     <Project Path="test/SchemaSaurus.Metadata.Tests/SchemaSaurus.Metadata.Tests.csproj" />
     <Project Path="test/SchemaSaurus.Migrator/SchemaSaurus.Migrator.csproj" Id="88e18bf4-bfdc-48d8-95bf-ad3eb1d4e49b" />
     <Project Path="test/SchemaSaurus.MySql.Tests/SchemaSaurus.MySql.Tests.csproj" />

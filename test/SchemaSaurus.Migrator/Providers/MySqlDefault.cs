@@ -11,4 +11,6 @@ public class MySqlDefault : IProviderDefault
     public bool SupportSchema { get; set; } = false;
     public bool SupportSequences { get; set; } = false;
     public bool SupportForeignKeys { get; set; } = true;
+    public bool SupportNonPrimaryKeyIdentity { get; set; } = false;
+    public bool SupportIdentity { get; set; } = true;
 }

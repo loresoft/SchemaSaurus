@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -72,7 +73,7 @@ public sealed partial class SqlServerSchemaReader
                 var schema = reader.GetString(schemaOrdinal);
                 var typeName = reader.GetString(nameOrdinal);
                 var isTableType = reader.GetBoolean(isTableOrdinal);
-                var baseTypeName = reader.IsDBNull(baseTypeOrdinal) ? "table" : reader.GetString(baseTypeOrdinal);
+                var baseTypeName = reader.GetStringNull(baseTypeOrdinal) ?? "table";
                 var maxLength = reader.GetInt16(maxLenOrdinal);
                 var precision = reader.GetByte(precisionOrdinal);
                 var scale = reader.GetByte(scaleOrdinal);
@@ -124,8 +125,9 @@ public sealed partial class SqlServerSchemaReader
 
                 // If this is a table type, store the mapping from type_table_object_id to user_type_id so we can link the table type columns
                 // to the correct user-defined type builder in the second pass.
-                if (isTableType && !reader.IsDBNull(ttObjOrdinal))
-                    tableTypeObjectIds[reader.GetInt32(ttObjOrdinal)] = userTypeId;
+                var tableTypeObjectId = reader.GetInt32Null(ttObjOrdinal);
+                if (isTableType && tableTypeObjectId is not null)
+                    tableTypeObjectIds[tableTypeObjectId.Value] = userTypeId;
             }
         }
 
@@ -172,7 +174,7 @@ public sealed partial class SqlServerSchemaReader
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
@@ -189,21 +191,24 @@ public sealed partial class SqlServerSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var ttObjectId = reader.GetInt32(objectIdOrdinal);
+
             if (!tableTypeObjectIds.TryGetValue(ttObjectId, out var userTypeId))
                 continue;
-            if (!udts.TryGetValue(userTypeId, out var ub))
+
+            if (!udts.TryGetValue(userTypeId, out var typeBuilder))
                 continue;
 
+            var columnId = reader.GetInt32(columnIdOrdinal);
+            var columnName = reader.GetString(colNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
-            var userTypeName = reader.IsDBNull(userTypeOrdinal) ? systemTypeName : reader.GetString(userTypeOrdinal);
+            var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
-            var columnName = reader.GetString(colNameOrdinal);
-            var columnId = reader.GetInt32(columnIdOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
             var isIdentity = reader.GetBoolean(identityOrdinal);
             var isComputed = reader.GetBoolean(computedOrdinal);
+
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
@@ -211,9 +216,9 @@ public sealed partial class SqlServerSchemaReader
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
             var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
 
-            ub.AddColumn(col =>
+            typeBuilder.AddColumn(columnBuilder =>
             {
-                col
+                columnBuilder
                     .WithName(columnName)
                     .WithOrdinalPosition(columnId)
                     .WithIsNullable(isNullable)
@@ -228,8 +233,8 @@ public sealed partial class SqlServerSchemaReader
                     .WithIsUnicode(isUnicode)
                     .WithIsFixedLength(isFixedLength);
 
-                ApplyExtendedProperties((8, ttObjectId, columnId), col);
-                col.WithAnnotation(SqlServerAnnotations.SqlDbType, sqlDbType.ToString());
+                ApplyExtendedProperties((8, ttObjectId, columnId), columnBuilder);
+                columnBuilder.WithAnnotation(SqlServerAnnotations.SqlDbType, sqlDbType.ToString());
             });
         }
     }

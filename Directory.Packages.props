@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="AssemblyMetadata.Generators" Version="2.2.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
+    <PackageVersion Include="coverlet.MTP" Version="10.0.0" />
     <PackageVersion Include="Equatable.Generator" Version="2.2.1" />
     <PackageVersion Include="FluentMigrator" Version="8.0.1" />
     <PackageVersion Include="FluentMigrator.Runner.MySql" Version="8.0.1" />
@@ -23,6 +24,8 @@
     <PackageVersion Include="System.Collections.Immutable" Version="10.0.7" />
     <PackageVersion Include="System.Text.Json" Version="10.0.7" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.11.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="4.11.0" />
+    <PackageVersion Include="Testcontainers.Oracle" Version="4.11.0" />
     <PackageVersion Include="Testcontainers.Postgresql" Version="4.11.0" />
     <PackageVersion Include="Verify.XunitV3" Version="31.16.2" />
     <PackageVersion Include="XUnit.Hosting" Version="4.0.0" />

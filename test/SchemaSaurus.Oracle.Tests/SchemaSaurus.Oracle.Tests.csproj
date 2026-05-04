@@ -1,26 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="AwesomeAssertions" />
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="coverlet.MTP" />
     <PackageReference Include="FluentMigrator.Runner.Oracle" />
-    <PackageReference Include="XUnit.Hosting" />
+    <PackageReference Include="Testcontainers.Oracle" />
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
 

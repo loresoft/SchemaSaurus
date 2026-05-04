@@ -1,5 +1,6 @@
 using FluentMigrator;
 
+using SchemaSaurus.Migrator.Extensions;
 using SchemaSaurus.Migrator.Providers;
 
 namespace SchemaSaurus.Migrator;
@@ -18,6 +19,8 @@ public class CreateGuidAutoTable : Migration
 
     public string RowVersionType => _providerDefault.RowVersionType;
 
+    public bool SupportNonPrimaryKeyIdentity => _providerDefault.SupportNonPrimaryKeyIdentity;
+
     public override void Up()
     {
         Create.Table("GuidAuto")
@@ -30,7 +33,7 @@ public class CreateGuidAutoTable : Migration
 
             .WithColumn("AutoID")
                 .AsInt32()
-                .Identity()
+                .IdentityIf(SupportNonPrimaryKeyIdentity)
                 .NotNullable()
 
             .WithColumn("Name")
@@ -40,6 +43,12 @@ public class CreateGuidAutoTable : Migration
             .WithColumn("Flag")
                 .AsCustom(RowVersionType)
                 .NotNullable();
+
+        Create.Index("UX_GuidAuto_AutoID")
+            .OnTable("GuidAuto")
+            .InSchema(DefaultSchema)
+            .OnColumn("AutoID").Ascending()
+            .WithOptions().Unique();
     }
 
     public override void Down()

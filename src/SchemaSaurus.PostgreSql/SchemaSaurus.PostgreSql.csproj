@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+    <Description>PostgreSQL schema reader for SchemaSaurus supporting PostgreSQL 12 and later.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +11,24 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SchemaSaurus.Metadata\SchemaSaurus.Metadata.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="PostgreSqlSchemaReader.Routines.cs">
+      <DependentUpon>PostgreSqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PostgreSqlSchemaReader.Sequences.cs">
+      <DependentUpon>PostgreSqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PostgreSqlSchemaReader.Tables.cs">
+      <DependentUpon>PostgreSqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PostgreSqlSchemaReader.UserDefinedTypes.cs">
+      <DependentUpon>PostgreSqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="PostgreSqlSchemaReader.Views.cs">
+      <DependentUpon>PostgreSqlSchemaReader.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

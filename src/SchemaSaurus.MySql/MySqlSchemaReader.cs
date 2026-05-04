@@ -3,6 +3,7 @@ using System.Data;
 using MySqlConnector;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.MySql;
@@ -31,9 +32,9 @@ public sealed class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnection>
             return;
 
         builder
-            .WithServerVersion(reader.IsDBNull(0) ? null : reader.GetString(0))
-            .WithEdition(reader.IsDBNull(1) ? null : reader.GetString(1))
-            .WithCollation(reader.IsDBNull(2) ? null : reader.GetString(2));
+            .WithServerVersion(reader.GetStringNull(0))
+            .WithEdition(reader.GetStringNull(1))
+            .WithCollation(reader.GetStringNull(2));
     }
 
     /// <inheritdoc />

@@ -17,4 +17,8 @@ public interface IProviderDefault
     bool SupportSequences { get; set; }
 
     bool SupportForeignKeys { get; set; }
+
+    bool SupportIdentity { get; set; }
+
+    bool SupportNonPrimaryKeyIdentity { get; set; }
 }

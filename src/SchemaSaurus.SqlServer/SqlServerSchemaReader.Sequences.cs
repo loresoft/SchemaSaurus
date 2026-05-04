@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -41,7 +42,7 @@ public sealed partial class SqlServerSchemaReader
         using var cmd = connection.CreateCommand();
         cmd.CommandText = sql;
 
-        using var reader = await cmd.ExecuteReaderAsync(SingleResultBehavior, cancellationToken).ConfigureAwait(false);
+        using var reader = await cmd.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         const int objectIdOrdinal = 0;
         const int nameOrdinal = 1;
@@ -66,10 +67,8 @@ public sealed partial class SqlServerSchemaReader
             var minValue = reader.GetInt64(minOrdinal);
             var maxValue = reader.GetInt64(maxOrdinal);
             var isCycling = reader.GetBoolean(cycleOrdinal);
-
-            int? cacheSize = reader.GetBoolean(cachedOrdinal)
-                ? (reader.IsDBNull(cacheOrdinal) ? null : reader.GetInt32(cacheOrdinal))
-                : null;
+            var cacheSize = reader.GetInt32Null(cacheOrdinal);
+            var cached = reader.GetBoolean(cachedOrdinal);
 
             // Map SQL Server system type to DbType and CLR type
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(typeName);

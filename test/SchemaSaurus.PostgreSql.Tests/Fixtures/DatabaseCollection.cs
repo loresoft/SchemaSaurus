@@ -1,6 +1,4 @@
 // support capturing console and trace output in xunit v3
-
-// support capturing console and trace output in xunit v3
 [assembly: CaptureConsole]
 [assembly: CaptureTrace]
 

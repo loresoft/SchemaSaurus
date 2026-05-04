@@ -11,4 +11,6 @@ public class SqliteDefault : IProviderDefault
     public bool SupportSchema { get; set; } = false;
     public bool SupportSequences { get; set; } = false;
     public bool SupportForeignKeys { get; set; } = false;
+    public bool SupportNonPrimaryKeyIdentity { get; set; } = true;
+    public bool SupportIdentity { get; set; } = true;
 }

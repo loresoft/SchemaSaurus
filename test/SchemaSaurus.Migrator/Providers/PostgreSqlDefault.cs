@@ -11,4 +11,6 @@ public class PostgreSqlDefault : IProviderDefault
     public bool SupportSchema { get; set; } = true;
     public bool SupportSequences { get; set; } = true;
     public bool SupportForeignKeys { get; set; } = true;
+    public bool SupportNonPrimaryKeyIdentity { get; set; } = true;
+    public bool SupportIdentity { get; set; } = true;
 }

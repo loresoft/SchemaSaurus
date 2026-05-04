@@ -3,6 +3,7 @@ using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.Oracle;
@@ -40,11 +41,11 @@ public sealed class OracleSchemaReader : DatabaseSchemaReader<OracleConnection>
             return;
 
         builder
-            .WithDefaultSchemaName(reader.IsDBNull(0) ? null : reader.GetString(0))
-            .WithEdition(reader.IsDBNull(1) ? null : reader.GetString(1))
-            .WithServerVersion(reader.IsDBNull(2) ? null : reader.GetString(2))
-            .WithCollation(reader.IsDBNull(3) ? null : reader.GetString(3))
-            .WithCompatibilityLevel(reader.IsDBNull(4) ? null : reader.GetString(4));
+            .WithDefaultSchemaName(reader.GetStringNull(0))
+            .WithEdition(reader.GetStringNull(1))
+            .WithServerVersion(reader.GetStringNull(2))
+            .WithCollation(reader.GetStringNull(3))
+            .WithCompatibilityLevel(reader.GetStringNull(4));
     }
 
     /// <inheritdoc />

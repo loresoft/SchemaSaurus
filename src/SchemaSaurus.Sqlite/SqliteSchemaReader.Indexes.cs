@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 
 namespace SchemaSaurus.Sqlite;
 
@@ -104,10 +105,10 @@ public sealed partial class SqliteSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             // Expression indexes have no column name and cannot be represented as ColumnReference values.
-            if (reader.IsDBNull(columnNameOrdinal))
+            var columnName = reader.GetStringNull(columnNameOrdinal);
+            if (columnName is null)
                 continue;
 
-            var columnName = reader.GetString(columnNameOrdinal);
             var sortDirection = reader.GetInt32(descendingOrdinal) != 0
                 ? SortDirection.Descending
                 : SortDirection.Ascending;
