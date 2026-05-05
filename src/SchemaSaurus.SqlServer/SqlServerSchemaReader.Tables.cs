@@ -265,9 +265,6 @@ public sealed partial class SqlServerSchemaReader
     {
         // Key constraints (primary keys and unique constraints) are read together since they share underlying index metadata.
 
-        // Get the set of object IDs for the tables we're interested in, to filter the query results efficiently.
-        var objectIds = tables.Keys.ToHashSet();
-
         // Dictionary to accumulate constraint info, keyed by (object_id, constraint_name). Value is (constraint_type, is_clustered, list of columns in order).
         var constraints = new Dictionary<(int ObjectId, string Name), (string Type, bool IsClustered, List<ColumnReference> Columns)>();
 
@@ -310,7 +307,7 @@ public sealed partial class SqlServerSchemaReader
             // This is more efficient than filtering in-memory after reading all constraints.
             var objectId = reader.GetInt32(parentOrdinal);
 
-            if (!objectIds.Contains(objectId))
+            if (!tables.ContainsKey(objectId))
                 continue;
 
             var constraintName = reader.GetString(nameOrdinal);
@@ -344,15 +341,16 @@ public sealed partial class SqlServerSchemaReader
         foreach (var ((objectId, name), (type, isClustered, columns)) in constraints)
         {
             var tableBuilder = tables[objectId];
+            var columnReferences = columns.ToArray();
 
             // SQL Server represents both primary keys and unique constraints in the sys.key_constraints view,
             // distinguished by the 'type' column ('PK' for primary key, 'UQ' for unique constraint).
             // We need to check the type to determine whether to call WithPrimaryKey or AddUniqueConstraint on the TableBuilder.
 
             if (type == "PK")
-                tableBuilder.WithPrimaryKey(name, isClustered, [.. columns]);
+                tableBuilder.WithPrimaryKey(name, isClustered, columnReferences);
             else
-                tableBuilder.AddUniqueConstraint(name, [.. columns]);
+                tableBuilder.AddUniqueConstraint(name, columnReferences);
         }
     }
 
@@ -361,12 +359,8 @@ public sealed partial class SqlServerSchemaReader
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        // Get the set of object IDs for the tables we're interested in, to filter the query results efficiently.
-        var objectIds = tables.Keys.ToHashSet();
-
-        // Dictionary to accumulate index info, keyed by (object_id, index_id). Value is (object_id, IndexBuilder).
-        // We need object_id in the value to associate the index with the correct table when we build it.
-        var indexes = new Dictionary<(int ObjectId, int IndexId), (int ObjectId, IndexBuilder Builder)>();
+        // Dictionary to accumulate index info, keyed by (object_id, index_id).
+        var indexes = new Dictionary<(int ObjectId, int IndexId), IndexBuilder>();
 
         const string sql = """
             SELECT
@@ -419,7 +413,7 @@ public sealed partial class SqlServerSchemaReader
             var objectId = reader.GetInt32(objectIdOrdinal);
 
             // Filter rows based on object_id to avoid processing indexes for tables we're not including.
-            if (!objectIds.Contains(objectId))
+            if (!tables.ContainsKey(objectId))
                 continue;
 
             var indexId = reader.GetInt32(indexIdOrdinal);
@@ -438,9 +432,9 @@ public sealed partial class SqlServerSchemaReader
 
             // If we haven't seen this index before, create a new IndexBuilder and add it to the dictionary.
             // Otherwise, we'll just add columns to the existing builder.
-            if (!indexes.TryGetValue(key, out var entry))
+            if (!indexes.TryGetValue(key, out var indexBuilder))
             {
-                var indexBuilder = new IndexBuilder()
+                indexBuilder = new IndexBuilder()
                     .WithName(indexName)
                     .WithIsUnique(isUnique)
                     .WithIsClustered(indexType == 1)
@@ -465,26 +459,25 @@ public sealed partial class SqlServerSchemaReader
                 else if (indexType == 7)
                     indexBuilder.WithIndexType("HASH");
 
-                entry = (objectId, indexBuilder);
-                indexes[key] = entry;
+                indexes[key] = indexBuilder;
             }
 
             // Included columns are part of the index but not key columns, so they don't have sort direction.
             // We need to call AddIncludedColumn instead of AddColumn for these.
             if (isIncluded)
             {
-                entry.Builder.AddIncludedColumn(columnName);
+                indexBuilder.AddIncludedColumn(columnName);
             }
             else
             {
                 var sortDirection = isDescending ? SortDirection.Descending : SortDirection.Ascending;
-                entry.Builder.AddColumn(columnName, sortDirection);
+                indexBuilder.AddColumn(columnName, sortDirection);
             }
         }
 
         // Now that we've read all the indexes and their columns, we can apply them to the corresponding tables.
-        foreach (var (_, (objectId, ib)) in indexes)
-            tables[objectId].AddIndex(ib.Build());
+        foreach (var ((objectId, _), indexBuilder) in indexes)
+            tables[objectId].AddIndex(indexBuilder.Build());
     }
 
     private static async Task ReadCheckConstraintsAsync(
@@ -492,9 +485,6 @@ public sealed partial class SqlServerSchemaReader
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        // Get the set of object IDs for the tables we're interested in, to filter the query results efficiently.
-        var objectIds = tables.Keys.ToHashSet();
-
         const string sql = """
             SELECT
                 cc.parent_object_id,
@@ -520,13 +510,13 @@ public sealed partial class SqlServerSchemaReader
             var objectId = reader.GetInt32(parentOrdinal);
 
             // Filter rows based on object_id to avoid processing constraints for tables we're not including.
-            if (!objectIds.Contains(objectId))
+            if (!tables.TryGetValue(objectId, out var tableBuilder))
                 continue;
 
             var name = reader.GetString(nameOrdinal);
             var definition = reader.GetString(defOrdinal);
 
-            tables[objectId].AddCheckConstraint(name, definition);
+            tableBuilder.AddCheckConstraint(name, definition);
         }
     }
 
@@ -535,12 +525,8 @@ public sealed partial class SqlServerSchemaReader
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        // Get the set of object IDs for the tables we're interested in, to filter the query results efficiently.
-        var objectIds = tables.Keys.ToHashSet();
-
         // Dictionary to accumulate foreign key info, keyed by (parent_object_id, fk_name).
-        // Value is (referenced_object_id, ForeignKeyBuilder with properties set except column mappings).
-        var foreignKeys = new Dictionary<(int ObjectId, string Name), (int ObjectId, ForeignKeyBuilder Builder)>();
+        var foreignKeys = new Dictionary<(int ObjectId, string Name), ForeignKeyBuilder>();
 
         const string sql = """
             SELECT
@@ -586,7 +572,7 @@ public sealed partial class SqlServerSchemaReader
             var objectId = reader.GetInt32(parentOrdinal);
 
             // Filter rows based on parent_object_id to avoid processing foreign keys for tables we're not including.
-            if (!objectIds.Contains(objectId))
+            if (!tables.ContainsKey(objectId))
                 continue;
 
             var fkName = reader.GetString(nameOrdinal);
@@ -601,26 +587,25 @@ public sealed partial class SqlServerSchemaReader
             var key = (objectId, fkName);
 
             // If we haven't seen this foreign key before, create a new ForeignKeyBuilder and add it to the dictionary.
-            if (!foreignKeys.TryGetValue(key, out var entry))
+            if (!foreignKeys.TryGetValue(key, out var foreignKeyBuilder))
             {
-                var foreignKeyBuilder = new ForeignKeyBuilder()
+                foreignKeyBuilder = new ForeignKeyBuilder()
                     .WithName(fkName)
                     .WithPrincipalTableName(principalSchema, principalTable)
                     .WithOnDelete(onDelete)
                     .WithOnUpdate(onUpdate)
                     .WithIsDisabled(isDisabled);
 
-                entry = (objectId, foreignKeyBuilder);
-                foreignKeys[key] = entry;
+                foreignKeys[key] = foreignKeyBuilder;
             }
 
             // Add the column mapping to the ForeignKeyBuilder. Since the query is ordered by constraint_column_id, the columns will be added in the correct order.
-            entry.Builder.AddColumnMapping(parentColumn, referencedColumn);
+            foreignKeyBuilder.AddColumnMapping(parentColumn, referencedColumn);
         }
 
         // Now that we've read all the foreign keys and their column mappings, we can apply them to the corresponding tables.
-        foreach (var (_, (objectId, fkb)) in foreignKeys)
-            tables[objectId].AddForeignKey(fkb.Build());
+        foreach (var ((objectId, _), foreignKeyBuilder) in foreignKeys)
+            tables[objectId].AddForeignKey(foreignKeyBuilder.Build());
     }
 
     private static async Task ReadTableTriggersAsync(
@@ -628,11 +613,8 @@ public sealed partial class SqlServerSchemaReader
         Dictionary<int, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        // Get the set of object IDs for the tables we're interested in, to filter the query results efficiently.
-        var objectIds = tables.Keys.ToHashSet();
-
         // Dictionary to accumulate trigger info, keyed by (parent_object_id, trigger_name).
-        var triggerData = new Dictionary<(int ObjectId, string Name), (bool IsDisabled, bool IsInsteadOf, string? Definition, List<string> Events)>();
+        var triggerData = new Dictionary<(int ObjectId, string Name), (bool IsDisabled, bool IsInsteadOf, string? Definition, TriggerEvent Events)>();
 
         const string sql = """
             SELECT
@@ -665,7 +647,7 @@ public sealed partial class SqlServerSchemaReader
         {
             var parentId = reader.GetInt32(parentOrdinal);
 
-            if (!objectIds.Contains(parentId))
+            if (!tables.ContainsKey(parentId))
                 continue;
 
             var name = reader.GetString(nameOrdinal);
@@ -674,34 +656,25 @@ public sealed partial class SqlServerSchemaReader
             var definition = reader.GetStringNull(definitionOrdinal);
             var eventType = reader.GetString(eventOrdinal);
 
+            var triggerEvent = MapTriggerEvent(eventType);
+
             var key = (parentId, name);
 
             // If we haven't seen this trigger before, create a new entry in the dictionary with its disabled/instead_of/definition info.
             if (!triggerData.TryGetValue(key, out var td))
             {
-                td = (isDisabled, isInsteadOf, definition, []);
+                triggerData[key] = (isDisabled, isInsteadOf, definition, triggerEvent);
+            }
+            else
+            {
+                td.Events |= triggerEvent;
                 triggerData[key] = td;
             }
-
-            td.Events.Add(eventType);
         }
 
         // Now that we've read all the triggers and their events, we can apply them to the corresponding tables.
-        foreach (var ((parentId, name), (isDisabled, isInsteadOf, definition, events)) in triggerData)
+        foreach (var ((parentId, name), (isDisabled, isInsteadOf, definition, triggerEvents)) in triggerData)
         {
-            // SQL Server table triggers expose DML events here; ignore any event types not represented by TriggerEvent.
-            var triggerEvents = TriggerEvent.None;
-            foreach (var evt in events)
-            {
-                triggerEvents |= evt switch
-                {
-                    "INSERT" => TriggerEvent.Insert,
-                    "UPDATE" => TriggerEvent.Update,
-                    "DELETE" => TriggerEvent.Delete,
-                    _ => TriggerEvent.None,
-                };
-            }
-
             // Determine the trigger timing based on the is_instead_of_trigger column.
             // If it's an INSTEAD OF trigger, the timing is InsteadOf; otherwise, it's After (SQL Server doesn't have BEFORE triggers).
             var timing = isInsteadOf ? TriggerTiming.InsteadOf : TriggerTiming.After;
@@ -717,4 +690,12 @@ public sealed partial class SqlServerSchemaReader
             tables[parentId].AddTrigger(trigger);
         }
     }
+
+    private static TriggerEvent MapTriggerEvent(string eventType) => eventType switch
+    {
+        "INSERT" => TriggerEvent.Insert,
+        "UPDATE" => TriggerEvent.Update,
+        "DELETE" => TriggerEvent.Delete,
+        _ => TriggerEvent.None,
+    };
 }

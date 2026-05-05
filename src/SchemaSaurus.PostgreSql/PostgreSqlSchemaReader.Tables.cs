@@ -105,8 +105,6 @@ public sealed partial class PostgreSqlSchemaReader
         Dictionary<uint, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        var objectIds = tables.Keys.ToHashSet();
-
         const string sql = """
             SELECT
                 con.conrelid,
@@ -156,7 +154,7 @@ public sealed partial class PostgreSqlSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var objectId = reader.GetFieldValue<uint>(objectIdOrdinal);
-            if (!objectIds.Contains(objectId))
+            if (!tables.TryGetValue(objectId, out var tableBuilder))
                 continue;
 
             var name = reader.GetString(nameOrdinal);
@@ -168,33 +166,28 @@ public sealed partial class PostgreSqlSchemaReader
             var dependentColumns = reader.GetFieldValueNull<string[]>(dependentColumnsOrdinal) ?? [];
             var principalColumns = reader.GetFieldValueNull<string[]>(principalColumnsOrdinal) ?? [];
 
-            var tableBuilder = tables[objectId];
-            var columnNames = dependentColumns;
-
             if (type == "p")
             {
-                var references = CreateColumnReferences(columnNames);
+                var references = CreateColumnReferences(dependentColumns);
                 tableBuilder.WithPrimaryKey(name, false, references);
             }
             else if (type == "u")
             {
-                var references = CreateColumnReferences(columnNames);
+                var references = CreateColumnReferences(dependentColumns);
                 tableBuilder.AddUniqueConstraint(name, references);
             }
             else if (principalSchema is not null && principalTable is not null)
             {
-                var principalColumnNames = principalColumns;
-
                 var foreignKeyBuilder = new ForeignKeyBuilder()
                     .WithName(name)
                     .WithPrincipalTableName(principalSchema, principalTable)
                     .WithOnDelete(MapReferentialAction(deleteAction))
                     .WithOnUpdate(MapReferentialAction(updateAction));
 
-                for (var i = 0; i < columnNames.Length && i < principalColumnNames.Length; i++)
+                for (var i = 0; i < dependentColumns.Length && i < principalColumns.Length; i++)
                 {
-                    var dependentColumnName = columnNames[i];
-                    var principalColumnName = principalColumnNames[i];
+                    var dependentColumnName = dependentColumns[i];
+                    var principalColumnName = principalColumns[i];
 
                     foreignKeyBuilder.AddColumnMapping(dependentColumnName, principalColumnName);
                 }
@@ -210,8 +203,6 @@ public sealed partial class PostgreSqlSchemaReader
         Dictionary<uint, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        var objectIds = tables.Keys.ToHashSet();
-
         const string sql = """
             SELECT
                 cls.oid,
@@ -273,7 +264,7 @@ public sealed partial class PostgreSqlSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var objectId = reader.GetFieldValue<uint>(objectIdOrdinal);
-            if (!objectIds.Contains(objectId))
+            if (!tables.TryGetValue(objectId, out var tableBuilder))
                 continue;
 
             var indexName = reader.GetString(nameOrdinal);
@@ -307,7 +298,7 @@ public sealed partial class PostgreSqlSchemaReader
                 indexBuilder.WithAnnotation(PostgreSqlAnnotations.IndexExpressions, expressions);
 
             var tableIndex = indexBuilder.Build();
-            tables[objectId].AddIndex(tableIndex);
+            tableBuilder.AddIndex(tableIndex);
         }
     }
 
@@ -316,8 +307,6 @@ public sealed partial class PostgreSqlSchemaReader
         Dictionary<uint, TableBuilder> tables,
         CancellationToken cancellationToken)
     {
-        var objectIds = tables.Keys.ToHashSet();
-
         const string sql = """
             SELECT
                 tr.tgrelid,
@@ -353,8 +342,10 @@ public sealed partial class PostgreSqlSchemaReader
         {
             var objectId = reader.GetFieldValue<uint>(objectIdOrdinal);
 
-            if (!objectIds.Contains(objectId))
-                continue; var name = reader.GetString(nameOrdinal);
+            if (!tables.TryGetValue(objectId, out var tableBuilder))
+                continue;
+
+            var name = reader.GetString(nameOrdinal);
 
             var enabled = reader.GetString(enabledOrdinal);
             var definition = reader.GetStringNull(definitionOrdinal);
@@ -388,7 +379,7 @@ public sealed partial class PostgreSqlSchemaReader
                 IsDisabled = enabled == "D",
             };
 
-            tables[objectId].AddTrigger(trigger);
+            tableBuilder.AddTrigger(trigger);
         }
     }
 }

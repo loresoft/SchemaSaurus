@@ -75,9 +75,9 @@ public sealed partial class PostgreSqlSchemaReader
             ORDER BY ns.nspname, proc.proname
             """;
 
-        var storedProcedures = new Dictionary<uint, StoredProcedureBuilder>();
-        var scalarFunctions = new Dictionary<uint, ScalarFunctionBuilder>();
-        var tableValuedFunctions = new Dictionary<uint, TableValuedFunctionBuilder>();
+        Dictionary<uint, StoredProcedureBuilder>? storedProcedures = routineKind == "p" ? [] : null;
+        Dictionary<uint, ScalarFunctionBuilder>? scalarFunctions = routineKind == "s" ? [] : null;
+        Dictionary<uint, TableValuedFunctionBuilder>? tableValuedFunctions = routineKind == "t" ? [] : null;
 
         await using (var command = connection.CreateCommand())
         {
@@ -111,7 +111,7 @@ public sealed partial class PostgreSqlSchemaReader
                         .WithDefinition(definition)
                         .WithDescription(description);
 
-                    storedProcedures[objectId] = storedProcedureBuilder;
+                    storedProcedures![objectId] = storedProcedureBuilder;
 
                     continue;
                 }
@@ -126,7 +126,7 @@ public sealed partial class PostgreSqlSchemaReader
                         .WithDescription(description)
                         .WithReturnType(dbType, nativeTypeName, systemType);
 
-                    scalarFunctions[objectId] = functionBuilder;
+                    scalarFunctions![objectId] = functionBuilder;
 
                     continue;
                 }
@@ -136,29 +136,29 @@ public sealed partial class PostgreSqlSchemaReader
                     .WithDefinition(definition)
                     .WithDescription(description);
 
-                tableValuedFunctions[objectId] = tableValuedFunctionBuilder;
+                tableValuedFunctions![objectId] = tableValuedFunctionBuilder;
             }
         }
 
         if (routineKind == "p")
         {
-            await ReadRoutineParametersAsync(connection, storedProcedures, routineKind, options, cancellationToken).ConfigureAwait(false);
+            await ReadRoutineParametersAsync(connection, storedProcedures!, routineKind, options, cancellationToken).ConfigureAwait(false);
 
-            foreach (var (_, storedProcedureBuilder) in storedProcedures)
+            foreach (var (_, storedProcedureBuilder) in storedProcedures!)
                 builder.AddStoredProcedure(storedProcedureBuilder.Build());
         }
         else if (routineKind == "s")
         {
-            await ReadRoutineParametersAsync(connection, scalarFunctions, routineKind, options, cancellationToken).ConfigureAwait(false);
+            await ReadRoutineParametersAsync(connection, scalarFunctions!, routineKind, options, cancellationToken).ConfigureAwait(false);
 
-            foreach (var (_, functionBuilder) in scalarFunctions)
+            foreach (var (_, functionBuilder) in scalarFunctions!)
                 builder.AddScalarFunction(functionBuilder.Build());
         }
         else
         {
-            await ReadRoutineParametersAsync(connection, tableValuedFunctions, routineKind, options, cancellationToken).ConfigureAwait(false);
+            await ReadRoutineParametersAsync(connection, tableValuedFunctions!, routineKind, options, cancellationToken).ConfigureAwait(false);
 
-            foreach (var (_, functionBuilder) in tableValuedFunctions)
+            foreach (var (_, functionBuilder) in tableValuedFunctions!)
                 builder.AddTableValuedFunction(functionBuilder.Build());
         }
     }

@@ -385,24 +385,26 @@ public sealed partial class SqlServerSchemaReader
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
-            var annotations = new Dictionary<string, object?>
+            ReturnColumn returnColumn = new()
             {
-                [SqlServerAnnotations.SqlDbType] = sqlDbType.ToString(),
+                Name = columnName,
+                OrdinalPosition = columnId,
+                IsNullable = isNullable,
+                DbType = dbType,
+                NativeTypeName = nativeTypeName,
+                SystemType = systemType,
+                MaxLength = maxLengthValue,
+                Precision = precisionValue,
+                Scale = scaleValue,
+                IsUnicode = isUnicode,
+                IsFixedLength = isFixedLength,
+                Annotations = new Dictionary<string, object?>
+                {
+                    [SqlServerAnnotations.SqlDbType] = sqlDbType.ToString(),
+                },
             };
 
-            functionBuilder.AddReturnColumn(
-                columnName,
-                columnId,
-                dbType,
-                nativeTypeName,
-                systemType,
-                isNullable,
-                maxLengthValue,
-                precisionValue,
-                scaleValue,
-                isUnicode,
-                isFixedLength,
-                annotations);
+            functionBuilder.AddReturnColumn(returnColumn);
         }
     }
 }

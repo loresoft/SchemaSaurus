@@ -61,8 +61,8 @@ public sealed partial class MySqlSchemaReader
             ORDER BY r.ROUTINE_SCHEMA, r.ROUTINE_NAME
             """;
 
-        var storedProcedures = new Dictionary<(string Schema, string Name), StoredProcedureBuilder>();
-        var scalarFunctions = new Dictionary<(string Schema, string Name), ScalarFunctionBuilder>();
+        Dictionary<(string Schema, string Name), StoredProcedureBuilder>? storedProcedures = routineType == "PROCEDURE" ? [] : null;
+        Dictionary<(string Schema, string Name), ScalarFunctionBuilder>? scalarFunctions = routineType == "FUNCTION" ? [] : null;
 
         await using (var command = connection.CreateCommand())
         {
@@ -101,7 +101,7 @@ public sealed partial class MySqlSchemaReader
                         .WithDefinition(definition)
                         .WithDescription(comment);
 
-                    storedProcedures[(schema, name)] = procedureBuilder;
+                    storedProcedures![(schema, name)] = procedureBuilder;
                     continue;
                 }
 
@@ -130,15 +130,15 @@ public sealed partial class MySqlSchemaReader
                     .WithIsDeterministic(isDeterministic)
                     .WithAnnotation(MySqlAnnotations.MySqlDbType, mySqlDbType.ToString());
 
-                scalarFunctions[(schema, name)] = functionBuilder;
+                scalarFunctions![(schema, name)] = functionBuilder;
             }
         }
 
         if (routineType == "PROCEDURE")
         {
-            await ReadRoutineParametersAsync(connection, storedProcedures, routineType, options, cancellationToken).ConfigureAwait(false);
+            await ReadRoutineParametersAsync(connection, storedProcedures!, routineType, options, cancellationToken).ConfigureAwait(false);
 
-            foreach (var (_, procedureBuilder) in storedProcedures)
+            foreach (var (_, procedureBuilder) in storedProcedures!)
             {
                 var procedure = procedureBuilder.Build();
                 builder.AddStoredProcedure(procedure);
@@ -146,9 +146,9 @@ public sealed partial class MySqlSchemaReader
         }
         else
         {
-            await ReadRoutineParametersAsync(connection, scalarFunctions, routineType, options, cancellationToken).ConfigureAwait(false);
+            await ReadRoutineParametersAsync(connection, scalarFunctions!, routineType, options, cancellationToken).ConfigureAwait(false);
 
-            foreach (var (_, functionBuilder) in scalarFunctions)
+            foreach (var (_, functionBuilder) in scalarFunctions!)
             {
                 var function = functionBuilder.Build();
                 builder.AddScalarFunction(function);

@@ -141,16 +141,16 @@ public sealed partial class MySqlSchemaReader
         const int deleteOrdinal = 8;
         const int updateOrdinal = 9;
 
-        var primaryKeys = new Dictionary<(string Schema, string Table, string Name), List<ColumnReference>>();
-        var uniqueConstraints = new Dictionary<(string Schema, string Table, string Name), List<ColumnReference>>();
-        var foreignKeys = new Dictionary<(string Schema, string Table, string Name), ForeignKeyBuilder>();
+        var primaryKeys = new Dictionary<(string Schema, string Table, string Name), (TableBuilder Builder, List<ColumnReference> Columns)>();
+        var uniqueConstraints = new Dictionary<(string Schema, string Table, string Name), (TableBuilder Builder, List<ColumnReference> Columns)>();
+        var foreignKeys = new Dictionary<(string Schema, string Table, string Name), (TableBuilder Builder, ForeignKeyBuilder ForeignKeyBuilder)>();
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
 
-            if (!tables.ContainsKey((schema, tableName)))
+            if (!tables.TryGetValue((schema, tableName), out var tableBuilder))
                 continue;
 
             var constraintName = reader.GetString(constraintOrdinal);
@@ -175,57 +175,58 @@ public sealed partial class MySqlSchemaReader
 
             if (constraintType == "PRIMARY KEY")
             {
-                if (!primaryKeys.TryGetValue(key, out var columns))
+                if (!primaryKeys.TryGetValue(key, out var entry))
                 {
-                    columns = [];
-                    primaryKeys[key] = columns;
+                    entry = (tableBuilder, []);
+                    primaryKeys[key] = entry;
                 }
 
-                columns.Add(reference);
+                entry.Columns.Add(reference);
             }
             else if (constraintType == "UNIQUE")
             {
-                if (!uniqueConstraints.TryGetValue(key, out var columns))
+                if (!uniqueConstraints.TryGetValue(key, out var entry))
                 {
-                    columns = [];
-                    uniqueConstraints[key] = columns;
+                    entry = (tableBuilder, []);
+                    uniqueConstraints[key] = entry;
                 }
 
-                columns.Add(reference);
+                entry.Columns.Add(reference);
             }
             else
             {
                 if (principalSchema is null || principalTable is null || principalColumn is null)
                     continue;
 
-                if (!foreignKeys.TryGetValue(key, out var foreignKeyBuilder))
+                if (!foreignKeys.TryGetValue(key, out var entry))
                 {
-                    foreignKeyBuilder = new ForeignKeyBuilder()
+                    var foreignKeyBuilder = new ForeignKeyBuilder()
                         .WithName(constraintName)
                         .WithPrincipalTableName(principalSchema, principalTable)
                         .WithOnDelete(MapReferentialAction(deleteRule))
                         .WithOnUpdate(MapReferentialAction(updateRule));
 
-                    foreignKeys[key] = foreignKeyBuilder;
+                    entry = (tableBuilder, foreignKeyBuilder);
+                    foreignKeys[key] = entry;
                 }
 
-                foreignKeyBuilder.AddColumnMapping(columnName, principalColumn);
+                entry.ForeignKeyBuilder.AddColumnMapping(columnName, principalColumn);
             }
         }
 
-        foreach (var ((schema, tableName, name), columns) in primaryKeys)
+        foreach (var ((_, tableName, name), (tableBuilder, columns)) in primaryKeys)
         {
             var primaryKeyName = NormalizePrimaryKeyName(name, tableName);
-            tables[(schema, tableName)].WithPrimaryKey(primaryKeyName, false, [.. columns]);
+            tableBuilder.WithPrimaryKey(primaryKeyName, false, [.. columns]);
         }
 
-        foreach (var ((schema, tableName, name), columns) in uniqueConstraints)
-            tables[(schema, tableName)].AddUniqueConstraint(name, [.. columns]);
+        foreach (var ((_, _, name), (tableBuilder, columns)) in uniqueConstraints)
+            tableBuilder.AddUniqueConstraint(name, [.. columns]);
 
-        foreach (var ((schema, tableName, _), foreignKeyBuilder) in foreignKeys)
+        foreach (var (_, (tableBuilder, foreignKeyBuilder)) in foreignKeys)
         {
             var foreignKey = foreignKeyBuilder.Build();
-            tables[(schema, tableName)].AddForeignKey(foreignKey);
+            tableBuilder.AddForeignKey(foreignKey);
         }
     }
 
@@ -267,14 +268,14 @@ public sealed partial class MySqlSchemaReader
         const int indexTypeOrdinal = 6;
         const int prefixLengthOrdinal = 7;
 
-        var indexes = new Dictionary<(string Schema, string Table, string Name), IndexBuilder>();
+        var indexes = new Dictionary<(string Schema, string Table, string Name), (TableBuilder Builder, IndexBuilder IndexBuilder)>();
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
 
-            if (!tables.ContainsKey((schema, tableName)))
+            if (!tables.TryGetValue((schema, tableName), out var tableBuilder))
                 continue;
 
             var indexName = reader.GetString(nameOrdinal);
@@ -285,9 +286,9 @@ public sealed partial class MySqlSchemaReader
             var prefixLength = reader.GetValueInt32Null(prefixLengthOrdinal);
 
             var key = (schema, tableName, indexName);
-            if (!indexes.TryGetValue(key, out var indexBuilder))
+            if (!indexes.TryGetValue(key, out var entry))
             {
-                indexBuilder = new IndexBuilder()
+                var indexBuilder = new IndexBuilder()
                     .WithName(indexName)
                     .WithIsUnique(isUnique)
                     .WithIndexType(indexType);
@@ -298,7 +299,8 @@ public sealed partial class MySqlSchemaReader
                 if (string.Equals(indexType, "SPATIAL", StringComparison.OrdinalIgnoreCase))
                     indexBuilder.WithAnnotation(MySqlAnnotations.SpatialIndex, true);
 
-                indexes[key] = indexBuilder;
+                entry = (tableBuilder, indexBuilder);
+                indexes[key] = entry;
             }
 
             if (columnName is null)
@@ -308,19 +310,19 @@ public sealed partial class MySqlSchemaReader
                 ? SortDirection.Descending
                 : SortDirection.Ascending;
 
-            indexBuilder.AddColumn(columnName, sortDirection);
+            entry.IndexBuilder.AddColumn(columnName, sortDirection);
 
             if (prefixLength is not null)
             {
                 var annotationName = MySqlAnnotations.IndexPrefixLength + ":" + columnName;
-                indexBuilder.WithAnnotation(annotationName, prefixLength);
+                entry.IndexBuilder.WithAnnotation(annotationName, prefixLength);
             }
         }
 
-        foreach (var ((schema, tableName, _), indexBuilder) in indexes)
+        foreach (var (_, (tableBuilder, indexBuilder)) in indexes)
         {
             var index = indexBuilder.Build();
-            tables[(schema, tableName)].AddIndex(index);
+            tableBuilder.AddIndex(index);
         }
     }
 
