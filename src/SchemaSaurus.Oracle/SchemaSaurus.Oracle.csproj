@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;net8.0;net9.0;net10.0</TargetFrameworks>
+    <Description>Oracle schema reader for SchemaSaurus supporting Oracle 12c and later.</Description>
   </PropertyGroup>
 
   <ItemGroup>
