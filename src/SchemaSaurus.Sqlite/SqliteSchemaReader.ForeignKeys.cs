@@ -54,7 +54,7 @@ public sealed partial class SqliteSchemaReader
 
             tableBuilder.AddForeignKey(fkBuilder =>
             {
-                var foreignKeyName = $"fk_{tableName}_{id}";
+                var foreignKeyName = CreateForeignKeyName(tableName, referencedTable, columns);
                 var onUpdateAction = ParseReferentialAction(onUpdate);
                 var onDeleteAction = ParseReferentialAction(onDelete);
 
@@ -116,6 +116,15 @@ public sealed partial class SqliteSchemaReader
         }
 
         return mappings;
+    }
+
+    private static string CreateForeignKeyName(
+        string tableName,
+        string referencedTableName,
+        IReadOnlyList<(string From, string To)> columns)
+    {
+        var columnNames = string.Join("_", columns.Select(static column => column.From));
+        return $"fk_{tableName}_{referencedTableName}_{columnNames}";
     }
 
     private static async Task<string?> GetPrimaryKeyColumnNameAsync(
