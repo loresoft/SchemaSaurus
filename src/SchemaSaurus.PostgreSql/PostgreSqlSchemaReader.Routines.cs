@@ -99,8 +99,10 @@ public sealed partial class PostgreSqlSchemaReader
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.GetStringNull(definitionOrdinal);
                 var typeName = reader.GetString(typeOrdinal);
-                var nativeTypeName = AdjustFormattedTypeName(reader.GetString(formattedTypeOrdinal));
+                var nativeType = reader.GetString(formattedTypeOrdinal);
                 var description = reader.GetStringNull(descriptionOrdinal);
+
+                var nativeTypeName = AdjustFormattedTypeName(nativeType);
 
                 if (routineKind == "p")
                 {
@@ -232,6 +234,7 @@ public sealed partial class PostgreSqlSchemaReader
             var typeName = reader.GetString(typeNameOrdinal);
             var formattedTypeName = AdjustFormattedTypeName(reader.GetString(formattedTypeOrdinal));
             var formattedBaseTypeName = reader.GetStringNull(formattedBaseTypeOrdinal);
+
             var nativeTypeName = formattedBaseTypeName is null
                 ? formattedTypeName
                 : AdjustFormattedTypeName(formattedBaseTypeName);

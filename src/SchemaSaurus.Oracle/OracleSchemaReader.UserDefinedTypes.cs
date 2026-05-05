@@ -119,11 +119,11 @@ public sealed partial class OracleSchemaReader
                 continue;
 
             var attributeName = reader.GetString(nameOrdinal);
-            var attributeOrdinalPosition = GetInt32Null(reader.GetValue(attributeOrdinal)) ?? 0;
+            var attributePosition = reader.GetValueInt32Null(attributeOrdinal) ?? 0;
             var dataType = reader.GetString(dataTypeOrdinal);
-            var dataLength = GetInt32Null(reader.GetValueNull(lengthOrdinal));
-            var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-            var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
+            var dataLength = reader.GetValueInt32Null(lengthOrdinal);
+            var precision = reader.GetValueInt32Null(precisionOrdinal);
+            var scale = reader.GetValueInt32Null(scaleOrdinal);
 
 
             var nativeTypeName = FormatNativeTypeName(dataType, dataLength, dataLength, precision, scale);
@@ -131,14 +131,14 @@ public sealed partial class OracleSchemaReader
 
             var (dbType, oracleDbType, systemType, isUnicode, isFixedLength) = MapOracleType(dataType, dataLength, precision, scale);
 
-            var precisionValue = NormalizePrecision(dbType, precision);
-            var scaleValue = NormalizeScale(dbType, scale);
+            var precisionValue = precision.NormalizePrecision(dbType);
+            var scaleValue = scale.NormalizeScale(dbType);
 
             typeBuilder.AddColumn(columnBuilder =>
             {
                 columnBuilder
                     .WithName(attributeName)
-                    .WithOrdinalPosition(attributeOrdinalPosition)
+                    .WithOrdinalPosition(attributePosition)
                     .WithIsNullable(true)
                     .WithNativeTypeName(nativeTypeName)
                     .WithDbType(dbType)

@@ -63,7 +63,7 @@ public sealed partial class OracleSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
-            var description = NullIfEmpty(reader.GetStringNull(commentsOrdinal));
+            var description = reader.GetStringNull(commentsOrdinal).NullIfEmpty();
             var definition = reader.GetStringNull(definitionOrdinal);
 
             var viewBuilder = new ViewBuilder()

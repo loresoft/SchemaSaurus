@@ -70,7 +70,7 @@ public sealed partial class OracleSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
-            var description = NullIfEmpty(reader.GetStringNull(commentsOrdinal));
+            var description = reader.GetStringNull(commentsOrdinal).NullIfEmpty();
             var iotType = reader.GetStringNull(iotTypeOrdinal);
             var temporary = reader.GetStringNull(temporaryOrdinal);
 

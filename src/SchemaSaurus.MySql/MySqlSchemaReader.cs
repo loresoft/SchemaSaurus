@@ -39,12 +39,18 @@ public sealed partial class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnec
         const int schemaOrdinal = 3;
         const int engineEditionOrdinal = 4;
 
+        var serverVersion = reader.GetStringNull(versionOrdinal);
+        var edition = reader.GetStringNull(commentOrdinal);
+        var collation = reader.GetStringNull(collationOrdinal);
+        var defaultSchemaName = reader.GetStringNull(schemaOrdinal);
+        var engineEdition = reader.GetStringNull(engineEditionOrdinal);
+
         builder
-            .WithServerVersion(reader.GetStringNull(versionOrdinal))
-            .WithEdition(reader.GetStringNull(commentOrdinal))
-            .WithCollation(reader.GetStringNull(collationOrdinal))
-            .WithDefaultSchemaName(reader.GetStringNull(schemaOrdinal))
-            .WithEngineEdition(reader.GetStringNull(engineEditionOrdinal));
+            .WithServerVersion(serverVersion)
+            .WithEdition(edition)
+            .WithCollation(collation)
+            .WithDefaultSchemaName(defaultSchemaName)
+            .WithEngineEdition(engineEdition);
     }
 
     private async Task ReadRelationColumnsAsync<TBuilder>(
@@ -113,25 +119,27 @@ public sealed partial class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnec
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
+
             if (!relationBuilders.TryGetValue((schema, tableName), out var relationBuilder))
                 continue;
 
             var columnName = reader.GetString(nameOrdinal);
-            var ordinalPosition = Convert.ToInt32(reader.GetValue(ordinalPositionOrdinal), CultureInfo.InvariantCulture);
+            var ordinalPosition = reader.GetValueInt32(ordinalPositionOrdinal);
             var defaultSql = reader.GetStringNull(defaultOrdinal);
             var isNullable = reader.GetInt32(nullableOrdinal) == 1;
             var dataType = reader.GetString(dataTypeOrdinal);
             var nativeTypeName = reader.GetString(columnTypeOrdinal);
-            var maxLength = GetInt32Null(reader.GetValueNull(maxLengthOrdinal));
-            var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-            var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
+            var maxLength = reader.GetValueInt32Null(maxLengthOrdinal);
+            var precision = reader.GetValueInt32Null(precisionOrdinal);
+            var scale = reader.GetValueInt32Null(scaleOrdinal);
             var characterSet = reader.GetStringNull(characterSetOrdinal);
             var collation = reader.GetStringNull(collationOrdinal);
-            var comment = NullIfEmpty(reader.GetStringNull(commentOrdinal));
+            var comment = reader.GetStringNull(commentOrdinal).NullIfEmpty();
             var extra = reader.GetStringNull(extraOrdinal) ?? string.Empty;
             var isIdentity = reader.GetInt32(identityOrdinal) == 1;
             var isGenerated = reader.GetInt32(generatedOrdinal) == 1;
             var generationExpression = reader.GetStringNull(generationExpressionOrdinal);
+
             var isStored = extra.Contains("STORED", StringComparison.OrdinalIgnoreCase);
 
             var (dbType, mySqlDbType, systemType, isUnicode, isFixedLength) = MySqlTypeMapper.MapNativeType(dataType);
@@ -187,6 +195,7 @@ public sealed partial class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnec
         }
     }
 
+
     private static string BuildInformationSchemaTableFilter(SchemaReaderOptions options, string schemaExpression, string tableExpression)
     {
         List<string> conditions = [$"{schemaExpression} NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys')"];
@@ -197,7 +206,7 @@ public sealed partial class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnec
 
         if (options.Tables.Count > 0)
         {
-            var list = string.Join(", ", options.Tables.Select(EscapeLiteral));
+            var list = string.Join(", ", options.Tables.Select(value => value.EscapeLiteral()));
             conditions.Add($"{tableExpression} IN ({list})");
         }
 
@@ -209,33 +218,10 @@ public sealed partial class MySqlSchemaReader : DatabaseSchemaReader<MySqlConnec
         if (schemas.Count == 0)
             return null;
 
-        var list = string.Join(", ", schemas.Select(EscapeLiteral));
+        var list = string.Join(", ", schemas.Select(value => value.EscapeLiteral()));
         return $"{schemaExpression} IN ({list})";
     }
 
-    private static string EscapeLiteral(string value)
-    {
-        return $"'{value.Replace("'", "''")}'";
-    }
-
-    private static int? GetInt32Null(object? value)
-    {
-        if (value is null or DBNull)
-            return null;
-
-        var longValue = Convert.ToInt64(value, CultureInfo.InvariantCulture);
-        return longValue > int.MaxValue ? null : (int)longValue;
-    }
-
-    private static long? GetInt64Null(object? value)
-    {
-        return value is null or DBNull ? null : Convert.ToInt64(value, CultureInfo.InvariantCulture);
-    }
-
-    private static string? NullIfEmpty(string? value)
-    {
-        return string.IsNullOrEmpty(value) ? null : value;
-    }
 
     private static bool IsUnicodeCharacterSet(string characterSet)
     {

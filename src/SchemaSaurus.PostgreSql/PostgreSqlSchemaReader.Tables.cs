@@ -352,25 +352,31 @@ public sealed partial class PostgreSqlSchemaReader
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             var objectId = reader.GetFieldValue<uint>(objectIdOrdinal);
-            if (!objectIds.Contains(objectId))
-                continue;
 
-            var name = reader.GetString(nameOrdinal);
+            if (!objectIds.Contains(objectId))
+                continue; var name = reader.GetString(nameOrdinal);
+
             var enabled = reader.GetString(enabledOrdinal);
             var definition = reader.GetStringNull(definitionOrdinal);
-            var timing = reader.GetBoolean(insteadOrdinal)
+            var isBefore = reader.GetBoolean(beforeOrdinal);
+            var isInstead = reader.GetBoolean(insteadOrdinal);
+            var isInsert = reader.GetBoolean(insertOrdinal);
+            var isDelete = reader.GetBoolean(deleteOrdinal);
+            var isUpdate = reader.GetBoolean(updateOrdinal);
+
+            var timing = isInstead
                 ? TriggerTiming.InsteadOf
-                : reader.GetBoolean(beforeOrdinal) ? TriggerTiming.Before : TriggerTiming.After;
+                : isBefore ? TriggerTiming.Before : TriggerTiming.After;
 
             var events = TriggerEvent.None;
 
-            if (reader.GetBoolean(insertOrdinal))
+            if (isInsert)
                 events |= TriggerEvent.Insert;
 
-            if (reader.GetBoolean(deleteOrdinal))
+            if (isDelete)
                 events |= TriggerEvent.Delete;
 
-            if (reader.GetBoolean(updateOrdinal))
+            if (isUpdate)
                 events |= TriggerEvent.Update;
 
             Trigger trigger = new()

@@ -309,25 +309,28 @@ public sealed partial class SqlServerSchemaReader
             // Filter rows based on object_id to avoid processing constraints for tables we're not including.
             // This is more efficient than filtering in-memory after reading all constraints.
             var objectId = reader.GetInt32(parentOrdinal);
+
             if (!objectIds.Contains(objectId))
                 continue;
 
             var constraintName = reader.GetString(nameOrdinal);
+            var type = reader.GetString(typeOrdinal).Trim();
+            var indexType = reader.GetByte(indexTypeOrdinal);
+            var columnName = reader.GetString(columnNameOrdinal);
+            var sortDirection = reader.GetBoolean(descendOrdinal)
+                ? SortDirection.Descending
+                : SortDirection.Ascending;
+
             var key = (objectId, constraintName);
 
             // If we haven't seen this constraint before, create a new entry in the dictionary with its type and clustering info.
             // Otherwise, we'll just add columns to the existing entry.
             if (!constraints.TryGetValue(key, out var kc))
             {
-                var type = reader.GetString(typeOrdinal).Trim();
-                var indexType = reader.GetByte(indexTypeOrdinal);
                 kc = (type, indexType == 1, []);
 
                 constraints[key] = kc;
             }
-
-            var columnName = reader.GetString(columnNameOrdinal);
-            var sortDirection = reader.GetBoolean(descendOrdinal) ? SortDirection.Descending : SortDirection.Ascending;
 
             ColumnReference reference = new()
             {

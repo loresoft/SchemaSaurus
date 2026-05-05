@@ -50,9 +50,7 @@ public sealed partial class SqliteSchemaReader
             // The id groups all column mappings that belong to the same foreign key.
             var columns = await ReadForeignKeyColumnsAsync(connection, tableName, referencedTable, id, cancellationToken).ConfigureAwait(false);
             if (columns.Count == 0)
-            {
                 continue;
-            }
 
             tableBuilder.AddForeignKey(fkBuilder =>
             {
@@ -97,6 +95,7 @@ public sealed partial class SqliteSchemaReader
         using var reader = await command.ExecuteReaderAsync(SequentialResultBehavior, cancellationToken).ConfigureAwait(false);
 
         var mappings = new List<(string From, string To)>();
+
         const int sequenceOrdinal = 0;
         const int fromColumnOrdinal = 1;
         const int toColumnOrdinal = 2;

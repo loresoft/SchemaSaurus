@@ -40,6 +40,9 @@ public sealed partial class MySqlSchemaReader
     {
         var schemaFilter = BuildSchemaFilter(options.Schemas, "r.ROUTINE_SCHEMA");
         var schemaWhere = schemaFilter is null ? string.Empty : $"\n              AND {schemaFilter}";
+
+        var routineLiteral = routineType.EscapeLiteral();
+
         var sql = $"""
             SELECT
                 r.ROUTINE_SCHEMA,
@@ -53,7 +56,7 @@ public sealed partial class MySqlSchemaReader
                 r.IS_DETERMINISTIC,
                 r.ROUTINE_COMMENT
             FROM INFORMATION_SCHEMA.ROUTINES r
-            WHERE r.ROUTINE_TYPE = {EscapeLiteral(routineType)}
+            WHERE r.ROUTINE_TYPE = {routineLiteral}
               AND r.ROUTINE_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys'){schemaWhere}
             ORDER BY r.ROUTINE_SCHEMA, r.ROUTINE_NAME
             """;
@@ -83,7 +86,13 @@ public sealed partial class MySqlSchemaReader
                 var schema = reader.GetString(schemaOrdinal);
                 var name = reader.GetString(nameOrdinal);
                 var definition = reader.GetStringNull(definitionOrdinal);
-                var comment = NullIfEmpty(reader.GetStringNull(commentOrdinal));
+                var nativeTypeName = reader.GetStringNull(dtdOrdinal);
+                var dataType = reader.GetStringNull(dataTypeOrdinal);
+                var maxLength = reader.GetValueInt32Null(maxLengthOrdinal);
+                var precision = reader.GetValueInt32Null(precisionOrdinal);
+                var scale = reader.GetValueInt32Null(scaleOrdinal);
+                var isDeterministic = reader.GetString(deterministicOrdinal) == "YES";
+                var comment = reader.GetStringNull(commentOrdinal).NullIfEmpty();
 
                 if (routineType == "PROCEDURE")
                 {
@@ -96,12 +105,9 @@ public sealed partial class MySqlSchemaReader
                     continue;
                 }
 
-                var dataType = reader.GetStringNull(dataTypeOrdinal) ?? "unknown";
-                var nativeTypeName = reader.GetStringNull(dtdOrdinal) ?? dataType;
-                var maxLength = GetInt32Null(reader.GetValueNull(maxLengthOrdinal));
-                var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-                var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
-                var isDeterministic = reader.GetString(deterministicOrdinal) == "YES";
+                dataType ??= "unknown";
+                nativeTypeName ??= dataType;
+
                 var (dbType, mySqlDbType, systemType, isUnicode, isFixedLength) = MySqlTypeMapper.MapNativeType(dataType);
 
                 TypeMapping returnType = new()
@@ -110,8 +116,8 @@ public sealed partial class MySqlSchemaReader
                     NativeTypeName = nativeTypeName,
                     SystemType = systemType,
                     MaxLength = maxLength,
-                    Precision = precision,
-                    Scale = scale,
+                    Precision = precision.NormalizePrecision(dbType),
+                    Scale = scale.NormalizeScale(dbType),
                     IsUnicode = isUnicode,
                     IsFixedLength = isFixedLength,
                 };
@@ -159,8 +165,10 @@ public sealed partial class MySqlSchemaReader
         where TBuilder : class
     {
         var schemaFilter = BuildSchemaFilter(options.Schemas, "p.SPECIFIC_SCHEMA");
-
         var schemaWhere = schemaFilter is null ? string.Empty : $"\n              AND {schemaFilter}";
+
+        var routineLiteral = routineType.EscapeLiteral();
+
         var sql = $"""
             SELECT
                 p.SPECIFIC_SCHEMA,
@@ -174,7 +182,7 @@ public sealed partial class MySqlSchemaReader
                 p.NUMERIC_PRECISION,
                 p.NUMERIC_SCALE
             FROM INFORMATION_SCHEMA.PARAMETERS p
-            WHERE p.ROUTINE_TYPE = {EscapeLiteral(routineType)}
+            WHERE p.ROUTINE_TYPE = {routineLiteral}
               AND p.SPECIFIC_SCHEMA NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys'){schemaWhere}
               AND p.PARAMETER_NAME IS NOT NULL
             ORDER BY p.SPECIFIC_SCHEMA, p.SPECIFIC_NAME, p.ORDINAL_POSITION
@@ -200,6 +208,7 @@ public sealed partial class MySqlSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var routineName = reader.GetString(routineOrdinal);
+
             if (!routineBuilders.TryGetValue((schema, routineName), out var routineBuilder))
                 continue;
 
@@ -208,9 +217,10 @@ public sealed partial class MySqlSchemaReader
             var direction = MapParameterDirection(reader.GetStringNull(modeOrdinal));
             var dataType = reader.GetStringNull(dataTypeOrdinal) ?? "unknown";
             var nativeTypeName = reader.GetStringNull(dtdOrdinal) ?? dataType;
-            var maxLength = GetInt32Null(reader.GetValueNull(maxLengthOrdinal));
-            var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-            var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
+            var maxLength = reader.GetValueInt32Null(maxLengthOrdinal);
+            var precision = reader.GetValueInt32Null(precisionOrdinal);
+            var scale = reader.GetValueInt32Null(scaleOrdinal);
+
             var (dbType, mySqlDbType, systemType, isUnicode, isFixedLength) = MySqlTypeMapper.MapNativeType(dataType);
 
             void Configure(ParameterBuilder parameterBuilder)

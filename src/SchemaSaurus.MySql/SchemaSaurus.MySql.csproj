@@ -20,9 +20,6 @@
     <Compile Update="MySqlSchemaReader.Tables.cs">
       <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
     </Compile>
-    <Compile Update="MySqlSchemaReader.UserDefinedTypes.cs">
-      <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
-    </Compile>
     <Compile Update="MySqlSchemaReader.Views.cs">
       <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
     </Compile>

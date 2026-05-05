@@ -265,14 +265,14 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         // If specific schemas are specified in the options, add a filter condition to include only those schemas.
         if (options.Schemas.Count > 0)
         {
-            var list = string.Join(", ", options.Schemas.Select(EscapeLiteral));
+            var list = string.Join(", ", options.Schemas.Select(EscapeUnicodeLiteral));
             conditions.Add($"SCHEMA_NAME(t.schema_id) IN ({list})");
         }
 
         // If specific tables are specified in the options, add a filter condition to include only those tables.
         if (options.Tables.Count > 0)
         {
-            var list = string.Join(", ", options.Tables.Select(EscapeLiteral));
+            var list = string.Join(", ", options.Tables.Select(EscapeUnicodeLiteral));
             conditions.Add($"t.name IN ({list})");
         }
 
@@ -289,14 +289,14 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         // The schemaExpression parameter allows specifying the expression to use
         // for the schema name (e.g. "SCHEMA_NAME(o.schema_id)" or "SCHEMA_NAME(t.schema_id)").
 
-        var list = string.Join(", ", schemas.Select(EscapeLiteral));
+        var list = string.Join(", ", schemas.Select(EscapeUnicodeLiteral));
 
         // Return a filter condition like "SCHEMA_NAME(o.schema_id) IN ('schema1', 'schema2')".
         return $"{schemaExpression} IN ({list})";
     }
 
 
-    private static string EscapeLiteral(string s) => $"N'{s.Replace("'", "''")}'";
+    private static string EscapeUnicodeLiteral(string value) => $"N{value.EscapeLiteral()}";
 
 
     private static string FormatNativeTypeName(string systemTypeName, string userTypeName, short maxLength, byte precision, byte scale)
@@ -312,10 +312,10 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         var nativeTypeName = systemTypeName.ToUpperInvariant();
 
         if (IsTypeName(systemTypeName, "char") || IsTypeName(systemTypeName, "varchar") || IsTypeName(systemTypeName, "binary") || IsTypeName(systemTypeName, "varbinary"))
-            return maxLength == -1 ? $"{nativeTypeName}(max)" : $"{nativeTypeName}({maxLength})";
+            return maxLength == -1 ? $"{nativeTypeName}(MAX)" : $"{nativeTypeName}({maxLength})";
 
         if (IsTypeName(systemTypeName, "nchar") || IsTypeName(systemTypeName, "nvarchar"))
-            return maxLength == -1 ? $"{nativeTypeName}(max)" : $"{nativeTypeName}({maxLength / 2})";
+            return maxLength == -1 ? $"{nativeTypeName}(MAX)" : $"{nativeTypeName}({maxLength / 2})";
 
         if (IsTypeName(systemTypeName, "decimal") || IsTypeName(systemTypeName, "numeric"))
             return $"{nativeTypeName}({precision}, {scale})";

@@ -221,7 +221,7 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
 
         if (options.Tables.Count > 0)
         {
-            var list = string.Join(", ", options.Tables.Select(EscapeLiteral));
+            var list = string.Join(", ", options.Tables.Select(value => value.EscapeLiteral()));
             conditions.Add($"{tableExpression} IN ({list})");
         }
 
@@ -233,13 +233,8 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
         if (schemas.Count == 0)
             return null;
 
-        var list = string.Join(", ", schemas.Select(EscapeLiteral));
+        var list = string.Join(", ", schemas.Select(value => value.EscapeLiteral()));
         return $"{schemaExpression} IN ({list})";
-    }
-
-    private static string EscapeLiteral(string value)
-    {
-        return $"'{value.Replace("'", "''")}'";
     }
 
     private static ColumnReference[] CreateColumnReferences(string[] columnNames)
@@ -264,12 +259,15 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
 
         foreach (var storageParameter in storageParameters)
         {
-            var parts = storageParameter.Split('=', 2);
-            if (parts.Length != 2)
+            var separatorIndex = storageParameter.IndexOf('=', StringComparison.Ordinal);
+            if (separatorIndex <= 0)
                 continue;
 
-            var annotationName = PostgreSqlAnnotations.StorageParameterPrefix + parts[0];
-            builder.WithAnnotation(annotationName, parts[1]);
+            var annotationName = storageParameter.AsSpan(0, separatorIndex);
+            if (annotationName.IsEmpty)
+                continue;
+
+            builder.WithAnnotation(annotationName.ToString(), storageParameter[(separatorIndex + 1)..]);
         }
     }
 
@@ -295,14 +293,16 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
 
     private static int? GetMaxLength(string nativeTypeName)
     {
-        var open = nativeTypeName.IndexOf('(', StringComparison.Ordinal);
-        var close = nativeTypeName.IndexOf(')', StringComparison.Ordinal);
+        var span = nativeTypeName.AsSpan();
+
+        var open = span.IndexOf('(');
+        var close = span.IndexOf(')');
+
         if (open < 0 || close <= open)
             return null;
 
-        var value = nativeTypeName[(open + 1)..close];
-        var comma = value.IndexOf(',', StringComparison.Ordinal);
-        if (comma >= 0)
+        var value = span[(open + 1)..close];
+        if (value.Contains(','))
             return null;
 
         return int.TryParse(value, out var length) ? length : null;
@@ -322,18 +322,26 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
 
     private static (int? Precision, int? Scale) GetNumericFacets(string nativeTypeName)
     {
-        var open = nativeTypeName.IndexOf('(', StringComparison.Ordinal);
-        var close = nativeTypeName.IndexOf(')', StringComparison.Ordinal);
+        var span = nativeTypeName.AsSpan();
+
+        var open = span.IndexOf('(');
+        var close = span.IndexOf(')');
+
         if (open < 0 || close <= open)
             return (null, null);
 
-        var value = nativeTypeName[(open + 1)..close];
-        var parts = value.Split(',', StringSplitOptions.TrimEntries);
-        if (parts.Length != 2)
+        var value = span[(open + 1)..close];
+        var separatorIndex = value.IndexOf(',');
+
+        if (separatorIndex < 0)
             return (null, null);
 
-        var hasPrecision = int.TryParse(parts[0], out var precision);
-        var hasScale = int.TryParse(parts[1], out var scale);
+        var precisionValue = value[..separatorIndex].Trim();
+        var scaleValue = value[(separatorIndex + 1)..].Trim();
+
+        var hasPrecision = int.TryParse(precisionValue, out var precision);
+        var hasScale = int.TryParse(scaleValue, out var scale);
+
         return (hasPrecision ? precision : null, hasScale ? scale : null);
     }
 

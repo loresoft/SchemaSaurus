@@ -3,6 +3,7 @@ using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.Oracle;
@@ -51,12 +52,12 @@ public sealed partial class OracleSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
-            var minValue = GetInt64(reader.GetValue(minOrdinal));
-            var maxValue = GetInt64(reader.GetValue(maxOrdinal));
-            var increment = GetInt64(reader.GetValue(incrementOrdinal));
+            var minValue = reader.GetValueInt64(minOrdinal);
+            var maxValue = reader.GetValueInt64(maxOrdinal);
+            var increment = reader.GetValueInt64(incrementOrdinal);
             var isCycling = reader.GetString(cycleOrdinal) == "Y";
             var isOrdered = reader.GetString(orderOrdinal) == "Y";
-            var cacheSize = GetInt32Null(reader.GetValue(cacheOrdinal));
+            var cacheSize = reader.GetValueInt32Null(cacheOrdinal);
 
             var startValue = increment >= 0 ? minValue : maxValue;
 

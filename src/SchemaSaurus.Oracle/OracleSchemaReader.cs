@@ -7,6 +7,7 @@ using Oracle.ManagedDataAccess.Client;
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
+using SchemaSaurus.Metadata.Internal;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.Oracle;
@@ -132,24 +133,24 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
                 continue;
 
             var columnName = reader.GetString(nameOrdinal);
-            var columnId = Convert.ToInt32(reader.GetValue(columnIdOrdinal), CultureInfo.InvariantCulture);
+            var columnId = reader.GetValueInt32(columnIdOrdinal);
             var dataType = reader.GetString(dataTypeOrdinal);
-            var dataLength = GetInt32Null(reader.GetValueNull(dataLengthOrdinal));
-            var charLength = GetInt32Null(reader.GetValueNull(charLengthOrdinal));
-            var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-            var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
+            var dataLength = reader.GetValueInt32Null(dataLengthOrdinal);
+            var charLength = reader.GetValueInt32Null(charLengthOrdinal);
+            var precision = reader.GetValueInt32Null(precisionOrdinal);
+            var scale = reader.GetValueInt32Null(scaleOrdinal);
             var isNullable = reader.GetString(nullableOrdinal) == "Y";
             var isIdentity = reader.GetStringNull(identityOrdinal) == "YES";
             var isComputed = reader.GetStringNull(virtualOrdinal) == "YES";
-            var description = NullIfEmpty(reader.GetStringNull(commentsOrdinal));
+            var description = reader.GetStringNull(commentsOrdinal).NullIfEmpty();
             var defaultSql = reader.GetStringNull(defaultOrdinal)?.Trim();
 
             var nativeTypeName = FormatNativeTypeName(dataType, dataLength, charLength, precision, scale);
 
             var (dbType, oracleDbType, systemType, isUnicode, isFixedLength) = MapOracleType(dataType, dataLength, precision, scale);
 
-            var precisionValue = NormalizePrecision(dbType, precision);
-            var scaleValue = NormalizeScale(dbType, scale);
+            var precisionValue = precision.NormalizePrecision(dbType);
+            var scaleValue = scale.NormalizeScale(dbType);
             var maxLength = GetMaxLength(dataType, dataLength, charLength);
 
             void Configure(ColumnBuilder columnBuilder)
@@ -204,13 +205,20 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
         if (schemas.Count == 0)
             return userMaintainedSchemaFilter;
 
-        var list = string.Join(", ", schemas.Select(EscapeLiteral));
+        var list = string.Join(", ", schemas.Select(value => value.EscapeLiteral()));
         return $"{userMaintainedSchemaFilter}\n              AND {schemaExpression} IN ({list})";
     }
 
     private static string BuildCaseInsensitiveFilter(IReadOnlyCollection<string> values, string expression)
     {
-        var builder = new StringBuilder();
+        var capacity = 2;
+        var expressionLength = expression.Length;
+        foreach (var value in values)
+            capacity += 21 + (expressionLength * 2) + value.Length + value.Count(character => character == '\'');
+
+        capacity += Math.Max(0, values.Count - 1) * 4;
+
+        var builder = StringBuilderCache.Acquire(capacity);
         builder.Append('(');
 
         var first = true;
@@ -219,37 +227,14 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
             if (!first)
                 builder.Append(" OR ");
 
-            builder.Append($"UPPER({expression}) = UPPER({EscapeLiteral(value)})");
+            builder.Append($"UPPER({expression}) = UPPER({value.EscapeLiteral()})");
             first = false;
         }
 
         builder.Append(')');
-        return builder.ToString();
+
+        return StringBuilderCache.ToString(builder);
     }
-
-
-    private static string EscapeLiteral(string value)
-        => $"'{value.Replace("'", "''")}'";
-
-
-    private static int? GetInt32Null(object? value)
-        => value is null or DBNull ? null : Convert.ToInt32(value, CultureInfo.InvariantCulture);
-
-    private static long GetInt64(object value)
-    {
-        var decimalValue = Convert.ToDecimal(value, CultureInfo.InvariantCulture);
-        if (decimalValue > long.MaxValue)
-            return long.MaxValue;
-
-        if (decimalValue < long.MinValue)
-            return long.MinValue;
-
-        return decimal.ToInt64(decimalValue);
-    }
-
-    private static string? NullIfEmpty(string? value)
-        => string.IsNullOrEmpty(value) ? null : value;
-
 
     private static (DbType DbType, OracleDbType OracleDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapOracleType(
         string dataType,
@@ -279,24 +264,6 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
     }
 
 
-    private static int? GetMaxLength(string dataType, int? dataLength, int? charLength)
-    {
-        if (dataType.Contains("CHAR", StringComparison.OrdinalIgnoreCase))
-            return charLength;
-
-        if (dataType.Contains("RAW", StringComparison.OrdinalIgnoreCase))
-            return dataLength;
-
-        return null;
-    }
-
-    private static int? NormalizePrecision(DbType dbType, int? precision)
-        => dbType == DbType.Decimal ? precision : null;
-
-    private static int? NormalizeScale(DbType dbType, int? scale)
-        => dbType == DbType.Decimal ? scale : null;
-
-
     private static string FormatNativeTypeName(string dataType, int? dataLength, int? charLength, int? precision, int? scale)
     {
         if (dataType.Contains("CHAR", StringComparison.OrdinalIgnoreCase) && charLength is not null)
@@ -311,6 +278,16 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
         return dataType;
     }
 
+    private static int? GetMaxLength(string dataType, int? dataLength, int? charLength)
+    {
+        if (dataType.Contains("CHAR", StringComparison.OrdinalIgnoreCase))
+            return charLength;
+
+        if (dataType.Contains("RAW", StringComparison.OrdinalIgnoreCase))
+            return dataLength;
+
+        return null;
+    }
 
     private static ReferentialAction MapReferentialAction(string? action)
     {

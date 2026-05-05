@@ -34,6 +34,7 @@ public sealed partial class MySqlSchemaReader
         CancellationToken cancellationToken)
     {
         var tableFilter = BuildInformationSchemaTableFilter(options, "v.TABLE_SCHEMA", "v.TABLE_NAME");
+
         var sql = $"""
             SELECT
                 v.TABLE_SCHEMA,
@@ -64,7 +65,7 @@ public sealed partial class MySqlSchemaReader
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
             var definition = reader.GetStringNull(definitionOrdinal);
-            var comment = NullIfEmpty(reader.GetStringNull(commentOrdinal));
+            var comment = reader.GetStringNull(commentOrdinal).NullIfEmpty();
 
             var viewBuilder = new ViewBuilder()
                 .WithSchemaQualifiedName(schema, name)

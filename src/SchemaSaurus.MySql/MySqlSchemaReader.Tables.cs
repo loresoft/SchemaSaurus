@@ -73,7 +73,7 @@ public sealed partial class MySqlSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
-            var comment = NullIfEmpty(reader.GetStringNull(commentOrdinal));
+            var comment = reader.GetStringNull(commentOrdinal).NullIfEmpty();
             var engine = reader.GetStringNull(engineOrdinal);
             var collation = reader.GetStringNull(collationOrdinal);
             var characterSet = reader.GetStringNull(characterSetOrdinal);
@@ -98,6 +98,7 @@ public sealed partial class MySqlSchemaReader
         CancellationToken cancellationToken)
     {
         var tableFilter = BuildInformationSchemaTableFilter(options, "tc.TABLE_SCHEMA", "tc.TABLE_NAME");
+
         var sql = $"""
             SELECT
                 tc.TABLE_SCHEMA,
@@ -148,14 +149,23 @@ public sealed partial class MySqlSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
+
             if (!tables.ContainsKey((schema, tableName)))
                 continue;
 
             var constraintName = reader.GetString(constraintOrdinal);
             var constraintType = reader.GetString(typeOrdinal);
             var columnName = reader.GetStringNull(columnOrdinal);
+
             if (columnName is null)
                 continue;
+
+            var principalSchema = reader.GetStringNull(principalSchemaOrdinal);
+            var principalTable = reader.GetStringNull(principalTableOrdinal);
+            var principalColumn = reader.GetStringNull(principalColumnOrdinal);
+            var deleteRule = reader.GetStringNull(deleteOrdinal);
+            var updateRule = reader.GetStringNull(updateOrdinal);
+
 
             var key = (schema, tableName, constraintName);
             ColumnReference reference = new()
@@ -185,9 +195,6 @@ public sealed partial class MySqlSchemaReader
             }
             else
             {
-                var principalSchema = reader.GetStringNull(principalSchemaOrdinal);
-                var principalTable = reader.GetStringNull(principalTableOrdinal);
-                var principalColumn = reader.GetStringNull(principalColumnOrdinal);
                 if (principalSchema is null || principalTable is null || principalColumn is null)
                     continue;
 
@@ -196,8 +203,8 @@ public sealed partial class MySqlSchemaReader
                     foreignKeyBuilder = new ForeignKeyBuilder()
                         .WithName(constraintName)
                         .WithPrincipalTableName(principalSchema, principalTable)
-                        .WithOnDelete(MapReferentialAction(reader.GetStringNull(deleteOrdinal)))
-                        .WithOnUpdate(MapReferentialAction(reader.GetStringNull(updateOrdinal)));
+                        .WithOnDelete(MapReferentialAction(deleteRule))
+                        .WithOnUpdate(MapReferentialAction(updateRule));
 
                     foreignKeys[key] = foreignKeyBuilder;
                 }
@@ -266,16 +273,20 @@ public sealed partial class MySqlSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
+
             if (!tables.ContainsKey((schema, tableName)))
                 continue;
 
             var indexName = reader.GetString(nameOrdinal);
+            var isUnique = reader.GetInt64(nonUniqueOrdinal) == 0;
+            var columnName = reader.GetStringNull(columnOrdinal);
+            var collation = reader.GetStringNull(collationOrdinal);
+            var indexType = reader.GetStringNull(indexTypeOrdinal);
+            var prefixLength = reader.GetValueInt32Null(prefixLengthOrdinal);
+
             var key = (schema, tableName, indexName);
             if (!indexes.TryGetValue(key, out var indexBuilder))
             {
-                var isUnique = reader.GetInt64(nonUniqueOrdinal) == 0;
-                var indexType = reader.GetStringNull(indexTypeOrdinal);
-
                 indexBuilder = new IndexBuilder()
                     .WithName(indexName)
                     .WithIsUnique(isUnique)
@@ -290,15 +301,13 @@ public sealed partial class MySqlSchemaReader
                 indexes[key] = indexBuilder;
             }
 
-            var columnName = reader.GetStringNull(columnOrdinal);
             if (columnName is null)
                 continue;
 
-            var sortDirection = reader.GetStringNull(collationOrdinal) == "D"
+            var sortDirection = collation == "D"
                 ? SortDirection.Descending
                 : SortDirection.Ascending;
 
-            var prefixLength = GetInt32Null(reader.GetValueNull(prefixLengthOrdinal));
             indexBuilder.AddColumn(columnName, sortDirection);
 
             if (prefixLength is not null)
@@ -352,14 +361,20 @@ public sealed partial class MySqlSchemaReader
         {
             var schema = reader.GetString(schemaOrdinal);
             var tableName = reader.GetString(tableOrdinal);
+
             if (!tables.TryGetValue((schema, tableName), out var tableBuilder))
                 continue;
 
-            var timing = reader.GetString(timingOrdinal).Equals("BEFORE", StringComparison.OrdinalIgnoreCase)
+            var triggerName = reader.GetString(nameOrdinal);
+            var timingValue = reader.GetString(timingOrdinal);
+            var eventValue = reader.GetString(eventOrdinal);
+            var definition = reader.GetStringNull(definitionOrdinal);
+
+            var timing = timingValue.Equals("BEFORE", StringComparison.OrdinalIgnoreCase)
                 ? TriggerTiming.Before
                 : TriggerTiming.After;
 
-            var events = reader.GetString(eventOrdinal).ToUpperInvariant() switch
+            var events = eventValue.ToUpperInvariant() switch
             {
                 "INSERT" => TriggerEvent.Insert,
                 "UPDATE" => TriggerEvent.Update,
@@ -369,10 +384,10 @@ public sealed partial class MySqlSchemaReader
 
             Trigger trigger = new()
             {
-                Name = reader.GetString(nameOrdinal),
+                Name = triggerName,
                 Timing = timing,
                 Events = events,
-                Definition = reader.GetStringNull(definitionOrdinal),
+                Definition = definition,
             };
 
             tableBuilder.AddTrigger(trigger);

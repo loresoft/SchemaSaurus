@@ -38,7 +38,7 @@ public sealed partial class OracleSchemaReader
         string objectType,
         CancellationToken cancellationToken)
     {
-        var typeLiteral = EscapeLiteral(objectType);
+        var typeLiteral = objectType.EscapeLiteral();
         var schemaFilter = BuildSchemaFilter(options.Schemas, "o.OWNER");
 
         var sql = $"""
@@ -165,13 +165,13 @@ public sealed partial class OracleSchemaReader
             var schema = reader.GetString(schemaOrdinal);
             var routineName = reader.GetString(routineOrdinal);
             var parameterName = reader.GetStringNull(nameOrdinal);
-            var position = Convert.ToInt32(reader.GetValue(positionOrdinal), CultureInfo.InvariantCulture);
-            var direction = MapParameterDirection(reader.GetStringNull(directionOrdinal));
+            var position = reader.GetValueInt32(positionOrdinal);
+            var direction = reader.GetStringNull(directionOrdinal);
             var dataType = reader.GetStringNull(dataTypeOrdinal) ?? "OBJECT";
-            var dataLength = GetInt32Null(reader.GetValueNull(dataLengthOrdinal));
-            var charLength = GetInt32Null(reader.GetValueNull(charLengthOrdinal));
-            var precision = GetInt32Null(reader.GetValueNull(precisionOrdinal));
-            var scale = GetInt32Null(reader.GetValueNull(scaleOrdinal));
+            var dataLength = reader.GetValueInt32Null(dataLengthOrdinal);
+            var charLength = reader.GetValueInt32Null(charLengthOrdinal);
+            var precision = reader.GetValueInt32Null(precisionOrdinal);
+            var scale = reader.GetValueInt32Null(scaleOrdinal);
 
             if (!routineBuilders.TryGetValue((schema, routineName), out var routineBuilder))
             {
@@ -189,8 +189,10 @@ public sealed partial class OracleSchemaReader
 
             var (dbType, oracleDbType, systemType, isUnicode, isFixedLength) = MapOracleType(dataType, dataLength, precision, scale);
 
-            var precisionValue = NormalizePrecision(dbType, precision);
-            var scaleValue = NormalizeScale(dbType, scale);
+            var precisionValue = precision.NormalizePrecision(dbType);
+            var scaleValue = scale.NormalizeScale(dbType);
+
+            var parameterDirection = MapParameterDirection(direction);
 
             if (routineBuilder is ScalarFunctionBuilder functionBuilder && position == 0)
             {
@@ -221,7 +223,7 @@ public sealed partial class OracleSchemaReader
                 parameterBuilder
                     .WithName(parameterName)
                     .WithOrdinal(position)
-                    .WithDirection(direction)
+                    .WithDirection(parameterDirection)
                     .WithNativeTypeName(nativeTypeName)
                     .WithDbType(dbType)
                     .WithSystemType(systemType)
@@ -243,7 +245,7 @@ public sealed partial class OracleSchemaReader
     private static string BuildRoutineFilter(IEnumerable<(string Schema, string Name)> routines)
     {
         var filters = routines
-            .Select(r => $"(UPPER(a.OWNER) = UPPER({EscapeLiteral(r.Schema)}) AND UPPER(a.OBJECT_NAME) = UPPER({EscapeLiteral(r.Name)}))");
+            .Select(r => $"(UPPER(a.OWNER) = UPPER({r.Schema.EscapeLiteral()}) AND UPPER(a.OBJECT_NAME) = UPPER({r.Name.EscapeLiteral()}))");
 
         return $"({string.Join(" OR ", filters)})";
     }
