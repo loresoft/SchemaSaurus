@@ -1,13 +1,8 @@
 <Solution>
-  <Project Path="src/SchemaSaurus.Metadata/SchemaSaurus.Metadata.csproj" />
-  <Project Path="src/SchemaSaurus.MySql/SchemaSaurus.MySql.csproj" />
-  <Project Path="src/SchemaSaurus.Oracle/SchemaSaurus.Oracle.csproj" />
-  <Project Path="src/SchemaSaurus.PostgreSql/SchemaSaurus.PostgreSql.csproj" />
-  <Project Path="src/SchemaSaurus.Sqlite/SchemaSaurus.Sqlite.csproj" />
-  <Project Path="src/SchemaSaurus.SqlServer/SchemaSaurus.SqlServer.csproj" />
   <Folder Name="/Build/">
     <File Path=".github/workflows/dotnet.yml" />
     <File Path="Directory.Packages.props" />
+    <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
   </Folder>
   <Folder Name="/Tests/">
@@ -20,4 +15,10 @@
     <Project Path="test/SchemaSaurus.Sqlite.Tests/SchemaSaurus.Sqlite.Tests.csproj" />
     <Project Path="test/SchemaSaurus.SqlServer.Tests/SchemaSaurus.SqlServer.Tests.csproj" />
   </Folder>
+  <Project Path="src/SchemaSaurus.Metadata/SchemaSaurus.Metadata.csproj" />
+  <Project Path="src/SchemaSaurus.MySql/SchemaSaurus.MySql.csproj" />
+  <Project Path="src/SchemaSaurus.Oracle/SchemaSaurus.Oracle.csproj" />
+  <Project Path="src/SchemaSaurus.PostgreSql/SchemaSaurus.PostgreSql.csproj" />
+  <Project Path="src/SchemaSaurus.Sqlite/SchemaSaurus.Sqlite.csproj" />
+  <Project Path="src/SchemaSaurus.SqlServer/SchemaSaurus.SqlServer.csproj" />
 </Solution>

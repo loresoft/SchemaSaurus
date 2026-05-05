@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Polyfill" PrivateAssets="all" />
   </ItemGroup>
 
