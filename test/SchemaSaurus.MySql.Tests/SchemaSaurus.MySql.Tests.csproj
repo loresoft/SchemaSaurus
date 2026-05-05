@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Scripts\*.mysql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.MTP" />
     <PackageReference Include="FluentMigrator.Runner.MySql" />
     <PackageReference Include="Testcontainers.MySql" />

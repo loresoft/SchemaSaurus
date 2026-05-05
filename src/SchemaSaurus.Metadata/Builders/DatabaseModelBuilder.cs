@@ -236,7 +236,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        _annotations[key] = value;
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

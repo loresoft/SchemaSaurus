@@ -63,7 +63,10 @@ public sealed class StoredProcedureBuilder : IAnnotationBuilder<StoredProcedureB
     public StoredProcedureBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        _annotations[key] = value;
+
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

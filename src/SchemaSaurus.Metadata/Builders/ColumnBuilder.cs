@@ -192,7 +192,9 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        _annotations[key] = value;
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

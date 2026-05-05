@@ -14,6 +14,7 @@ public class SerializationTests(DatabaseFixture databaseFixture)
         model.Tables.Should().NotBeEmpty();
 
         var json = model.ToJson();
-        File.WriteAllText("SerializationTests_Snapshot.json", json);
+
+        File.WriteAllText("..\\..\\..\\..\\TestResults\\SqlServer_Snapshot.json", json);
     }
 }

@@ -94,7 +94,10 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     public ScalarFunctionBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        _annotations[key] = value;
+
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

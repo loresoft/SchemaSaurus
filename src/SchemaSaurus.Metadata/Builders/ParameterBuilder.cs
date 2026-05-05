@@ -111,7 +111,10 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     public ParameterBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        _annotations[key] = value;
+
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

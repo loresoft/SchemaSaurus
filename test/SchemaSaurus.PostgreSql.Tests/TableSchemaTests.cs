@@ -135,7 +135,8 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Status");
 
         var rowVersionColumn = statusTable.Columns.First(c => c.Name == "RowVersion");
-        rowVersionColumn.DbType.Should().Be(DbType.Object);
+        rowVersionColumn.DbType.Should().Be(DbType.UInt32);
+        rowVersionColumn.SystemType.Should().Be(typeof(uint));
     }
 
     [Fact]
@@ -220,5 +221,14 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Status");
 
         statusTable.Columns.Should().AllSatisfy(c => c.OrdinalPosition.Should().BeGreaterThan(0));
+    }
+
+    [Fact]
+    public async Task WhenReadingAuditTableThenColumnNamesAreUnique()
+    {
+        var model = await GetDatabaseModelAsync();
+        var auditTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Audit");
+
+        auditTable.Columns.Select(c => c.Name).Should().OnlyHaveUniqueItems();
     }
 }

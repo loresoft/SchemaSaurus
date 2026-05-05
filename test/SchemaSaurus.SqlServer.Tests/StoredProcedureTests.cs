@@ -49,6 +49,9 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
         var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().HaveCount(3);
+        sp.Parameters.Should().Contain(p => p.Name == "@Offset");
+        sp.Parameters.Should().Contain(p => p.Name == "@Size");
+        sp.Parameters.Should().Contain(p => p.Name == "@Total");
     }
 
     [Fact]

@@ -13,4 +13,19 @@
     <ProjectReference Include="..\SchemaSaurus.Metadata\SchemaSaurus.Metadata.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="MySqlSchemaReader.Routines.cs">
+      <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="MySqlSchemaReader.Tables.cs">
+      <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="MySqlSchemaReader.UserDefinedTypes.cs">
+      <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="MySqlSchemaReader.Views.cs">
+      <DependentUpon>MySqlSchemaReader.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

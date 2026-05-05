@@ -2,6 +2,8 @@ using System.Data;
 
 using SchemaSaurus.SqlServer.Tests.Fixtures;
 
+using ParameterDirection = SchemaSaurus.Metadata.ParameterDirection;
+
 namespace SchemaSaurus.SqlServer.Tests;
 
 public class ScalarFunctionTests(DatabaseFixture databaseFixture)
@@ -66,6 +68,25 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
             p.DbType.Should().Be(DbType.String);
             p.SystemType.Should().Be(typeof(string));
         });
+    }
+
+    [Fact]
+    public async Task WhenReadingFormatAddressThenParametersAreInput()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Parameters.Should().AllSatisfy(p => p.Direction.Should().Be(ParameterDirection.Input));
+    }
+
+    [Fact]
+    public async Task WhenReadingFormatAddressThenParameterOrdinalsAreSequential()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Parameters.Should().AllSatisfy(p => p.Ordinal.Should().BeGreaterThan(0));
+        func.Parameters.Select(p => p.Ordinal).Should().BeInAscendingOrder();
     }
 
     [Fact]

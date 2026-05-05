@@ -14,11 +14,23 @@ public class AddScripts : Migration
 
         foreach (var name in names)
         {
-            if (!name.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            if (!name.EndsWith(".mysql", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             Execute.EmbeddedScript(name);
         }
+
+        Create.Table("CharacterSetType")
+            .WithColumn("Id")
+                .AsInt32()
+                .NotNullable()
+                .PrimaryKey()
+            .WithColumn("UnicodeText")
+                .AsCustom("varchar(50) CHARACTER SET utf8mb4")
+                .Nullable()
+            .WithColumn("AnsiText")
+                .AsCustom("varchar(50) CHARACTER SET latin1")
+                .Nullable();
     }
 
     public override void Down()

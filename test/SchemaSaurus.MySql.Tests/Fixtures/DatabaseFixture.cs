@@ -17,7 +17,9 @@ namespace SchemaSaurus.MySql.Tests.Fixtures;
 
 public class DatabaseFixture : TestApplicationFixture, IAsyncLifetime
 {
-    private readonly MySqlContainer _mySqlContainer = new MySqlBuilder("mysql:8").Build();
+    private readonly MySqlContainer _mySqlContainer = new MySqlBuilder("mysql:8")
+        .WithCommand("--log-bin-trust-function-creators=1")
+        .Build();
 
     public async ValueTask InitializeAsync()
     {

@@ -11,6 +11,8 @@ public class PostgreSqlDataTypeMapperTests
     [InlineData(DbType.String, NpgsqlDbType.Text)]
     [InlineData(DbType.Binary, NpgsqlDbType.Bytea)]
     [InlineData(DbType.Guid, NpgsqlDbType.Uuid)]
+    [InlineData(DbType.UInt32, NpgsqlDbType.Xid)]
+    [InlineData(DbType.UInt64, NpgsqlDbType.Xid8)]
     [InlineData(DbType.Xml, NpgsqlDbType.Xml)]
     public void WhenMappingDbTypeThenNpgsqlDbTypeIsReturned(DbType dbType, NpgsqlDbType expectedNpgsqlDbType)
     {
@@ -25,9 +27,14 @@ public class PostgreSqlDataTypeMapperTests
     [InlineData(NpgsqlDbType.Varchar, DbType.String)]
     [InlineData(NpgsqlDbType.Bytea, DbType.Binary)]
     [InlineData(NpgsqlDbType.Uuid, DbType.Guid)]
+    [InlineData(NpgsqlDbType.Oid, DbType.UInt32)]
+    [InlineData(NpgsqlDbType.Xid, DbType.UInt32)]
+    [InlineData(NpgsqlDbType.Xid8, DbType.UInt64)]
     [InlineData(NpgsqlDbType.Xml, DbType.Xml)]
     [InlineData(NpgsqlDbType.Json, DbType.String)]
     [InlineData(NpgsqlDbType.Jsonb, DbType.String)]
+    [InlineData(NpgsqlDbType.JsonPath, DbType.String)]
+    [InlineData(NpgsqlDbType.Citext, DbType.Object)]
     public void WhenMappingNpgsqlDbTypeThenDbTypeIsReturned(NpgsqlDbType npgsqlDbType, DbType expectedDbType)
     {
         var dbType = PostgreSqlTypeMapper.ToDbType(npgsqlDbType);
@@ -39,6 +46,17 @@ public class PostgreSqlDataTypeMapperTests
     [InlineData("json", DbType.String, NpgsqlDbType.Json, typeof(string), true, false)]
     [InlineData("jsonb", DbType.String, NpgsqlDbType.Jsonb, typeof(string), true, false)]
     [InlineData("uuid", DbType.Guid, NpgsqlDbType.Uuid, typeof(Guid), null, null)]
+    [InlineData("oid", DbType.UInt32, NpgsqlDbType.Oid, typeof(uint), null, null)]
+    [InlineData("xid", DbType.UInt32, NpgsqlDbType.Xid, typeof(uint), null, null)]
+    [InlineData("xid8", DbType.UInt64, NpgsqlDbType.Xid8, typeof(ulong), null, null)]
+    [InlineData("citext", DbType.String, NpgsqlDbType.Citext, typeof(string), true, false)]
+    [InlineData("jsonpath", DbType.String, NpgsqlDbType.JsonPath, typeof(string), true, false)]
+    [InlineData("bit", DbType.StringFixedLength, NpgsqlDbType.Bit, typeof(string), null, true)]
+    [InlineData("varbit", DbType.String, NpgsqlDbType.Varbit, typeof(string), null, false)]
+    [InlineData("inet", DbType.Object, NpgsqlDbType.Inet, typeof(NpgsqlInet), null, null)]
+    [InlineData("macaddr", DbType.Object, NpgsqlDbType.MacAddr, typeof(System.Net.NetworkInformation.PhysicalAddress), null, null)]
+    [InlineData("pg_lsn", DbType.Object, NpgsqlDbType.PgLsn, typeof(NpgsqlLogSequenceNumber), null, null)]
+    [InlineData("tid", DbType.Object, NpgsqlDbType.Tid, typeof(NpgsqlTid), null, null)]
     public void WhenMappingNativeTypeThenExpectedMetadataIsReturned(
         string typeName,
         DbType expectedDbType,

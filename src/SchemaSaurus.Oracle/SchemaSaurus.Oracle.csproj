@@ -12,4 +12,22 @@
     <ProjectReference Include="..\SchemaSaurus.Metadata\SchemaSaurus.Metadata.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="OracleSchemaReader.Routines.cs">
+      <DependentUpon>OracleSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="OracleSchemaReader.Sequences.cs">
+      <DependentUpon>OracleSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="OracleSchemaReader.Tables.cs">
+      <DependentUpon>OracleSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="OracleSchemaReader.UserDefinedTypes.cs">
+      <DependentUpon>OracleSchemaReader.cs</DependentUpon>
+    </Compile>
+    <Compile Update="OracleSchemaReader.Views.cs">
+      <DependentUpon>OracleSchemaReader.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

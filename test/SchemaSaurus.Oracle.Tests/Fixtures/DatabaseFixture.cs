@@ -1,11 +1,11 @@
+using DotNet.Testcontainers.Builders;
+
 using FluentMigrator.Runner;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-
-using Oracle.ManagedDataAccess.Client;
 
 using SchemaSaurus.Migrator.Providers;
 
@@ -18,7 +18,6 @@ namespace SchemaSaurus.Oracle.Tests.Fixtures;
 public class DatabaseFixture : TestApplicationFixture, IAsyncLifetime
 {
     private readonly OracleContainer _oracleContainer = new OracleBuilder("gvenzl/oracle-xe:21.3.0-slim-faststart")
-        .WithDatabase("SchemaSaurus")
         .Build();
 
     public async ValueTask InitializeAsync()

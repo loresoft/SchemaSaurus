@@ -43,6 +43,32 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingFormatAddressThenParametersExist()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Parameters.Should().HaveCount(4);
+        func.Parameters.Should().Contain(p => p.Name == "AddressLine1");
+        func.Parameters.Should().Contain(p => p.Name == "City");
+        func.Parameters.Should().Contain(p => p.Name == "StateProvince");
+        func.Parameters.Should().Contain(p => p.Name == "PostalCode");
+    }
+
+    [Fact]
+    public async Task WhenReadingFormatAddressThenParameterTypesAreCorrect()
+    {
+        var model = await GetDatabaseModelAsync();
+        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+
+        func.Parameters.Should().AllSatisfy(p =>
+        {
+            p.DbType.Should().Be(DbType.String);
+            p.SystemType.Should().Be(typeof(string));
+        });
+    }
+
+    [Fact]
     public async Task WhenReadingFormatAddressThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();

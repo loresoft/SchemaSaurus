@@ -14,6 +14,8 @@ public class SerializationTests(DatabaseFixture databaseFixture)
         model.Tables.Should().NotBeEmpty();
 
         var json = model.ToJson();
-        File.WriteAllText("PostgreSqlSerializationTests_Snapshot.json", json);
+
+        File.WriteAllText("..\\..\\..\\..\\TestResults\\PostgreSql_Snapshot.json", json);
+
     }
 }

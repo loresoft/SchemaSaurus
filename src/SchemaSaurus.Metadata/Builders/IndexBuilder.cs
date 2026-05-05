@@ -102,7 +102,10 @@ public sealed class IndexBuilder : IAnnotationBuilder<IndexBuilder>
     public IndexBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        _annotations[key] = value;
+
+        if (value is not null)
+            _annotations[key] = value;
+
         return this;
     }
 

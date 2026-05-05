@@ -93,8 +93,16 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             LEFT JOIN pg_attrdef AS def ON def.adrelid = cls.oid AND def.adnum = attr.attnum
             LEFT JOIN pg_description AS des ON des.objoid = cls.oid AND des.objsubid = attr.attnum
             LEFT JOIN pg_collation AS coll ON coll.oid = attr.attcollation
-            LEFT JOIN pg_depend AS dep ON dep.refobjid = cls.oid AND dep.refobjsubid = attr.attnum AND dep.deptype IN ('i', 'a')
-            LEFT JOIN pg_sequence AS seq ON seq.seqrelid = dep.objid
+            LEFT JOIN LATERAL (
+                SELECT sequence.seqstart, sequence.seqincrement
+                FROM pg_depend AS dep
+                JOIN pg_sequence AS sequence ON sequence.seqrelid = dep.objid
+                WHERE dep.refobjid = cls.oid
+                  AND dep.refobjsubid = attr.attnum
+                  AND dep.deptype IN ('i', 'a')
+                ORDER BY CASE dep.deptype WHEN 'i' THEN 0 ELSE 1 END
+                LIMIT 1
+            ) AS seq ON true
             WHERE cls.relkind IN ('r', 'p', 'f', 'v', 'm')
               AND attr.attnum > 0
               AND NOT attr.attisdropped
