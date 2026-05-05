@@ -24,6 +24,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the parameter name.</summary>
+    /// <param name="name">The parameter name.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithName(string name)
     {
         _name = name;
@@ -31,6 +33,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the one-based ordinal position.</summary>
+    /// <param name="ordinal">The one-based ordinal position.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithOrdinal(int ordinal)
     {
         _ordinal = ordinal;
@@ -38,6 +42,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the parameter direction.</summary>
+    /// <param name="direction">The parameter direction.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithDirection(ParameterDirection direction)
     {
         _direction = direction;
@@ -45,6 +51,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the default value SQL expression.</summary>
+    /// <param name="defaultValueSql">The default SQL expression, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithDefaultValueSql(string? defaultValueSql)
     {
         _defaultValueSql = defaultValueSql;
@@ -52,6 +60,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the normalized, provider-independent data type.</summary>
+    /// <param name="dbType">The provider-independent database type.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithDbType(DbType dbType)
     {
         _dbType = dbType;
@@ -59,6 +69,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the raw provider type name.</summary>
+    /// <param name="nativeTypeName">The provider-specific type name.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithNativeTypeName(string nativeTypeName)
     {
         _nativeTypeName = nativeTypeName;
@@ -66,6 +78,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the .NET CLR type this parameter maps to.</summary>
+    /// <param name="systemType">The CLR <see cref="Type"/> mapped from the database type.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithSystemType(Type systemType)
     {
         _systemType = systemType;
@@ -73,6 +87,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the maximum character or byte length.</summary>
+    /// <param name="maxLength">The max length value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithMaxLength(int? maxLength)
     {
         _maxLength = maxLength;
@@ -80,6 +96,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the numeric precision.</summary>
+    /// <param name="precision">The precision value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithPrecision(int? precision)
     {
         _precision = precision;
@@ -87,6 +105,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets the numeric scale.</summary>
+    /// <param name="scale">The scale value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithScale(int? scale)
     {
         _scale = scale;
@@ -94,6 +114,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets whether the string type stores Unicode characters.</summary>
+    /// <param name="isUnicode"><see langword="true"/> for Unicode storage, <see langword="false"/> for non-Unicode, or <see langword="null"/> when unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithIsUnicode(bool? isUnicode)
     {
         _isUnicode = isUnicode;
@@ -101,6 +123,8 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Sets whether the type is fixed-length.</summary>
+    /// <param name="isFixedLength"><see langword="true"/> for fixed-length, <see langword="false"/> for variable-length, or <see langword="null"/> when unspecified.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
     public ParameterBuilder WithIsFixedLength(bool? isFixedLength)
     {
         _isFixedLength = isFixedLength;
@@ -108,6 +132,10 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="ParameterBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ParameterBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -123,7 +151,19 @@ public sealed class ParameterBuilder : IAnnotationBuilder<ParameterBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="Parameter"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when required properties have not been set.
+    /// Thrown when <see cref="WithName"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithOrdinal"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithDbType"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithNativeTypeName"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithSystemType"/> has not been called.
     /// </exception>
     public Parameter Build()
     {

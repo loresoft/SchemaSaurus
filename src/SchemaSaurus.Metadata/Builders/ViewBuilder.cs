@@ -16,6 +16,8 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the schema-qualified name of the view.</summary>
+    /// <param name="name">The schema-qualified view name.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
     public ViewBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
@@ -23,6 +25,10 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Sets the schema-qualified name from schema and view name strings.</summary>
+    /// <param name="schema">The schema name, or <see langword="null"/> when no schema is provided.</param>
+    /// <param name="name">The view name.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ViewBuilder WithSchemaQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -31,6 +37,8 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Sets the view description or comment.</summary>
+    /// <param name="description">The view description, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
     public ViewBuilder WithDescription(string? description)
     {
         _description = description;
@@ -38,6 +46,8 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Sets the SQL definition of the view.</summary>
+    /// <param name="definition">The SQL definition text, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
     public ViewBuilder WithDefinition(string? definition)
     {
         _definition = definition;
@@ -45,6 +55,8 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Sets whether this is a materialized or indexed view.</summary>
+    /// <param name="isMaterialized"><see langword="true"/> if materialized/indexed; otherwise, <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
     public ViewBuilder WithIsMaterialized(bool isMaterialized)
     {
         _isMaterialized = isMaterialized;
@@ -52,6 +64,9 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds a column to the view.</summary>
+    /// <param name="column">The column to add.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="column"/> is <see langword="null"/>.</exception>
     public ViewBuilder AddColumn(Column column)
     {
         ArgumentNullException.ThrowIfNull(column);
@@ -60,6 +75,9 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds a column to the view using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ColumnBuilder"/> instance.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public ViewBuilder AddColumn(Action<ColumnBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -70,6 +88,9 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds an index to the view.</summary>
+    /// <param name="index">The index to add.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="index"/> is <see langword="null"/>.</exception>
     public ViewBuilder AddIndex(Index index)
     {
         ArgumentNullException.ThrowIfNull(index);
@@ -78,6 +99,9 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds an index to the view using a builder action.</summary>
+    /// <param name="configure">An action that configures an <see cref="IndexBuilder"/> instance.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public ViewBuilder AddIndex(Action<IndexBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -88,6 +112,9 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds a trigger to the view.</summary>
+    /// <param name="trigger">The trigger to add.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="trigger"/> is <see langword="null"/>.</exception>
     public ViewBuilder AddTrigger(Trigger trigger)
     {
         ArgumentNullException.ThrowIfNull(trigger);
@@ -96,6 +123,10 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ViewBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -111,7 +142,7 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="View"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the schema-qualified name has not been set.
+    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public View Build()
     {

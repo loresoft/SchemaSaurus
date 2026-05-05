@@ -102,8 +102,13 @@ public static class OracleTypeMapper
         }.ToFrozenDictionary();
 
     /// <summary>
-    /// Maps an Oracle native data type name to its corresponding <see cref="DbType" />, provider type, CLR type, and text attributes.
+    /// Maps an Oracle native data type name to its corresponding <see cref="DbType"/>, provider type, CLR type, and text attributes.
     /// </summary>
+    /// <param name="typeName">The Oracle native type name (for example, <c>VARCHAR2</c> or <c>TIMESTAMP(6)</c>).</param>
+    /// <returns>
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="OracleDbType"/>, CLR <see cref="Type"/>, 
+    /// and optional Unicode/fixed-length flags. Unknown types map to object defaults.
+    /// </returns>
     public static (DbType DbType, OracleDbType OracleDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)
     {
         var normalizedTypeName = NormalizeTypeName(typeName);
@@ -114,8 +119,10 @@ public static class OracleTypeMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="DbType" /> value to its closest Oracle-specific <see cref="OracleDbType" /> value.
+    /// Maps a <see cref="DbType"/> value to its closest Oracle-specific <see cref="OracleDbType"/> value.
     /// </summary>
+    /// <param name="dbType">The provider-independent database type to map.</param>
+    /// <returns>The closest matching <see cref="OracleDbType"/> value. Unknown values map to <see cref="OracleDbType.Object"/>.</returns>
     public static OracleDbType ToOracleDbType(DbType dbType)
     {
         if (DbTypeToOracleDbTypeMappings.TryGetValue(dbType, out var oracleDbType))
@@ -125,8 +132,10 @@ public static class OracleTypeMapper
     }
 
     /// <summary>
-    /// Maps an Oracle-specific <see cref="OracleDbType" /> value to its closest provider-independent <see cref="DbType" /> value.
+    /// Maps an Oracle-specific <see cref="OracleDbType"/> value to its closest provider-independent <see cref="DbType"/> value.
     /// </summary>
+    /// <param name="oracleDbType">The Oracle-specific database type to map.</param>
+    /// <returns>The closest matching <see cref="DbType"/> value. Unknown values map to <see cref="DbType.Object"/>.</returns>
     public static DbType ToDbType(OracleDbType oracleDbType)
     {
         if (OracleDbTypeToDbTypeMappings.TryGetValue(oracleDbType, out var dbType))

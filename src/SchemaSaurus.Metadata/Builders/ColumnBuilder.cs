@@ -34,6 +34,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the column name.</summary>
+    /// <param name="name">The column name.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithName(string name)
     {
         _name = name;
@@ -41,6 +43,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the one-based ordinal position of the column.</summary>
+    /// <param name="ordinalPosition">The one-based ordinal position.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithOrdinalPosition(int ordinalPosition)
     {
         _ordinalPosition = ordinalPosition;
@@ -48,6 +52,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether the column accepts null values.</summary>
+    /// <param name="isNullable"><see langword="true"/> when the column allows <see langword="null"/> values; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsNullable(bool isNullable)
     {
         _isNullable = isNullable;
@@ -55,6 +61,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the default value SQL expression.</summary>
+    /// <param name="defaultValueSql">The SQL expression used as the default value, or <see langword="null"/> when no default exists.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithDefaultValueSql(string? defaultValueSql)
     {
         _defaultValueSql = defaultValueSql;
@@ -62,6 +70,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether this is an identity column.</summary>
+    /// <param name="isIdentity"><see langword="true"/> when the column is identity-backed; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsIdentity(bool isIdentity)
     {
         _isIdentity = isIdentity;
@@ -69,6 +79,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the identity seed value.</summary>
+    /// <param name="identitySeed">The starting value for the identity sequence, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIdentitySeed(long? identitySeed)
     {
         _identitySeed = identitySeed;
@@ -76,6 +88,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the identity increment value.</summary>
+    /// <param name="identityIncrement">The step value for the identity sequence, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIdentityIncrement(long? identityIncrement)
     {
         _identityIncrement = identityIncrement;
@@ -83,6 +97,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether this is a computed column.</summary>
+    /// <param name="isComputed"><see langword="true"/> when the column value is computed; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsComputed(bool isComputed)
     {
         _isComputed = isComputed;
@@ -90,6 +106,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the SQL expression for a computed column.</summary>
+    /// <param name="computedColumnSql">The SQL expression for the computed column, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithComputedColumnSql(string? computedColumnSql)
     {
         _computedColumnSql = computedColumnSql;
@@ -97,6 +115,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether a computed column is persisted to disk.</summary>
+    /// <param name="isStored"><see langword="true"/> when the computed column is persisted; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsStored(bool isStored)
     {
         _isStored = isStored;
@@ -104,6 +124,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether this is a row version / timestamp column.</summary>
+    /// <param name="isRowVersion"><see langword="true"/> when the column is a row version; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsRowVersion(bool isRowVersion)
     {
         _isRowVersion = isRowVersion;
@@ -111,6 +133,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether this column is a concurrency token.</summary>
+    /// <param name="isConcurrencyToken"><see langword="true"/> when the column participates in optimistic concurrency checks; otherwise <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsConcurrencyToken(bool isConcurrencyToken)
     {
         _isConcurrencyToken = isConcurrencyToken;
@@ -118,6 +142,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the collation override for this column.</summary>
+    /// <param name="collation">The collation name, or <see langword="null"/> to use the default collation.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithCollation(string? collation)
     {
         _collation = collation;
@@ -125,6 +151,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the column description or comment.</summary>
+    /// <param name="description">The column description, or <see langword="null"/> when no description is available.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithDescription(string? description)
     {
         _description = description;
@@ -132,6 +160,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the normalized, provider-independent data type.</summary>
+    /// <param name="dbType">The normalized database type.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithDbType(DbType dbType)
     {
         _dbType = dbType;
@@ -139,6 +169,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the raw provider type name (e.g., <c>"nvarchar(256)"</c>).</summary>
+    /// <param name="nativeTypeName">The provider-specific type name.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithNativeTypeName(string nativeTypeName)
     {
         _nativeTypeName = nativeTypeName;
@@ -146,6 +178,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the .NET CLR type this column maps to.</summary>
+    /// <param name="systemType">The CLR type mapped from the provider type.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithSystemType(Type systemType)
     {
         _systemType = systemType;
@@ -153,6 +187,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the maximum character or byte length.</summary>
+    /// <param name="maxLength">The max length value, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithMaxLength(int? maxLength)
     {
         _maxLength = maxLength;
@@ -160,6 +196,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the numeric precision.</summary>
+    /// <param name="precision">The numeric precision, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithPrecision(int? precision)
     {
         _precision = precision;
@@ -167,6 +205,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets the numeric scale.</summary>
+    /// <param name="scale">The numeric scale, or <see langword="null"/> when not applicable.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithScale(int? scale)
     {
         _scale = scale;
@@ -174,6 +214,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether the string type stores Unicode characters.</summary>
+    /// <param name="isUnicode"><see langword="true"/> for Unicode storage, <see langword="false"/> for non-Unicode storage, or <see langword="null"/> when not specified.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsUnicode(bool? isUnicode)
     {
         _isUnicode = isUnicode;
@@ -181,6 +223,8 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Sets whether the type is fixed-length.</summary>
+    /// <param name="isFixedLength"><see langword="true"/> for fixed-length types, <see langword="false"/> for variable-length types, or <see langword="null"/> when not specified.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
     public ColumnBuilder WithIsFixedLength(bool? isFixedLength)
     {
         _isFixedLength = isFixedLength;
@@ -188,6 +232,10 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="ColumnBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ColumnBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -203,7 +251,7 @@ public sealed class ColumnBuilder : IAnnotationBuilder<ColumnBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="Column"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when required properties have not been set.
+    /// Thrown when one or more required properties have not been set.
     /// </exception>
     public Column Build()
     {

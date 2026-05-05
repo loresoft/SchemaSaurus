@@ -14,6 +14,8 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the schema-qualified name of the function.</summary>
+    /// <param name="name">The schema-qualified function name.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
     public TableValuedFunctionBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
@@ -21,6 +23,10 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Sets the schema-qualified name from schema and function name strings.</summary>
+    /// <param name="schema">The schema name, or <see langword="null"/> when no schema is provided.</param>
+    /// <param name="name">The function name.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableValuedFunctionBuilder WithSchemaQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -29,6 +35,8 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Sets the SQL definition of the function.</summary>
+    /// <param name="definition">The SQL definition text, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
     public TableValuedFunctionBuilder WithDefinition(string? definition)
     {
         _definition = definition;
@@ -36,6 +44,8 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Sets the function description.</summary>
+    /// <param name="description">The function description, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
     public TableValuedFunctionBuilder WithDescription(string? description)
     {
         _description = description;
@@ -43,6 +53,9 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Adds a parameter to the function.</summary>
+    /// <param name="parameter">The parameter to add.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="parameter"/> is <see langword="null"/>.</exception>
     public TableValuedFunctionBuilder AddParameter(Parameter parameter)
     {
         ArgumentNullException.ThrowIfNull(parameter);
@@ -51,6 +64,9 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Adds a parameter to the function using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ParameterBuilder"/> instance.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public TableValuedFunctionBuilder AddParameter(Action<ParameterBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -61,6 +77,9 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Adds a return column descriptor to the function.</summary>
+    /// <param name="returnColumn">The return column descriptor to add.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="returnColumn"/> is <see langword="null"/>.</exception>
     public TableValuedFunctionBuilder AddReturnColumn(ReturnColumn returnColumn)
     {
         ArgumentNullException.ThrowIfNull(returnColumn);
@@ -69,6 +88,22 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Adds a return column descriptor using individual properties.</summary>
+    /// <param name="name">The return column name.</param>
+    /// <param name="ordinalPosition">The zero-based ordinal position of the return column.</param>
+    /// <param name="dbType">The provider-independent database type.</param>
+    /// <param name="nativeTypeName">The provider-specific type name.</param>
+    /// <param name="systemType">The CLR <see cref="Type"/> mapped from the database type.</param>
+    /// <param name="isNullable"><see langword="true"/> if nullable; otherwise, <see langword="false"/>.</param>
+    /// <param name="maxLength">The max length value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <param name="precision">The precision value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <param name="scale">The scale value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <param name="isUnicode"><see langword="true"/> for Unicode storage, <see langword="false"/> for non-Unicode, or <see langword="null"/> when unspecified.</param>
+    /// <param name="isFixedLength"><see langword="true"/> for fixed-length, <see langword="false"/> for variable-length, or <see langword="null"/> when unspecified.</param>
+    /// <param name="annotations">Optional provider-specific annotations for the return column.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="nativeTypeName"/> is <see langword="null"/>, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="systemType"/> is <see langword="null"/>.</exception>
     public TableValuedFunctionBuilder AddReturnColumn(
         string name,
         int ordinalPosition,
@@ -108,6 +143,10 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableValuedFunctionBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -123,7 +162,7 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     /// </summary>
     /// <returns>A fully initialized <see cref="TableValuedFunction"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the schema-qualified name has not been set.
+    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public TableValuedFunction Build()
     {

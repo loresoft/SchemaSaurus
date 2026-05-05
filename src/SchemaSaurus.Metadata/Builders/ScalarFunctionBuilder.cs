@@ -15,6 +15,8 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the schema-qualified name of the function.</summary>
+    /// <param name="name">The schema-qualified function name.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
     public ScalarFunctionBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
@@ -22,6 +24,10 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets the schema-qualified name from schema and function name strings.</summary>
+    /// <param name="schema">The schema name, or <see langword="null"/> when no schema is provided.</param>
+    /// <param name="name">The function name.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ScalarFunctionBuilder WithSchemaQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -30,6 +36,9 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets the return type mapping for the scalar function.</summary>
+    /// <param name="returnType">The return type mapping.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="returnType"/> is <see langword="null"/>.</exception>
     public ScalarFunctionBuilder WithReturnType(TypeMapping returnType)
     {
         ArgumentNullException.ThrowIfNull(returnType);
@@ -38,6 +47,12 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets the return type using individual type facets.</summary>
+    /// <param name="dbType">The provider-independent database type.</param>
+    /// <param name="nativeTypeName">The provider-specific type name.</param>
+    /// <param name="systemType">The CLR <see cref="Type"/> mapped from the database type.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="nativeTypeName"/> is <see langword="null"/>, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="systemType"/> is <see langword="null"/>.</exception>
     public ScalarFunctionBuilder WithReturnType(DbType dbType, string nativeTypeName, Type systemType)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(nativeTypeName);
@@ -52,6 +67,8 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets whether the function is deterministic.</summary>
+    /// <param name="isDeterministic"><see langword="true"/> if deterministic; otherwise, <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
     public ScalarFunctionBuilder WithIsDeterministic(bool isDeterministic)
     {
         _isDeterministic = isDeterministic;
@@ -59,6 +76,8 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets the SQL definition of the function.</summary>
+    /// <param name="definition">The SQL definition text, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
     public ScalarFunctionBuilder WithDefinition(string? definition)
     {
         _definition = definition;
@@ -66,6 +85,8 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Sets the function description.</summary>
+    /// <param name="description">The function description, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
     public ScalarFunctionBuilder WithDescription(string? description)
     {
         _description = description;
@@ -73,6 +94,9 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Adds a parameter to the function.</summary>
+    /// <param name="parameter">The parameter to add.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="parameter"/> is <see langword="null"/>.</exception>
     public ScalarFunctionBuilder AddParameter(Parameter parameter)
     {
         ArgumentNullException.ThrowIfNull(parameter);
@@ -81,6 +105,9 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Adds a parameter to the function using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ParameterBuilder"/> instance.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public ScalarFunctionBuilder AddParameter(Action<ParameterBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -91,6 +118,10 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ScalarFunctionBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -106,7 +137,10 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     /// </summary>
     /// <returns>A fully initialized <see cref="ScalarFunction"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when required properties have not been set.
+    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithReturnType(TypeMapping)"/> or <see cref="WithReturnType(DbType, string, Type)"/> has not been called.
     /// </exception>
     public ScalarFunction Build()
     {

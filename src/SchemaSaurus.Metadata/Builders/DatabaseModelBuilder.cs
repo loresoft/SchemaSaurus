@@ -27,6 +27,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the database name.</summary>
+    /// <param name="name">The database name to assign to the model.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithDatabaseName(string name)
     {
         _databaseName = name;
@@ -34,6 +36,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the default collation name.</summary>
+    /// <param name="collation">The collation name, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithCollation(string? collation)
     {
         _collation = collation;
@@ -41,6 +45,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the database engine edition or product variant.</summary>
+    /// <param name="edition">The edition value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithEdition(string? edition)
     {
         _edition = edition;
@@ -48,6 +54,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the database engine edition family or deployment type.</summary>
+    /// <param name="engineEdition">The engine edition value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithEngineEdition(string? engineEdition)
     {
         _engineEdition = engineEdition;
@@ -55,6 +63,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the database compatibility level.</summary>
+    /// <param name="compatibilityLevel">The compatibility level value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithCompatibilityLevel(string? compatibilityLevel)
     {
         _compatibilityLevel = compatibilityLevel;
@@ -62,6 +72,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the default schema name (e.g., <c>"dbo"</c>, <c>"public"</c>).</summary>
+    /// <param name="schemaName">The default schema name, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithDefaultSchemaName(string? schemaName)
     {
         _defaultSchemaName = schemaName;
@@ -69,6 +81,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the database provider identifier.</summary>
+    /// <param name="provider">The provider identifier to assign to the model.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithProvider(string provider)
     {
         _provider = provider;
@@ -76,6 +90,8 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Sets the server version string.</summary>
+    /// <param name="serverVersion">The server version value, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
     public DatabaseModelBuilder WithServerVersion(string? serverVersion)
     {
         _serverVersion = serverVersion;
@@ -84,6 +100,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
 
 
     /// <summary>Adds a table to the model.</summary>
+    /// <param name="table">The table to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="table"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddTable(Table table)
     {
         ArgumentNullException.ThrowIfNull(table);
@@ -93,6 +112,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a table to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="TableBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddTable(Action<TableBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -105,6 +127,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a view to the model.</summary>
+    /// <param name="view">The view to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddView(View view)
     {
         ArgumentNullException.ThrowIfNull(view);
@@ -114,6 +139,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a view to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ViewBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddView(Action<ViewBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -126,6 +154,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a sequence to the model.</summary>
+    /// <param name="sequence">The sequence to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="sequence"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddSequence(Sequence sequence)
     {
         ArgumentNullException.ThrowIfNull(sequence);
@@ -135,6 +166,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a sequence to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="SequenceBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddSequence(Action<SequenceBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -147,6 +181,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a stored procedure to the model.</summary>
+    /// <param name="storedProcedure">The stored procedure to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="storedProcedure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddStoredProcedure(StoredProcedure storedProcedure)
     {
         ArgumentNullException.ThrowIfNull(storedProcedure);
@@ -156,6 +193,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a stored procedure to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="StoredProcedureBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddStoredProcedure(Action<StoredProcedureBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -168,6 +208,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a scalar function to the model.</summary>
+    /// <param name="function">The scalar function to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="function"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddScalarFunction(ScalarFunction function)
     {
         ArgumentNullException.ThrowIfNull(function);
@@ -177,6 +220,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a scalar function to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ScalarFunctionBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddScalarFunction(Action<ScalarFunctionBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -189,6 +235,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a table-valued function to the model.</summary>
+    /// <param name="function">The table-valued function to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="function"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddTableValuedFunction(TableValuedFunction function)
     {
         ArgumentNullException.ThrowIfNull(function);
@@ -198,6 +247,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a table-valued function to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="TableValuedFunctionBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddTableValuedFunction(Action<TableValuedFunctionBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -210,6 +262,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a user-defined type to the model.</summary>
+    /// <param name="userDefinedType">The user-defined type to add.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="userDefinedType"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddUserDefinedType(UserDefinedType userDefinedType)
     {
         ArgumentNullException.ThrowIfNull(userDefinedType);
@@ -219,6 +274,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     }
 
     /// <summary>Adds a user-defined type to the model using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="UserDefinedTypeBuilder"/> instance.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public DatabaseModelBuilder AddUserDefinedType(Action<UserDefinedTypeBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -232,6 +290,10 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
 
 
     /// <summary>Adds a provider-specific annotation to the root <see cref="DatabaseModel"/>.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="DatabaseModelBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public DatabaseModelBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -249,6 +311,9 @@ public sealed class DatabaseModelBuilder : IAnnotationBuilder<DatabaseModelBuild
     /// <returns>A fully initialized, immutable <see cref="DatabaseModel"/>.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <see cref="WithDatabaseName"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithProvider"/> has not been called.
     /// </exception>
     public DatabaseModel Build()
     {

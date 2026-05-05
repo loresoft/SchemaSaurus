@@ -136,12 +136,12 @@ public static class PostgreSqlTypeMapper
         }.ToFrozenDictionary();
 
     /// <summary>
-    /// Maps a PostgreSQL native data type name to its corresponding <see cref="DbType" />, CLR type, and text attributes.
+    /// Maps a PostgreSQL native data type name to its corresponding <see cref="DbType"/>, provider type, CLR type, and text attributes.
     /// </summary>
-    /// <param name="typeName">The PostgreSQL native data type name to map.</param>
+    /// <param name="typeName">The PostgreSQL native type name (for example, <c>varchar</c> or <c>timestamp with time zone</c>).</param>
     /// <returns>
-    /// A tuple containing the mapped <see cref="DbType" />, <see cref="NpgsqlDbType" />, CLR system type, Unicode flag, and fixed-length flag.
-    /// Unknown type names map to <see cref="DbType.Object" />, <see cref="NpgsqlDbType.Unknown" />, <see cref="object" />, and unspecified text attributes.
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="NpgsqlDbType"/>, CLR <see cref="Type"/>, 
+    /// and optional Unicode/fixed-length flags. Unknown types map to object/unknown defaults.
     /// </returns>
     public static (DbType DbType, NpgsqlDbType NpgsqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)
     {
@@ -152,10 +152,10 @@ public static class PostgreSqlTypeMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="DbType" /> value to its closest PostgreSQL-specific <see cref="NpgsqlDbType" /> value.
+    /// Maps a <see cref="DbType"/> value to its closest PostgreSQL-specific <see cref="NpgsqlDbType"/> value.
     /// </summary>
     /// <param name="dbType">The provider-independent database type to map.</param>
-    /// <returns>The closest matching PostgreSQL-specific type, or <see cref="NpgsqlDbType.Unknown" /> when no mapping exists.</returns>
+    /// <returns>The closest matching <see cref="NpgsqlDbType"/> value. Unknown values map to <see cref="NpgsqlDbType.Unknown"/>.</returns>
     public static NpgsqlDbType ToNpgsqlDbType(DbType dbType)
     {
         if (DbTypeToNpgsqlDbTypeMappings.TryGetValue(dbType, out var npgsqlDbType))
@@ -165,10 +165,10 @@ public static class PostgreSqlTypeMapper
     }
 
     /// <summary>
-    /// Maps a PostgreSQL-specific <see cref="NpgsqlDbType" /> value to its closest provider-independent <see cref="DbType" /> value.
+    /// Maps a PostgreSQL-specific <see cref="NpgsqlDbType"/> value to its closest provider-independent <see cref="DbType"/> value.
     /// </summary>
     /// <param name="npgsqlDbType">The PostgreSQL-specific database type to map.</param>
-    /// <returns>The closest matching provider-independent type, or <see cref="DbType.Object" /> when no mapping exists.</returns>
+    /// <returns>The closest matching <see cref="DbType"/> value. Unknown values map to <see cref="DbType.Object"/>.</returns>
     public static DbType ToDbType(NpgsqlDbType npgsqlDbType)
     {
         if (NpgsqlDbTypeToDbTypeMappings.TryGetValue(npgsqlDbType, out var dbType))

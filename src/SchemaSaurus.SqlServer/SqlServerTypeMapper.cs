@@ -123,12 +123,12 @@ public static class SqlServerTypeMapper
 
 
     /// <summary>
-    /// Maps a SQL Server native data type name to its corresponding <see cref="DbType" />, CLR type, and text attributes.
+    /// Maps a SQL Server native data type name to its corresponding <see cref="DbType"/>, provider type, CLR type, and text attributes.
     /// </summary>
-    /// <param name="typeName">The SQL Server native data type name to map.</param>
+    /// <param name="typeName">The SQL Server native type name (for example, <c>nvarchar</c> or <c>datetime2</c>).</param>
     /// <returns>
-    /// A tuple containing the mapped <see cref="DbType" />, CLR system type, Unicode flag, and fixed-length flag.
-    /// Unknown type names map to <see cref="DbType.Object" />, <see cref="object" />, and unspecified text attributes.
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="SqlDbType"/>, CLR <see cref="Type"/>, 
+    /// and optional Unicode/fixed-length flags. Unknown types map to object/variant defaults.
     /// </returns>
     public static (DbType DbType, SqlDbType SqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)
     {
@@ -139,10 +139,10 @@ public static class SqlServerTypeMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="DbType" /> value to its closest SQL Server-specific <see cref="SqlDbType" /> value.
+    /// Maps a <see cref="DbType"/> value to its closest SQL Server-specific <see cref="SqlDbType"/> value.
     /// </summary>
     /// <param name="dbType">The provider-independent database type to map.</param>
-    /// <returns>The closest matching SQL Server-specific type, or <see cref="SqlDbType.Variant" /> when no mapping exists.</returns>
+    /// <returns>The closest matching <see cref="SqlDbType"/> value. Unknown values map to <see cref="SqlDbType.Variant"/>.</returns>
     public static SqlDbType ToSqlDbType(DbType dbType)
     {
         if (DbTypeToSqlDbTypeMappings.TryGetValue(dbType, out var sqlDbType))
@@ -152,10 +152,10 @@ public static class SqlServerTypeMapper
     }
 
     /// <summary>
-    /// Maps a SQL Server-specific <see cref="SqlDbType" /> value to its closest provider-independent <see cref="DbType" /> value.
+    /// Maps a SQL Server-specific <see cref="SqlDbType"/> value to its closest provider-independent <see cref="DbType"/> value.
     /// </summary>
     /// <param name="sqlDbType">The SQL Server-specific database type to map.</param>
-    /// <returns>The closest matching provider-independent type, or <see cref="DbType.Object" /> when no mapping exists.</returns>
+    /// <returns>The closest matching <see cref="DbType"/> value. Unknown values map to <see cref="DbType.Object"/>.</returns>
     public static DbType ToDbType(SqlDbType sqlDbType)
     {
         if (SqlDbTypeToDbTypeMappings.TryGetValue(sqlDbType, out var dbType))

@@ -53,7 +53,7 @@ public partial class MetadataJsonContext : JsonSerializerContext
     /// with the source-generated <see cref="Default"/> resolver and the
     /// empty-collection skipping modifier.
     /// </summary>
-    public static Lazy<JsonSerializerOptions> JsonSerializerOptions => new(CreateOptions);
+    public static Lazy<JsonSerializerOptions> JsonSerializerOptions { get; } = new(CreateOptions);
 
     /// <summary>
     /// Creates a new <see cref="System.Text.Json.JsonSerializerOptions"/> instance

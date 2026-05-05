@@ -8,10 +8,13 @@ namespace SchemaSaurus.Sqlite;
 public static class SqliteTypeMapper
 {
     /// <summary>
-    /// Maps a SQLite declared type to its corresponding <see cref="DbType" /> and CLR type using SQLite type affinity rules.
+    /// Maps a SQLite declared type name to its corresponding <see cref="DbType" /> and CLR type using SQLite type affinity rules.
     /// </summary>
-    /// <param name="typeName">The SQLite declared type name to map.</param>
-    /// <returns>A tuple containing the mapped <see cref="DbType" /> and CLR system type.</returns>
+    /// <param name="typeName">The SQLite declared type name to map (for example, <c>INTEGER</c>, <c>TEXT</c>, or <c>NUMERIC(10,2)</c>).</param>
+    /// <returns>
+    /// A tuple containing mapped <see cref="DbType" /> and CLR <see cref="Type" />.
+    /// Empty or whitespace input maps to binary defaults.
+    /// </returns>
     public static (DbType DbType, Type SystemType) MapNativeType(string typeName)
     {
         if (string.IsNullOrWhiteSpace(typeName))

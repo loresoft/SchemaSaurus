@@ -129,8 +129,13 @@ public static class MySqlTypeMapper
         }.ToFrozenDictionary();
 
     /// <summary>
-    /// Maps a MySQL native data type name to its corresponding <see cref="DbType" />, provider type, CLR type, and text attributes.
+    /// Maps a MySQL native data type name to its corresponding <see cref="DbType"/>, provider type, CLR type, and text attributes.
     /// </summary>
+    /// <param name="typeName">The MySQL native type name (for example, <c>varchar</c> or <c>bigint</c>).</param>
+    /// <returns>
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="MySqlDbType"/>, CLR <see cref="Type"/>, 
+    /// and optional Unicode/fixed-length flags. Unknown types map to object/JSON defaults.
+    /// </returns>
     public static (DbType DbType, MySqlDbType MySqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)
     {
         if (MySqlTypeMappings.TryGetValue(typeName, out var mapping))
@@ -140,8 +145,10 @@ public static class MySqlTypeMapper
     }
 
     /// <summary>
-    /// Maps a <see cref="DbType" /> value to its closest MySQL-specific <see cref="MySqlDbType" /> value.
+    /// Maps a <see cref="DbType"/> value to its closest MySQL-specific <see cref="MySqlDbType"/> value.
     /// </summary>
+    /// <param name="dbType">The provider-independent database type to map.</param>
+    /// <returns>The closest matching <see cref="MySqlDbType"/> value. Unknown values map to <see cref="MySqlDbType.JSON"/>.</returns>
     public static MySqlDbType ToMySqlDbType(DbType dbType)
     {
         if (DbTypeToMySqlDbTypeMappings.TryGetValue(dbType, out var mySqlDbType))
@@ -151,8 +158,10 @@ public static class MySqlTypeMapper
     }
 
     /// <summary>
-    /// Maps a MySQL-specific <see cref="MySqlDbType" /> value to its closest provider-independent <see cref="DbType" /> value.
+    /// Maps a MySQL-specific <see cref="MySqlDbType"/> value to its closest provider-independent <see cref="DbType"/> value.
     /// </summary>
+    /// <param name="mySqlDbType">The MySQL-specific database type to map.</param>
+    /// <returns>The closest matching <see cref="DbType"/> value. Unknown values map to <see cref="DbType.Object"/>.</returns>
     public static DbType ToDbType(MySqlDbType mySqlDbType)
     {
         if (MySqlDbTypeToDbTypeMappings.TryGetValue(mySqlDbType, out var dbType))

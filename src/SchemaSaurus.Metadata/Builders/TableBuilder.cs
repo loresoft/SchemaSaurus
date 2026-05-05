@@ -20,6 +20,8 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the schema-qualified name of the table.</summary>
+    /// <param name="name">The schema-qualified table name.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
     public TableBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
@@ -27,6 +29,10 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Sets the schema-qualified name from schema and table name strings.</summary>
+    /// <param name="schema">The schema name, or <see langword="null"/> when no schema is provided.</param>
+    /// <param name="name">The table name.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableBuilder WithSchemaQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -35,6 +41,8 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Sets the table description or comment.</summary>
+    /// <param name="description">The table description, or <see langword="null"/> to leave it unspecified.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
     public TableBuilder WithDescription(string? description)
     {
         _description = description;
@@ -42,6 +50,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a column to the table.</summary>
+    /// <param name="column">The column to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="column"/> is <see langword="null"/>.</exception>
     public TableBuilder AddColumn(Column column)
     {
         ArgumentNullException.ThrowIfNull(column);
@@ -50,6 +61,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a column to the table using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ColumnBuilder"/> instance.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public TableBuilder AddColumn(Action<ColumnBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -60,6 +74,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds an index to the table.</summary>
+    /// <param name="index">The index to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="index"/> is <see langword="null"/>.</exception>
     public TableBuilder AddIndex(Index index)
     {
         ArgumentNullException.ThrowIfNull(index);
@@ -68,6 +85,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds an index to the table using a builder action.</summary>
+    /// <param name="configure">An action that configures an <see cref="IndexBuilder"/> instance.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public TableBuilder AddIndex(Action<IndexBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -78,6 +98,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a trigger to the table.</summary>
+    /// <param name="trigger">The trigger to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="trigger"/> is <see langword="null"/>.</exception>
     public TableBuilder AddTrigger(Trigger trigger)
     {
         ArgumentNullException.ThrowIfNull(trigger);
@@ -86,6 +109,8 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Sets the primary key constraint.</summary>
+    /// <param name="primaryKey">The primary key definition, or <see langword="null"/> to clear it.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
     public TableBuilder WithPrimaryKey(PrimaryKey? primaryKey)
     {
         _primaryKey = primaryKey;
@@ -93,6 +118,11 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Sets the primary key using a name and column references.</summary>
+    /// <param name="name">The primary key constraint name.</param>
+    /// <param name="isClustered"><see langword="true"/> if clustered; otherwise, <see langword="false"/>.</param>
+    /// <param name="columns">The primary key column references.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableBuilder WithPrimaryKey(string name, bool isClustered, params ColumnReference[] columns)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -106,6 +136,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a unique constraint to the table.</summary>
+    /// <param name="constraint">The unique constraint to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="constraint"/> is <see langword="null"/>.</exception>
     public TableBuilder AddUniqueConstraint(UniqueConstraint constraint)
     {
         ArgumentNullException.ThrowIfNull(constraint);
@@ -114,6 +147,10 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a unique constraint using a name and column references.</summary>
+    /// <param name="name">The unique constraint name.</param>
+    /// <param name="columns">The unique constraint column references.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableBuilder AddUniqueConstraint(string name, params ColumnReference[] columns)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -126,6 +163,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a check constraint to the table.</summary>
+    /// <param name="constraint">The check constraint to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="constraint"/> is <see langword="null"/>.</exception>
     public TableBuilder AddCheckConstraint(CheckConstraint constraint)
     {
         ArgumentNullException.ThrowIfNull(constraint);
@@ -134,6 +174,11 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a check constraint using a name and expression.</summary>
+    /// <param name="name">The check constraint name.</param>
+    /// <param name="expression">The check expression.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="expression"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableBuilder AddCheckConstraint(string name, string expression)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -147,6 +192,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a foreign key constraint to the table.</summary>
+    /// <param name="foreignKey">The foreign key to add.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="foreignKey"/> is <see langword="null"/>.</exception>
     public TableBuilder AddForeignKey(ForeignKey foreignKey)
     {
         ArgumentNullException.ThrowIfNull(foreignKey);
@@ -155,6 +203,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a foreign key constraint using a builder action.</summary>
+    /// <param name="configure">An action that configures a <see cref="ForeignKeyBuilder"/> instance.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is <see langword="null"/>.</exception>
     public TableBuilder AddForeignKey(Action<ForeignKeyBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(configure);
@@ -165,6 +216,9 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Sets the provider-specific table options.</summary>
+    /// <param name="options">The provider-specific table options.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
     public TableBuilder WithOptions(TableOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -173,6 +227,10 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public TableBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -188,7 +246,7 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="Table"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when the schema-qualified name has not been set.
+    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public Table Build()
     {

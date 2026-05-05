@@ -15,6 +15,8 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     private readonly Dictionary<string, object?> _annotations = [];
 
     /// <summary>Sets the foreign key constraint name.</summary>
+    /// <param name="name">The foreign key constraint name.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
     public ForeignKeyBuilder WithName(string name)
     {
         _name = name;
@@ -22,6 +24,8 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Sets the principal (referenced) table name.</summary>
+    /// <param name="principalTableName">The schema-qualified name of the principal table.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
     public ForeignKeyBuilder WithPrincipalTableName(SchemaQualifiedName principalTableName)
     {
         _principalTableName = principalTableName;
@@ -29,6 +33,10 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Sets the principal (referenced) table name from schema and table name strings.</summary>
+    /// <param name="schema">The schema name, or <see langword="null"/> when no schema is provided.</param>
+    /// <param name="name">The principal table name.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ForeignKeyBuilder WithPrincipalTableName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -37,6 +45,11 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Adds a column mapping between the dependent and principal tables.</summary>
+    /// <param name="dependentColumnName">The dependent table column name.</param>
+    /// <param name="principalColumnName">The principal table column name.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="dependentColumnName"/> is <see langword="null"/>, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="principalColumnName"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ForeignKeyBuilder AddColumnMapping(string dependentColumnName, string principalColumnName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dependentColumnName);
@@ -51,6 +64,8 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Sets the referential action on delete.</summary>
+    /// <param name="onDelete">The referential action to apply when the principal row is deleted.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
     public ForeignKeyBuilder WithOnDelete(ReferentialAction onDelete)
     {
         _onDelete = onDelete;
@@ -58,6 +73,8 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Sets the referential action on update.</summary>
+    /// <param name="onUpdate">The referential action to apply when the principal row is updated.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
     public ForeignKeyBuilder WithOnUpdate(ReferentialAction onUpdate)
     {
         _onUpdate = onUpdate;
@@ -65,6 +82,8 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Sets whether the foreign key is currently disabled.</summary>
+    /// <param name="isDisabled"><see langword="true"/> to mark the foreign key as disabled; otherwise, <see langword="false"/>.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
     public ForeignKeyBuilder WithIsDisabled(bool isDisabled)
     {
         _isDisabled = isDisabled;
@@ -72,6 +91,10 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     }
 
     /// <summary>Adds a provider-specific annotation.</summary>
+    /// <param name="key">The annotation key.</param>
+    /// <param name="value">The annotation value. When <see langword="null"/>, no annotation is added.</param>
+    /// <returns>The current <see cref="ForeignKeyBuilder"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is <see langword="null"/>, empty, or whitespace.</exception>
     public ForeignKeyBuilder WithAnnotation(string key, object? value)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -87,7 +110,10 @@ public sealed class ForeignKeyBuilder : IAnnotationBuilder<ForeignKeyBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="ForeignKey"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when required properties have not been set.
+    /// Thrown when <see cref="WithName"/> has not been called.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="WithPrincipalTableName(SchemaQualifiedName)"/> or <see cref="WithPrincipalTableName(string?, string)"/> has not been called.
     /// </exception>
     public ForeignKey Build()
     {
