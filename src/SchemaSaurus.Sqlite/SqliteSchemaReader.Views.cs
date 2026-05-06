@@ -42,7 +42,7 @@ public sealed partial class SqliteSchemaReader
             var viewSql = reader.GetStringNull(sqlOrdinal);
 
             var viewBuilder = new ViewBuilder()
-                .WithSchemaQualifiedName(schema: null, viewName)
+                .WithQualifiedName(schema: null, viewName)
                 .WithDefinition(viewSql);
 
             await ReadViewColumnsAsync(connection, viewName, viewBuilder, cancellationToken).ConfigureAwait(false);

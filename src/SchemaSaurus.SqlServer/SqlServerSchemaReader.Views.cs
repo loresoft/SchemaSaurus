@@ -85,7 +85,7 @@ public sealed partial class SqlServerSchemaReader
             var isMaterialized = reader.GetInt32(materializedOrdinal) == 1;
 
             var viewBuilder = new ViewBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDefinition(definition)
                 .WithDescription(description)
                 .WithIsMaterialized(isMaterialized);

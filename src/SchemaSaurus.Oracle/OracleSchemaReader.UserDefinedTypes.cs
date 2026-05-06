@@ -53,7 +53,7 @@ public sealed partial class OracleSchemaReader
                     : UserDefinedTypeKind.Alias;
 
                 var typeBuilder = new UserDefinedTypeBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithKind(kind)
                     .WithDbType(DbType.Object)
                     .WithNativeTypeName(name)

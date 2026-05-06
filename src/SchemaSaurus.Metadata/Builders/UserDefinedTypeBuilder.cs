@@ -26,7 +26,7 @@ public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeB
     /// <summary>Sets the schema-qualified name of the user-defined type.</summary>
     /// <param name="name">The schema-qualified user-defined type name.</param>
     /// <returns>The current <see cref="UserDefinedTypeBuilder"/> instance.</returns>
-    public UserDefinedTypeBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public UserDefinedTypeBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -37,7 +37,7 @@ public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeB
     /// <param name="name">The type name.</param>
     /// <returns>The current <see cref="UserDefinedTypeBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public UserDefinedTypeBuilder WithSchemaQualifiedName(string? schema, string name)
+    public UserDefinedTypeBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -183,7 +183,7 @@ public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeB
     /// </summary>
     /// <returns>A fully initialized <see cref="UserDefinedType"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <see cref="WithKind"/> has not been called.
@@ -202,7 +202,7 @@ public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeB
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         if (_kind is null)
@@ -231,7 +231,7 @@ public sealed class UserDefinedTypeBuilder : IAnnotationBuilder<UserDefinedTypeB
 
         return new UserDefinedType
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             Kind = _kind.Value,
             Columns = _columns,
             EnumLabels = _enumLabels,

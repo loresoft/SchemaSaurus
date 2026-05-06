@@ -85,7 +85,7 @@ public sealed partial class PostgreSqlSchemaReader
             builder.AddSequence(sequenceBuilder =>
             {
                 sequenceBuilder
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDbType(dbType)
                     .WithSystemType(systemType)
                     .WithStartValue(startValue)

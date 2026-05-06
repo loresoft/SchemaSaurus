@@ -10,7 +10,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenAliasTypeBuiltThenBuildSucceeds()
     {
         var udt = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "PhoneNumber")
+            .WithQualifiedName("dbo", "PhoneNumber")
             .WithKind(UserDefinedTypeKind.Alias)
             .WithDbType(DbType.String)
             .WithNativeTypeName("nvarchar(20)")
@@ -19,7 +19,7 @@ public class UserDefinedTypeBuilderTests
             .WithIsUnicode(true)
             .Build();
 
-        udt.SchemaQualifiedName.Name.Should().Be("PhoneNumber");
+        udt.QualifiedName.Name.Should().Be("PhoneNumber");
         udt.Kind.Should().Be(UserDefinedTypeKind.Alias);
         udt.DbType.Should().Be(DbType.String);
         udt.MaxLength.Should().Be(20);
@@ -31,7 +31,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenTableTypeBuiltWithColumnsViaBuilderActionThenColumnsArePopulated()
     {
         var udt = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "OrderTableType")
+            .WithQualifiedName("dbo", "OrderTableType")
             .WithKind(UserDefinedTypeKind.TableType)
             .WithDbType(DbType.Object)
             .WithNativeTypeName("table")
@@ -62,7 +62,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenEnumTypeBuiltWithLabelsThenLabelsArePopulated()
     {
         var udt = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("public", "status_enum")
+            .WithQualifiedName("public", "status_enum")
             .WithKind(UserDefinedTypeKind.Enum)
             .WithDbType(DbType.String)
             .WithNativeTypeName("status_enum")
@@ -81,7 +81,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenAnnotationAddedThenAnnotationIsPresent()
     {
         var udt = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "MyType")
+            .WithQualifiedName("dbo", "MyType")
             .WithKind(UserDefinedTypeKind.Alias)
             .WithDbType(DbType.Int32)
             .WithNativeTypeName("int")
@@ -104,14 +104,14 @@ public class UserDefinedTypeBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 
     [Fact]
     public void WhenKindMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "MyType")
+            .WithQualifiedName("dbo", "MyType")
             .WithDbType(DbType.Int32)
             .WithNativeTypeName("int")
             .WithSystemType(typeof(int));
@@ -126,7 +126,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenDbTypeMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "MyType")
+            .WithQualifiedName("dbo", "MyType")
             .WithKind(UserDefinedTypeKind.Alias)
             .WithNativeTypeName("int")
             .WithSystemType(typeof(int));
@@ -141,7 +141,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenNativeTypeNameMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "MyType")
+            .WithQualifiedName("dbo", "MyType")
             .WithKind(UserDefinedTypeKind.Alias)
             .WithDbType(DbType.Int32)
             .WithSystemType(typeof(int));
@@ -156,7 +156,7 @@ public class UserDefinedTypeBuilderTests
     public void WhenSystemTypeMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new UserDefinedTypeBuilder()
-            .WithSchemaQualifiedName("dbo", "MyType")
+            .WithQualifiedName("dbo", "MyType")
             .WithKind(UserDefinedTypeKind.Alias)
             .WithDbType(DbType.Int32)
             .WithNativeTypeName("int");

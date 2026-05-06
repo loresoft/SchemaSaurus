@@ -13,9 +13,9 @@ namespace SchemaSaurus.Metadata;
 public sealed partial class TableOptions
 {
     /// <summary>
-    /// Indicates whether this is a SQL Server temporal (system-versioned) table
+    /// Indicates whether this is a temporal (system-versioned) table
     /// (<c>WITH (SYSTEM_VERSIONING = ON)</c>).
-    /// When <see langword="true"/>, <see cref="HistoryTableName"/> identifies the
+    /// When <see langword="true"/>, <see cref="HistoryTable"/> identifies the
     /// associated history table.
     /// Defaults to <see langword="false"/>.
     /// </summary>
@@ -23,24 +23,37 @@ public sealed partial class TableOptions
     public bool IsTemporalTable { get; init; }
 
     /// <summary>
-    /// Schema-qualified name of the associated temporal history table (SQL Server).
+    /// Schema-qualified name of the associated temporal history table.
     /// <see langword="null"/> when <see cref="IsTemporalTable"/> is
-    /// <see langword="false"/>.
     /// </summary>
-    [JsonPropertyName("historyTableName")]
-    public SchemaQualifiedName? HistoryTableName { get; init; }
+    [JsonPropertyName("historyTable")]
+    public SchemaQualifiedName? HistoryTable { get; init; }
 
     /// <summary>
-    /// Indicates whether the table is memory-optimized
-    /// (SQL Server In-Memory OLTP, <c>WITH (MEMORY_OPTIMIZED = ON)</c>).
+    /// Name of the column that stores the start of the temporal period.
+    /// <see langword="null"/> when <see cref="IsTemporalTable"/> is
+    /// <see langword="false"/> or the provider does not expose period metadata.
+    /// </summary>
+    [JsonPropertyName("periodStartColumnName")]
+    public string? PeriodStartColumnName { get; init; }
+
+    /// <summary>
+    /// Name of the column that stores the end of the temporal period.
+    /// <see langword="null"/> when <see cref="IsTemporalTable"/> is
+    /// <see langword="false"/> or the provider does not expose period metadata.
+    /// </summary>
+    [JsonPropertyName("periodEndColumnName")]
+    public string? PeriodEndColumnName { get; init; }
+
+    /// <summary>
+    /// Indicates whether the table is memory-optimized.
     /// Defaults to <see langword="false"/>.
     /// </summary>
     [JsonPropertyName("isMemoryOptimized")]
     public bool IsMemoryOptimized { get; init; }
 
     /// <summary>
-    /// Indicates whether the table is a SQL Server FileTable
-    /// (<c>AS FileTable</c> in <c>CREATE TABLE</c>).
+    /// Indicates whether the table is a file table.
     /// Defaults to <see langword="false"/>.
     /// </summary>
     [JsonPropertyName("isFileTable")]

@@ -10,7 +10,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenPrimaryKeyExists()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.PrimaryKey.Should().NotBeNull();
     }
@@ -19,7 +19,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenPrimaryKeyHasIdColumn()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.PrimaryKey!.Columns.Should().HaveCount(1);
         userTable.PrimaryKey.Columns[0].ColumnName.Should().Be("ID");
@@ -29,7 +29,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenPrimaryKeyIsNotClustered()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.PrimaryKey!.IsClustered.Should().BeFalse();
     }
@@ -38,7 +38,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserRoleTableThenPrimaryKeyHasCompositeColumns()
     {
         var model = await GetDatabaseModelAsync();
-        var userRoleTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "USERROLE");
+        var userRoleTable = model.Tables.First(t => t.QualifiedName.Name == "USERROLE");
 
         userRoleTable.PrimaryKey.Should().NotBeNull();
         userRoleTable.PrimaryKey!.Columns.Should().HaveCount(2);
@@ -50,7 +50,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingPrimaryKeyThenSortDirectionIsAscending()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.PrimaryKey!.Columns[0].SortDirection.Should().Be(SortDirection.Ascending);
     }
@@ -59,7 +59,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingPrimaryKeyThenNameIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.PrimaryKey!.Name.Should().NotBeNullOrWhiteSpace();
     }

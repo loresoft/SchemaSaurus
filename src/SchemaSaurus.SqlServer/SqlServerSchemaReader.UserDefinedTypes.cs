@@ -107,7 +107,7 @@ public sealed partial class SqlServerSchemaReader
                 var fixedLength = isTableType ? null : isFixedLength;
 
                 var userTypeBuilder = new UserDefinedTypeBuilder()
-                    .WithSchemaQualifiedName(schema, typeName)
+                    .WithQualifiedName(schema, typeName)
                     .WithKind(kind)
                     .WithDbType(dbType)
                     .WithNativeTypeName(nativeTypeName)

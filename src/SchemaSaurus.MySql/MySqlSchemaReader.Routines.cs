@@ -97,7 +97,7 @@ public sealed partial class MySqlSchemaReader
                 if (routineType == "PROCEDURE")
                 {
                     var procedureBuilder = new StoredProcedureBuilder()
-                        .WithSchemaQualifiedName(schema, name)
+                        .WithQualifiedName(schema, name)
                         .WithDefinition(definition)
                         .WithDescription(comment);
 
@@ -123,7 +123,7 @@ public sealed partial class MySqlSchemaReader
                 };
 
                 var functionBuilder = new ScalarFunctionBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(comment)
                     .WithReturnType(returnType)

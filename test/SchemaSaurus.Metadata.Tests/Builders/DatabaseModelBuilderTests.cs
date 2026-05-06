@@ -56,7 +56,7 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Orders")
+                .WithQualifiedName("dbo", "Orders")
                 .AddColumn(c => c
                     .WithName("Id")
                     .WithOrdinalPosition(1)
@@ -67,7 +67,7 @@ public class DatabaseModelBuilderTests
             .Build();
 
         model.Tables.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("Orders");
+            .Which.QualifiedName.Name.Should().Be("Orders");
     }
 
     [Fact]
@@ -77,12 +77,12 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddView(v => v
-                .WithSchemaQualifiedName("dbo", "vw_ActiveOrders")
+                .WithQualifiedName("dbo", "vw_ActiveOrders")
                 .WithDefinition("SELECT * FROM Orders WHERE IsActive = 1"))
             .Build();
 
         model.Views.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("vw_ActiveOrders");
+            .Which.QualifiedName.Name.Should().Be("vw_ActiveOrders");
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddSequence(s => s
-                .WithSchemaQualifiedName("dbo", "OrderSeq")
+                .WithQualifiedName("dbo", "OrderSeq")
                 .WithSystemType(typeof(long))
                 .WithStartValue(1)
                 .WithIncrement(1)
@@ -101,7 +101,7 @@ public class DatabaseModelBuilderTests
             .Build();
 
         model.Sequences.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("OrderSeq");
+            .Which.QualifiedName.Name.Should().Be("OrderSeq");
     }
 
     [Fact]
@@ -111,11 +111,11 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddStoredProcedure(sp => sp
-                .WithSchemaQualifiedName("dbo", "uspGetOrders"))
+                .WithQualifiedName("dbo", "uspGetOrders"))
             .Build();
 
         model.StoredProcedures.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("uspGetOrders");
+            .Which.QualifiedName.Name.Should().Be("uspGetOrders");
     }
 
     [Fact]
@@ -125,12 +125,12 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddScalarFunction(fn => fn
-                .WithSchemaQualifiedName("dbo", "fnGetTotal")
+                .WithQualifiedName("dbo", "fnGetTotal")
                 .WithReturnType(DbType.Decimal, "decimal(18,2)", typeof(decimal)))
             .Build();
 
         model.ScalarFunctions.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("fnGetTotal");
+            .Which.QualifiedName.Name.Should().Be("fnGetTotal");
     }
 
     [Fact]
@@ -140,11 +140,11 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddTableValuedFunction(fn => fn
-                .WithSchemaQualifiedName("dbo", "fnGetItems"))
+                .WithQualifiedName("dbo", "fnGetItems"))
             .Build();
 
         model.TableValuedFunctions.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("fnGetItems");
+            .Which.QualifiedName.Name.Should().Be("fnGetItems");
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class DatabaseModelBuilderTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddUserDefinedType(udt => udt
-                .WithSchemaQualifiedName("dbo", "PhoneNumber")
+                .WithQualifiedName("dbo", "PhoneNumber")
                 .WithKind(UserDefinedTypeKind.Alias)
                 .WithDbType(DbType.String)
                 .WithNativeTypeName("nvarchar(20)")
@@ -162,7 +162,7 @@ public class DatabaseModelBuilderTests
             .Build();
 
         model.UserDefinedTypes.Should().ContainSingle()
-            .Which.SchemaQualifiedName.Name.Should().Be("PhoneNumber");
+            .Which.QualifiedName.Name.Should().Be("PhoneNumber");
     }
 
     [Fact]

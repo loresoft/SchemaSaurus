@@ -79,7 +79,7 @@ public sealed partial class MySqlSchemaReader
             var characterSet = reader.GetStringNull(characterSetOrdinal);
 
             var tableBuilder = new TableBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDescription(comment)
                 .WithAnnotation(MySqlAnnotations.Engine, engine)
                 .WithAnnotation(MySqlAnnotations.CharacterSet, characterSet)

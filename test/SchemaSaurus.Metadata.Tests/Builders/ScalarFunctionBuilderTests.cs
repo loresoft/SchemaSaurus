@@ -10,11 +10,11 @@ public class ScalarFunctionBuilderTests
     public void WhenRequiredPropertiesSetThenBuildSucceeds()
     {
         var fn = new ScalarFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnGetTotal")
+            .WithQualifiedName("dbo", "fnGetTotal")
             .WithReturnType(DbType.Decimal, "decimal(18,2)", typeof(decimal))
             .Build();
 
-        fn.SchemaQualifiedName.Name.Should().Be("fnGetTotal");
+        fn.QualifiedName.Name.Should().Be("fnGetTotal");
         fn.ReturnType.DbType.Should().Be(DbType.Decimal);
         fn.ReturnType.NativeTypeName.Should().Be("decimal(18,2)");
         fn.ReturnType.SystemType.Should().Be(typeof(decimal));
@@ -33,7 +33,7 @@ public class ScalarFunctionBuilderTests
         };
 
         var fn = new ScalarFunctionBuilder()
-            .WithSchemaQualifiedName(new SchemaQualifiedName { Schema = "dbo", Name = "fnCalc" })
+            .WithQualifiedName(new SchemaQualifiedName { Schema = "dbo", Name = "fnCalc" })
             .WithReturnType(returnType)
             .WithIsDeterministic(true)
             .WithDefinition("CREATE FUNCTION dbo.fnCalc() RETURNS int AS BEGIN RETURN 1 END")
@@ -49,7 +49,7 @@ public class ScalarFunctionBuilderTests
     public void WhenParameterAddedViaBuilderActionThenParameterAppearsInFunction()
     {
         var fn = new ScalarFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnAdd")
+            .WithQualifiedName("dbo", "fnAdd")
             .WithReturnType(DbType.Int32, "int", typeof(int))
             .AddParameter(p => p
                 .WithName("@a")
@@ -79,14 +79,14 @@ public class ScalarFunctionBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 
     [Fact]
     public void WhenReturnTypeMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new ScalarFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnNoReturn");
+            .WithQualifiedName("dbo", "fnNoReturn");
 
         var act = () => builder.Build();
 

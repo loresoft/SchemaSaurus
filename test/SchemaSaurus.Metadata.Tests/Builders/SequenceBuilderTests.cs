@@ -10,7 +10,7 @@ public class SequenceBuilderTests
     public void WhenAllRequiredPropertiesSetThenBuildSucceeds()
     {
         var sequence = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "OrderSeq")
+            .WithQualifiedName("dbo", "OrderSeq")
             .WithSystemType(typeof(long))
             .WithStartValue(1)
             .WithIncrement(1)
@@ -18,7 +18,7 @@ public class SequenceBuilderTests
             .WithMaxValue(long.MaxValue)
             .Build();
 
-        sequence.SchemaQualifiedName.Name.Should().Be("OrderSeq");
+        sequence.QualifiedName.Name.Should().Be("OrderSeq");
         sequence.DbType.Should().Be(DbType.Int64);
         sequence.SystemType.Should().Be(typeof(long));
         sequence.StartValue.Should().Be(1);
@@ -33,7 +33,7 @@ public class SequenceBuilderTests
     public void WhenAllPropertiesSetThenBuildReturnsFullyPopulatedSequence()
     {
         var sequence = new SequenceBuilder()
-            .WithSchemaQualifiedName(new SchemaQualifiedName { Schema = "public", Name = "id_seq" })
+            .WithQualifiedName(new SchemaQualifiedName { Schema = "public", Name = "id_seq" })
             .WithDbType(DbType.Int32)
             .WithSystemType(typeof(int))
             .WithStartValue(100)
@@ -66,14 +66,14 @@ public class SequenceBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 
     [Fact]
     public void WhenSystemTypeMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "Seq1")
+            .WithQualifiedName("dbo", "Seq1")
             .WithStartValue(1)
             .WithIncrement(1)
             .WithMinValue(1)
@@ -89,7 +89,7 @@ public class SequenceBuilderTests
     public void WhenStartValueMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "Seq1")
+            .WithQualifiedName("dbo", "Seq1")
             .WithSystemType(typeof(long))
             .WithIncrement(1)
             .WithMinValue(1)
@@ -105,7 +105,7 @@ public class SequenceBuilderTests
     public void WhenIncrementMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "Seq1")
+            .WithQualifiedName("dbo", "Seq1")
             .WithSystemType(typeof(long))
             .WithStartValue(1)
             .WithMinValue(1)
@@ -121,7 +121,7 @@ public class SequenceBuilderTests
     public void WhenMinValueMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "Seq1")
+            .WithQualifiedName("dbo", "Seq1")
             .WithSystemType(typeof(long))
             .WithStartValue(1)
             .WithIncrement(1)
@@ -137,7 +137,7 @@ public class SequenceBuilderTests
     public void WhenMaxValueMissingThenBuildThrowsInvalidOperationException()
     {
         var builder = new SequenceBuilder()
-            .WithSchemaQualifiedName("dbo", "Seq1")
+            .WithQualifiedName("dbo", "Seq1")
             .WithSystemType(typeof(long))
             .WithStartValue(1)
             .WithIncrement(1)

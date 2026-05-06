@@ -18,23 +18,23 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.StoredProcedures.Should().Contain(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        model.StoredProcedures.Should().Contain(sp => sp.QualifiedName.Name == "StatusPaged");
     }
 
     [Fact]
     public async Task WhenReadingStatusPagedThenSchemaIsDefaultSchema()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
-        sp.SchemaQualifiedName.Schema.Should().Be(model.DefaultSchemaName);
+        sp.QualifiedName.Schema.Should().Be(model.DefaultSchemaName);
     }
 
     [Fact]
     public async Task WhenReadingStatusPagedThenParametersExist()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().BeEmpty();
     }
@@ -43,7 +43,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusPagedThenOffsetParameterIsInput()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().BeEmpty();
     }
@@ -52,7 +52,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusPagedThenTotalParameterIsOutput()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().BeEmpty();
     }
@@ -61,7 +61,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStoredProcedureWithDefinitionsThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Definition.Should().NotBeNullOrWhiteSpace();
     }
@@ -83,7 +83,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingParametersThenOrdinalsAreSequential()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().AllSatisfy(p => p.Ordinal.Should().BeGreaterThan(0));
         sp.Parameters.Select(p => p.Ordinal).Should().BeInAscendingOrder();

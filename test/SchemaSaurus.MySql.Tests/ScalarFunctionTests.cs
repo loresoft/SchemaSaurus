@@ -22,23 +22,23 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.ScalarFunctions.Should().Contain(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        model.ScalarFunctions.Should().Contain(f => f.QualifiedName.Name == "FormatAddress");
     }
 
     [Fact]
     public async Task WhenReadingFormatAddressThenSchemaIsDatabaseName()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
-        func.SchemaQualifiedName.Schema.Should().Be(model.DefaultSchemaName);
+        func.QualifiedName.Schema.Should().Be(model.DefaultSchemaName);
     }
 
     [Fact]
     public async Task WhenReadingFormatAddressThenReturnTypeIsString()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.ReturnType.DbType.Should().Be(DbType.String);
         func.ReturnType.SystemType.Should().Be(typeof(string));
@@ -48,7 +48,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParametersExist()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().HaveCount(4);
         func.Parameters.Should().Contain(p => p.Name == "AddressLine1");
@@ -61,7 +61,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParameterTypesAreCorrect()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().AllSatisfy(p =>
         {
@@ -74,7 +74,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParametersAreInput()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().AllSatisfy(p => p.Direction.Should().Be(ParameterDirection.Input));
     }
@@ -83,7 +83,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParameterOrdinalsAreSequential()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().AllSatisfy(p => p.Ordinal.Should().BeGreaterThan(0));
         func.Parameters.Select(p => p.Ordinal).Should().BeInAscendingOrder();
@@ -93,7 +93,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Definition.Should().NotBeNullOrWhiteSpace();
     }
@@ -102,7 +102,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenDescriptionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Description.Should().Be("Formats an address.");
     }

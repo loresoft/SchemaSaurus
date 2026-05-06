@@ -16,7 +16,7 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     /// <summary>Sets the schema-qualified name of the function.</summary>
     /// <param name="name">The schema-qualified function name.</param>
     /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
-    public TableValuedFunctionBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public TableValuedFunctionBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -27,7 +27,7 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     /// <param name="name">The function name.</param>
     /// <returns>The current <see cref="TableValuedFunctionBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public TableValuedFunctionBuilder WithSchemaQualifiedName(string? schema, string name)
+    public TableValuedFunctionBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -162,19 +162,19 @@ public sealed class TableValuedFunctionBuilder : IAnnotationBuilder<TableValuedF
     /// </summary>
     /// <returns>A fully initialized <see cref="TableValuedFunction"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public TableValuedFunction Build()
     {
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         return new TableValuedFunction
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             Definition = _definition,
             Description = _description,
             Parameters = _parameters,

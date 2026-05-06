@@ -28,7 +28,7 @@
         }
       ],
       "options": {},
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "Customers"
       },
@@ -110,7 +110,7 @@
         }
       ],
       "options": {},
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "Orders"
       },
@@ -187,7 +187,7 @@
   "views": [
     {
       "definition": "SELECT Id, Name, Email FROM dbo.Customers WHERE Email IS NOT NULL",
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "vw_ActiveCustomers"
       },
@@ -211,7 +211,7 @@
   ],
   "sequences": [
     {
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "InvoiceSeq"
       },
@@ -226,7 +226,7 @@
   ],
   "storedProcedures": [
     {
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "uspGetCustomerOrders"
       },
@@ -245,7 +245,7 @@
   ],
   "scalarFunctions": [
     {
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "fnGetOrderTotal"
       },
@@ -269,7 +269,7 @@
   ],
   "tableValuedFunctions": [
     {
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "fnGetOrdersByDate"
       },
@@ -310,7 +310,7 @@
   ],
   "userDefinedTypes": [
     {
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "PhoneNumber"
       },

@@ -32,7 +32,7 @@ public class DatabaseModelSnapshotTests
             .WithProvider("SqlServer")
             .WithDefaultSchemaName("dbo")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Products")
+                .WithQualifiedName("dbo", "Products")
                 .WithDescription("Product catalog")
                 .WithPrimaryKey("PK_Products", true,
                     new ColumnReference { ColumnName = "Id" })

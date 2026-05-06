@@ -72,7 +72,7 @@ public sealed partial class PostgreSqlSchemaReader
                 var description = reader.GetStringNull(descriptionOrdinal);
 
                 var viewBuilder = new ViewBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description)
                     .WithIsMaterialized(kind == 'm');

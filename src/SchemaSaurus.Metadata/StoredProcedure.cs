@@ -14,14 +14,28 @@ namespace SchemaSaurus.Metadata;
 /// return result sets, see <see cref="TableValuedFunction"/>.
 /// </remarks>
 [Equatable]
-[DebuggerDisplay("{SchemaQualifiedName}")]
-public sealed partial class StoredProcedure : IAnnotatable
+[DebuggerDisplay("{QualifiedName}")]
+public sealed partial class StoredProcedure : IAnnotatable, IQualifiedName
 {
     /// <summary>
     /// Schema-qualified name that uniquely identifies this stored procedure within the database.
     /// </summary>
-    [JsonPropertyName("schemaQualifiedName")]
-    public required SchemaQualifiedName SchemaQualifiedName { get; init; }
+    [JsonPropertyName("qualifiedName")]
+    public required SchemaQualifiedName QualifiedName { get; init; }
+
+    /// <summary>
+    /// Gets the unqualified name component of the object.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string Name => QualifiedName.Name;
+
+    /// <summary>
+    /// Gets the schema component of the qualified name, if available.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string? Schema => QualifiedName.Schema;
 
     /// <summary>
     /// Ordered list of parameters, sorted by <see cref="Parameter.Ordinal"/>.

@@ -107,7 +107,7 @@ public sealed partial class PostgreSqlSchemaReader
                 if (routineKind == "p")
                 {
                     var storedProcedureBuilder = new StoredProcedureBuilder()
-                        .WithSchemaQualifiedName(schema, name)
+                        .WithQualifiedName(schema, name)
                         .WithDefinition(definition)
                         .WithDescription(description);
 
@@ -121,7 +121,7 @@ public sealed partial class PostgreSqlSchemaReader
                     var (dbType, _, systemType, _, _) = PostgreSqlTypeMapper.MapNativeType(typeName);
 
                     var functionBuilder = new ScalarFunctionBuilder()
-                        .WithSchemaQualifiedName(schema, name)
+                        .WithQualifiedName(schema, name)
                         .WithDefinition(definition)
                         .WithDescription(description)
                         .WithReturnType(dbType, nativeTypeName, systemType);
@@ -132,7 +132,7 @@ public sealed partial class PostgreSqlSchemaReader
                 }
 
                 var tableValuedFunctionBuilder = new TableValuedFunctionBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description);
 

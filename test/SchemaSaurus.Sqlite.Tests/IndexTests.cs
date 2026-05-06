@@ -11,7 +11,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         taskTable.Indexes.Should().NotBeEmpty();
@@ -22,7 +22,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_Task_AssignedId");
@@ -33,7 +33,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_Task_StatusId");
@@ -44,7 +44,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_Task_PriorityId");
@@ -55,7 +55,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         var index = taskTable.Indexes.FirstOrDefault(i => i.Name == "IX_Task_AssignedId");
@@ -68,7 +68,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var uniqueIndex = userTable.Indexes.FirstOrDefault(i => i.Name == "UX_User_EmailAddress");
@@ -81,7 +81,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var uniqueIndex = userTable.Indexes.FirstOrDefault(i => i.Name == "UX_User_EmailAddress");
@@ -94,7 +94,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var roleTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Role");
+        var roleTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Role");
         roleTable.Should().NotBeNull();
 
         roleTable.Indexes.Should().Contain(i => i.Name == "UX_Role_Name");
@@ -109,7 +109,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         var index = taskTable.Indexes.FirstOrDefault(i => i.Name == "IX_Task_StatusId");
@@ -122,7 +122,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         var index = taskTable.Indexes.FirstOrDefault(i => i.Name == "IX_Task_StatusId");
@@ -137,7 +137,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var computedTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Computed Column");
+        var computedTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Computed Column");
         computedTable.Should().NotBeNull();
 
         var index = computedTable.Indexes.FirstOrDefault(i => i.Name == "IX_Computed Column_Search Name_Active");
@@ -151,7 +151,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var computedTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Computed Column");
+        var computedTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Computed Column");
         computedTable.Should().NotBeNull();
 
         computedTable.Indexes.Should().Contain(i => i.Name == "IX_Computed Column_Lower_First Name");

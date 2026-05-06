@@ -37,7 +37,7 @@ public class DatabaseModelJsonTests
         var fk = orders.ForeignKeys.First();
         fk.DependentTable.Should().BeSameAs(orders);
         fk.PrincipalTable.Should().NotBeNull();
-        fk.PrincipalTable.SchemaQualifiedName.Name.Should().Be("Customers");
+        fk.PrincipalTable.QualifiedName.Name.Should().Be("Customers");
 
         // ForeignKeyColumnMapping resolved columns
         var mapping = fk.ColumnMappings.First();
@@ -112,7 +112,7 @@ public class DatabaseModelJsonTests
             .WithDatabaseName("TestDb")
             .WithProvider("SqlServer")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Simple")
+                .WithQualifiedName("dbo", "Simple")
                 .AddColumn(c => c
                     .WithName("Id")
                     .WithOrdinalPosition(1)
@@ -140,7 +140,7 @@ public class DatabaseModelJsonTests
             .WithProvider("SqlServer")
             .WithAnnotation("custom_key", "custom_value")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Annotated")
+                .WithQualifiedName("dbo", "Annotated")
                 .WithAnnotation("table_flag", "true")
                 .AddColumn(c => c
                     .WithName("Id")
@@ -168,7 +168,7 @@ public class DatabaseModelJsonTests
             .WithProvider("SqlServer")
             .WithAnnotation("db_level", "value1")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Annotated")
+                .WithQualifiedName("dbo", "Annotated")
                 .WithAnnotation("table_level", "value2")
                 .AddColumn(c => c
                     .WithName("Id")
@@ -198,7 +198,7 @@ public class DatabaseModelJsonTests
             .WithDatabaseName("DefaultsDb")
             .WithProvider("SqlServer")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "WithDefaults")
+                .WithQualifiedName("dbo", "WithDefaults")
                 .AddColumn(c => c
                     .WithName("CreatedDate")
                     .WithOrdinalPosition(1)

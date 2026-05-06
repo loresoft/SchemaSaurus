@@ -51,9 +51,19 @@ public sealed partial class SqlServerSchemaReader
                 t.is_filetable,
                 SCHEMA_NAME(ht.schema_id)           AS history_schema,
                 ht.name                             AS history_name,
+                pc.start_column_name,
+                pc.end_column_name,
                 CAST(ep.value AS NVARCHAR(4000))    AS description
             FROM sys.tables t
             LEFT JOIN sys.tables ht ON t.history_table_id = ht.object_id
+            OUTER APPLY (
+                SELECT
+                    MAX(CASE WHEN c.generated_always_type = 1 THEN c.name END) AS start_column_name,
+                    MAX(CASE WHEN c.generated_always_type = 2 THEN c.name END) AS end_column_name
+                FROM sys.columns c
+                WHERE c.object_id = t.object_id
+                  AND c.generated_always_type IN (1, 2)
+            ) pc
             LEFT JOIN sys.extended_properties ep
                 ON ep.major_id = t.object_id AND ep.minor_id = 0
                 AND ep.class = 1 AND ep.name = 'MS_Description'
@@ -71,11 +81,13 @@ public sealed partial class SqlServerSchemaReader
         const int schemaOrdinal = 1;
         const int nameOrdinal = 2;
         const int temporalOrdinal = 3;
-        const int memOptOrdinal = 4;
+        const int memoryOptimizedOrdinal = 4;
         const int fileTableOrdinal = 5;
-        const int histSchemaOrdinal = 6;
-        const int histNameOrdinal = 7;
-        const int descOrdinal = 8;
+        const int historySchemaOrdinal = 6;
+        const int historyNameOrdinal = 7;
+        const int periodStartOrdinal = 8;
+        const int periodEndOrdinal = 9;
+        const int descOrdinal = 10;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -83,26 +95,30 @@ public sealed partial class SqlServerSchemaReader
             var schema = reader.GetString(schemaOrdinal);
             var name = reader.GetString(nameOrdinal);
             var temporalType = reader.GetByte(temporalOrdinal);
-            var isMemOpt = reader.GetBoolean(memOptOrdinal);
+            var isMemoryOptimized = reader.GetBoolean(memoryOptimizedOrdinal);
             var isFileTable = reader.GetBoolean(fileTableOrdinal);
-            var histSchema = reader.GetStringNull(histSchemaOrdinal);
-            var histName = reader.GetStringNull(histNameOrdinal);
+            var historySchema = reader.GetStringNull(historySchemaOrdinal);
+            var historyName = reader.GetStringNull(historyNameOrdinal);
+            var periodStartColumn = reader.GetStringNull(periodStartOrdinal);
+            var periodEndColumn = reader.GetStringNull(periodEndOrdinal);
             var description = reader.GetStringNull(descOrdinal);
 
-            SchemaQualifiedName? historyTableName = histSchema is not null && histName is not null
-                ? new SchemaQualifiedName { Schema = histSchema, Name = histName }
+            SchemaQualifiedName? historyTableName = historySchema is not null && historyName is not null
+                ? new SchemaQualifiedName { Schema = historySchema, Name = historyName }
                 : null;
 
             var tableOptions = new TableOptions
             {
                 IsTemporalTable = temporalType == 2,
-                HistoryTableName = historyTableName,
-                IsMemoryOptimized = isMemOpt,
+                HistoryTable = historyTableName,
+                PeriodStartColumnName = periodStartColumn,
+                PeriodEndColumnName = periodEndColumn,
+                IsMemoryOptimized = isMemoryOptimized,
                 IsFileTable = isFileTable,
             };
 
             var tb = new TableBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDescription(description)
                 .WithOptions(tableOptions);
 
@@ -167,23 +183,23 @@ public sealed partial class SqlServerSchemaReader
 
         const int objectIdOrdinal = 0;
         const int columnIdOrdinal = 1;
-        const int colNameOrdinal = 2;
-        const int sysTypeOrdinal = 3;
+        const int columnNameOrdinal = 2;
+        const int systemTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLenOrdinal = 5;
+        const int maxLengthOrdinal = 5;
         const int precisionOrdinal = 6;
         const int scaleOrdinal = 7;
         const int nullableOrdinal = 8;
         const int identityOrdinal = 9;
         const int computedOrdinal = 10;
-        const int rowVerOrdinal = 11;
+        const int rowVersionOrdinal = 11;
         const int collationOrdinal = 12;
         const int seedOrdinal = 13;
-        const int incrOrdinal = 14;
-        const int compSqlOrdinal = 15;
+        const int incrementOrdinal = 14;
+        const int computedSqlOrdinal = 15;
         const int persistedOrdinal = 16;
-        const int defSqlOrdinal = 17;
-        const int descOrdinal = 18;
+        const int defaultSqlOrdinal = 17;
+        const int descriptionOrdinal = 18;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -192,23 +208,23 @@ public sealed partial class SqlServerSchemaReader
                 continue;
 
             var columnId = reader.GetInt32(columnIdOrdinal);
-            var columnName = reader.GetString(colNameOrdinal);
-            var systemTypeName = reader.GetString(sysTypeOrdinal);
+            var columnName = reader.GetString(columnNameOrdinal);
+            var systemTypeName = reader.GetString(systemTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
-            var maxLength = reader.GetInt16(maxLenOrdinal);
+            var maxLength = reader.GetInt16(maxLengthOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
             var isIdentity = reader.GetBoolean(identityOrdinal);
             var isComputed = reader.GetBoolean(computedOrdinal);
-            var isRowVersion = reader.GetBoolean(rowVerOrdinal);
+            var isRowVersion = reader.GetBoolean(rowVersionOrdinal);
             var collation = reader.GetStringNull(collationOrdinal);
             var identitySeed = reader.GetInt64Null(seedOrdinal);
-            var identityIncrement = reader.GetInt64Null(incrOrdinal);
-            var computedSql = reader.GetStringNull(compSqlOrdinal);
+            var identityIncrement = reader.GetInt64Null(incrementOrdinal);
+            var computedSql = reader.GetStringNull(computedSqlOrdinal);
             var isPersisted = reader.GetBooleanNull(persistedOrdinal) ?? false;
-            var defaultSql = reader.GetStringNull(defSqlOrdinal);
-            var description = reader.GetStringNull(descOrdinal);
+            var defaultSql = reader.GetStringNull(defaultSqlOrdinal);
+            var description = reader.GetStringNull(descriptionOrdinal);
 
             // Map SQL Server system type to DbType and CLR type, and determine Unicode/fixed-length attributes
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);

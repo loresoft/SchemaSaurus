@@ -20,7 +20,7 @@ public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
     /// <summary>Sets the schema-qualified name of the sequence.</summary>
     /// <param name="name">The schema-qualified sequence name.</param>
     /// <returns>The current <see cref="SequenceBuilder"/> instance.</returns>
-    public SequenceBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public SequenceBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -31,7 +31,7 @@ public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
     /// <param name="name">The sequence name.</param>
     /// <returns>The current <see cref="SequenceBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public SequenceBuilder WithSchemaQualifiedName(string? schema, string name)
+    public SequenceBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -130,7 +130,7 @@ public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="Sequence"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <see cref="WithSystemType"/> has not been called.
@@ -152,7 +152,7 @@ public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         if (_systemType is null)
@@ -187,7 +187,7 @@ public sealed class SequenceBuilder : IAnnotationBuilder<SequenceBuilder>
 
         return new Sequence
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             DbType = _dbType,
             SystemType = _systemType,
             StartValue = _startValue.Value,

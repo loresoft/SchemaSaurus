@@ -20,23 +20,23 @@ public class SequenceTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Sequences.Should().Contain(s => s.SchemaQualifiedName.Name == "OrderNumberSequence");
+        model.Sequences.Should().Contain(s => s.QualifiedName.Name == "OrderNumberSequence");
     }
 
     [Fact]
     public async Task WhenReadingOrderNumberSequenceThenSchemaIsDbo()
     {
         var model = await GetDatabaseModelAsync();
-        var sequence = model.Sequences.First(s => s.SchemaQualifiedName.Name == "OrderNumberSequence");
+        var sequence = model.Sequences.First(s => s.QualifiedName.Name == "OrderNumberSequence");
 
-        sequence.SchemaQualifiedName.Schema.Should().Be("dbo");
+        sequence.QualifiedName.Schema.Should().Be("dbo");
     }
 
     [Fact]
     public async Task WhenReadingOrderNumberSequenceThenStartValueIs1000()
     {
         var model = await GetDatabaseModelAsync();
-        var sequence = model.Sequences.First(s => s.SchemaQualifiedName.Name == "OrderNumberSequence");
+        var sequence = model.Sequences.First(s => s.QualifiedName.Name == "OrderNumberSequence");
 
         sequence.StartValue.Should().Be(1000);
     }
@@ -45,7 +45,7 @@ public class SequenceTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingOrderNumberSequenceThenIncrementIs1()
     {
         var model = await GetDatabaseModelAsync();
-        var sequence = model.Sequences.First(s => s.SchemaQualifiedName.Name == "OrderNumberSequence");
+        var sequence = model.Sequences.First(s => s.QualifiedName.Name == "OrderNumberSequence");
 
         sequence.Increment.Should().Be(1);
     }
@@ -54,7 +54,7 @@ public class SequenceTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingOrderNumberSequenceThenTypeIsMapped()
     {
         var model = await GetDatabaseModelAsync();
-        var sequence = model.Sequences.First(s => s.SchemaQualifiedName.Name == "OrderNumberSequence");
+        var sequence = model.Sequences.First(s => s.QualifiedName.Name == "OrderNumberSequence");
 
         sequence.DbType.Should().Be(DbType.Int64);
         sequence.SystemType.Should().Be(typeof(long));

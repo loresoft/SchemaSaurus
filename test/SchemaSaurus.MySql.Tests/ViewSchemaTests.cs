@@ -20,7 +20,7 @@ public class ViewSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Views.Should().Contain(v => v.SchemaQualifiedName.Name == "PriorityDropdown");
+        model.Views.Should().Contain(v => v.QualifiedName.Name == "PriorityDropdown");
     }
 
     [Fact]
@@ -28,23 +28,23 @@ public class ViewSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Views.Should().Contain(v => v.SchemaQualifiedName.Name == "StatusDropdown");
+        model.Views.Should().Contain(v => v.QualifiedName.Name == "StatusDropdown");
     }
 
     [Fact]
     public async Task WhenReadingPriorityDropdownViewThenSchemaIsDatabaseName()
     {
         var model = await GetDatabaseModelAsync();
-        var view = model.Views.First(v => v.SchemaQualifiedName.Name == "PriorityDropdown");
+        var view = model.Views.First(v => v.QualifiedName.Name == "PriorityDropdown");
 
-        view.SchemaQualifiedName.Schema.Should().Be(model.DefaultSchemaName);
+        view.QualifiedName.Schema.Should().Be(model.DefaultSchemaName);
     }
 
     [Fact]
     public async Task WhenReadingPriorityDropdownViewThenColumnsExist()
     {
         var model = await GetDatabaseModelAsync();
-        var view = model.Views.First(v => v.SchemaQualifiedName.Name == "PriorityDropdown");
+        var view = model.Views.First(v => v.QualifiedName.Name == "PriorityDropdown");
 
         view.Columns.Should().HaveCount(3);
         view.Columns.Should().Contain(c => c.Name == "Id");
@@ -56,7 +56,7 @@ public class ViewSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingPriorityDropdownViewThenIdColumnIsInt32()
     {
         var model = await GetDatabaseModelAsync();
-        var view = model.Views.First(v => v.SchemaQualifiedName.Name == "PriorityDropdown");
+        var view = model.Views.First(v => v.QualifiedName.Name == "PriorityDropdown");
 
         var idColumn = view.Columns.First(c => c.Name == "Id");
         idColumn.DbType.Should().Be(DbType.Int32);
@@ -67,7 +67,7 @@ public class ViewSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingViewWithDefinitionsThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var view = model.Views.First(v => v.SchemaQualifiedName.Name == "PriorityDropdown");
+        var view = model.Views.First(v => v.QualifiedName.Name == "PriorityDropdown");
 
         view.Definition.Should().NotBeNullOrWhiteSpace();
     }

@@ -19,14 +19,28 @@ namespace SchemaSaurus.Metadata;
 /// <see cref="TypeMapping.Precision"/>) from <see cref="TypeMapping"/>.
 /// </remarks>
 [Equatable]
-[DebuggerDisplay("{SchemaQualifiedName} ({Kind})")]
-public sealed partial class UserDefinedType : TypeMapping, IAnnotatable
+[DebuggerDisplay("{QualifiedName} ({Kind})")]
+public sealed partial class UserDefinedType : TypeMapping, IAnnotatable, IQualifiedName
 {
     /// <summary>
     /// Schema-qualified name of the user-defined type.
     /// </summary>
-    [JsonPropertyName("schemaQualifiedName")]
-    public required SchemaQualifiedName SchemaQualifiedName { get; init; }
+    [JsonPropertyName("qualifiedName")]
+    public required SchemaQualifiedName QualifiedName { get; init; }
+
+    /// <summary>
+    /// Gets the unqualified name component of the object.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string Name => QualifiedName.Name;
+
+    /// <summary>
+    /// Gets the schema component of the qualified name, if available.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string? Schema => QualifiedName.Schema;
 
     /// <summary>
     /// Structural kind of this user-defined type.

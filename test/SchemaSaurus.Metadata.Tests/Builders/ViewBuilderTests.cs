@@ -10,11 +10,11 @@ public class ViewBuilderTests
     public void WhenSchemaQualifiedNameSetThenBuildSucceeds()
     {
         var view = new ViewBuilder()
-            .WithSchemaQualifiedName("dbo", "vw_ActiveCustomers")
+            .WithQualifiedName("dbo", "vw_ActiveCustomers")
             .Build();
 
-        view.SchemaQualifiedName.Schema.Should().Be("dbo");
-        view.SchemaQualifiedName.Name.Should().Be("vw_ActiveCustomers");
+        view.QualifiedName.Schema.Should().Be("dbo");
+        view.QualifiedName.Name.Should().Be("vw_ActiveCustomers");
         view.IsMaterialized.Should().BeFalse();
         view.Definition.Should().BeNull();
         view.Columns.Should().BeEmpty();
@@ -26,7 +26,7 @@ public class ViewBuilderTests
     public void WhenAllPropertiesSetThenBuildReturnsFullyPopulatedView()
     {
         var view = new ViewBuilder()
-            .WithSchemaQualifiedName(new SchemaQualifiedName { Schema = "public", Name = "mv_Summary" })
+            .WithQualifiedName(new SchemaQualifiedName { Schema = "public", Name = "mv_Summary" })
             .WithDefinition("SELECT * FROM Orders")
             .WithIsMaterialized(true)
             .WithDescription("Materialized summary view")
@@ -43,7 +43,7 @@ public class ViewBuilderTests
     public void WhenColumnAddedViaBuilderActionThenColumnAppearsInView()
     {
         var view = new ViewBuilder()
-            .WithSchemaQualifiedName("dbo", "vw_Test")
+            .WithQualifiedName("dbo", "vw_Test")
             .AddColumn(c => c
                 .WithName("Id")
                 .WithOrdinalPosition(1)
@@ -61,7 +61,7 @@ public class ViewBuilderTests
     public void WhenIndexAddedViaBuilderActionThenIndexAppearsInView()
     {
         var view = new ViewBuilder()
-            .WithSchemaQualifiedName("dbo", "vw_Indexed")
+            .WithQualifiedName("dbo", "vw_Indexed")
             .AddIndex(ix => ix
                 .WithName("IX_vw_Indexed_Col1")
                 .WithIsClustered(true)
@@ -84,7 +84,7 @@ public class ViewBuilderTests
         };
 
         var view = new ViewBuilder()
-            .WithSchemaQualifiedName("dbo", "vw_Test")
+            .WithQualifiedName("dbo", "vw_Test")
             .AddTrigger(trigger)
             .Build();
 
@@ -101,6 +101,6 @@ public class ViewBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 }

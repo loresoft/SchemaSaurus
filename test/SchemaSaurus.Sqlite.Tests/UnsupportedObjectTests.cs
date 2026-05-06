@@ -64,7 +64,7 @@ public class UnsupportedObjectTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Views.Should().Contain(v => v.SchemaQualifiedName.Name == "Active Users");
+        model.Views.Should().Contain(v => v.QualifiedName.Name == "Active Users");
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class UnsupportedObjectTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var view = model.Views.FirstOrDefault(v => v.SchemaQualifiedName.Name == "Active Users");
+        var view = model.Views.FirstOrDefault(v => v.QualifiedName.Name == "Active Users");
         view.Should().NotBeNull();
 
         view.Definition.Should().Contain("SELECT");
@@ -83,7 +83,7 @@ public class UnsupportedObjectTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var view = model.Views.FirstOrDefault(v => v.SchemaQualifiedName.Name == "Active Users");
+        var view = model.Views.FirstOrDefault(v => v.QualifiedName.Name == "Active Users");
         view.Should().NotBeNull();
 
         view.Columns.Should().Contain(c => c.Name == "Id");

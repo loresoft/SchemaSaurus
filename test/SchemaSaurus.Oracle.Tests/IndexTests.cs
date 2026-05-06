@@ -10,7 +10,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenIndexesExist()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         taskTable.Indexes.Should().NotBeEmpty();
     }
@@ -19,7 +19,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenAssignedIdIndexExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_TASK_ASSIGNEDID");
     }
@@ -28,7 +28,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenStatusIdIndexExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_TASK_STATUSID");
     }
@@ -37,7 +37,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenPriorityIdIndexExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         taskTable.Indexes.Should().Contain(i => i.Name == "IX_TASK_PRIORITYID");
     }
@@ -46,7 +46,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingAssignedIdIndexThenColumnIsCorrect()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         var index = taskTable.Indexes.First(i => i.Name == "IX_TASK_ASSIGNEDID");
         index.Columns.Should().Contain(c => c.ColumnName == "ASSIGNEDID");
@@ -56,7 +56,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUniqueIndexThenIsUniqueIsTrue()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         var uniqueIndex = userTable.Indexes.First(i => i.Name == "UX_USER_EMAILADDRESS");
         uniqueIndex.IsUnique.Should().BeTrue();
@@ -66,7 +66,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUniqueEmailIndexThenColumnIsEmailAddress()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         var uniqueIndex = userTable.Indexes.First(i => i.Name == "UX_USER_EMAILADDRESS");
         uniqueIndex.Columns.Should().Contain(c => c.ColumnName == "EMAILADDRESS");
@@ -76,7 +76,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingRoleTableThenUniqueNameIndexExists()
     {
         var model = await GetDatabaseModelAsync();
-        var roleTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "ROLE");
+        var roleTable = model.Tables.First(t => t.QualifiedName.Name == "ROLE");
 
         roleTable.Indexes.Should().Contain(i => i.Name == "UX_ROLE_NAME");
         var index = roleTable.Indexes.First(i => i.Name == "UX_ROLE_NAME");
@@ -87,7 +87,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingNonUniqueIndexThenIsUniqueIsFalse()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         var index = taskTable.Indexes.First(i => i.Name == "IX_TASK_STATUSID");
         index.IsUnique.Should().BeFalse();
@@ -97,7 +97,7 @@ public class IndexTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingIndexColumnThenSortDirectionIsAscending()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TASK");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "TASK");
 
         var index = taskTable.Indexes.First(i => i.Name == "IX_TASK_STATUSID");
         var keyColumns = index.Columns.Where(c => !c.IsIncludedColumn).ToList();

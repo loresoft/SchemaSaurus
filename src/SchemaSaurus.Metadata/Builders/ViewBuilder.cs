@@ -18,7 +18,7 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     /// <summary>Sets the schema-qualified name of the view.</summary>
     /// <param name="name">The schema-qualified view name.</param>
     /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
-    public ViewBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public ViewBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -29,7 +29,7 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     /// <param name="name">The view name.</param>
     /// <returns>The current <see cref="ViewBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public ViewBuilder WithSchemaQualifiedName(string? schema, string name)
+    public ViewBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -142,19 +142,19 @@ public sealed class ViewBuilder : IAnnotationBuilder<ViewBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="View"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public View Build()
     {
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         return new View
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             Description = _description,
             Definition = _definition,
             IsMaterialized = _isMaterialized,

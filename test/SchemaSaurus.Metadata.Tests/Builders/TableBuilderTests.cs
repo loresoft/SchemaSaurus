@@ -10,11 +10,11 @@ public class TableBuilderTests
     public void WhenSchemaQualifiedNameSetThenBuildSucceeds()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .Build();
 
-        table.SchemaQualifiedName.Schema.Should().Be("dbo");
-        table.SchemaQualifiedName.Name.Should().Be("Orders");
+        table.QualifiedName.Schema.Should().Be("dbo");
+        table.QualifiedName.Name.Should().Be("Orders");
         table.Columns.Should().BeEmpty();
         table.Indexes.Should().BeEmpty();
         table.Triggers.Should().BeEmpty();
@@ -30,17 +30,17 @@ public class TableBuilderTests
         var name = new SchemaQualifiedName { Schema = "sales", Name = "Invoices" };
 
         var table = new TableBuilder()
-            .WithSchemaQualifiedName(name)
+            .WithQualifiedName(name)
             .Build();
 
-        table.SchemaQualifiedName.Should().Be(name);
+        table.QualifiedName.Should().Be(name);
     }
 
     [Fact]
     public void WhenColumnAddedViaBuilderActionThenColumnAppearsInTable()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Products")
+            .WithQualifiedName("dbo", "Products")
             .AddColumn(c => c
                 .WithName("Id")
                 .WithOrdinalPosition(1)
@@ -68,7 +68,7 @@ public class TableBuilderTests
         };
 
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Products")
+            .WithQualifiedName("dbo", "Products")
             .AddColumn(column)
             .Build();
 
@@ -80,7 +80,7 @@ public class TableBuilderTests
     public void WhenIndexAddedViaBuilderActionThenIndexAppearsInTable()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .AddIndex(ix => ix
                 .WithName("IX_Orders_CustomerId")
                 .AddColumn("CustomerId"))
@@ -94,7 +94,7 @@ public class TableBuilderTests
     public void WhenPrimaryKeySetViaConvenienceOverloadThenPrimaryKeyIsPopulated()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .WithPrimaryKey("PK_Orders", true,
                 new ColumnReference { ColumnName = "Id" })
             .Build();
@@ -110,7 +110,7 @@ public class TableBuilderTests
     public void WhenUniqueConstraintAddedViaConvenienceOverloadThenConstraintAppearsInTable()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Users")
+            .WithQualifiedName("dbo", "Users")
             .AddUniqueConstraint("UQ_Users_Email",
                 new ColumnReference { ColumnName = "Email" })
             .Build();
@@ -123,7 +123,7 @@ public class TableBuilderTests
     public void WhenCheckConstraintAddedViaConvenienceOverloadThenConstraintAppearsInTable()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Products")
+            .WithQualifiedName("dbo", "Products")
             .AddCheckConstraint("CK_Products_Price", "([Price] > 0)")
             .Build();
 
@@ -136,7 +136,7 @@ public class TableBuilderTests
     public void WhenForeignKeyAddedViaBuilderActionThenForeignKeyAppearsInTable()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .AddForeignKey(fk => fk
                 .WithName("FK_Order_Customer")
                 .WithPrincipalTableName("dbo", "Customers")
@@ -160,7 +160,7 @@ public class TableBuilderTests
         };
 
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .AddTrigger(trigger)
             .Build();
 
@@ -172,7 +172,7 @@ public class TableBuilderTests
     public void WhenDescriptionSetThenTableHasDescription()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .WithDescription("Customer order header")
             .Build();
 
@@ -185,7 +185,7 @@ public class TableBuilderTests
         var options = new TableOptions { IsTemporalTable = true };
 
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .WithOptions(options)
             .Build();
 
@@ -196,7 +196,7 @@ public class TableBuilderTests
     public void WhenAnnotationAddedThenTableHasAnnotation()
     {
         var table = new TableBuilder()
-            .WithSchemaQualifiedName("dbo", "Orders")
+            .WithQualifiedName("dbo", "Orders")
             .WithAnnotation("engine", "InnoDB")
             .Build();
 
@@ -212,6 +212,6 @@ public class TableBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 }

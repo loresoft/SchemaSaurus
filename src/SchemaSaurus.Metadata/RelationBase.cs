@@ -13,14 +13,28 @@ namespace SchemaSaurus.Metadata;
 /// knowing its concrete type.
 /// </remarks>
 [Equatable]
-[DebuggerDisplay("{SchemaQualifiedName}")]
-public abstract partial class RelationBase : IAnnotatable
+[DebuggerDisplay("{QualifiedName}")]
+public abstract partial class RelationBase : IAnnotatable, IQualifiedName
 {
     /// <summary>
     /// Schema-qualified name that uniquely identifies this relation within the database.
     /// </summary>
-    [JsonPropertyName("schemaQualifiedName")]
-    public required SchemaQualifiedName SchemaQualifiedName { get; init; }
+    [JsonPropertyName("qualifiedName")]
+    public required SchemaQualifiedName QualifiedName { get; init; }
+
+    /// <summary>
+    /// Gets the unqualified name component of the object.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string Name => QualifiedName.Name;
+
+    /// <summary>
+    /// Gets the schema component of the qualified name, if available.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string? Schema => QualifiedName.Schema;
 
     /// <summary>
     /// Back-reference to the owning <see cref="DatabaseModel"/>.

@@ -13,14 +13,29 @@ namespace SchemaSaurus.Metadata;
 /// see <see cref="TableValuedFunction"/>.
 /// </remarks>
 [Equatable]
-[DebuggerDisplay("{SchemaQualifiedName}")]
-public sealed partial class ScalarFunction : IAnnotatable
+[DebuggerDisplay("{QualifiedName}")]
+public sealed partial class ScalarFunction : IAnnotatable, IQualifiedName
 {
     /// <summary>
     /// Schema-qualified name that uniquely identifies this function within the database.
     /// </summary>
-    [JsonPropertyName("schemaQualifiedName")]
-    public required SchemaQualifiedName SchemaQualifiedName { get; init; }
+    [JsonPropertyName("qualifiedName")]
+    public required SchemaQualifiedName QualifiedName { get; init; }
+
+    /// <summary>
+    /// Gets the unqualified name component of the object.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string Name => QualifiedName.Name;
+
+    /// <summary>
+    /// Gets the schema component of the qualified name, if available.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string? Schema => QualifiedName.Schema;
+
 
     /// <summary>
     /// <see cref="TypeMapping"/> describing the scalar value returned by the function,

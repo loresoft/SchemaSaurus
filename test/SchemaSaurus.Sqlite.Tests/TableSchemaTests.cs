@@ -21,7 +21,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == "User");
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "User");
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == "Status");
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Status");
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == "Task");
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Task");
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == "Computed Column");
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Computed Column");
     }
 
     [Fact]
@@ -53,9 +53,9 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
-        userTable.SchemaQualifiedName.Schema.Should().BeNull();
+        userTable.QualifiedName.Schema.Should().BeNull();
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         userTable.Columns.Should().NotBeEmpty();
@@ -77,7 +77,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var idColumn = userTable.Columns.FirstOrDefault(c => c.Name == "Id");
@@ -90,7 +90,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var idColumn = userTable.Columns.FirstOrDefault(c => c.Name == "Id");
@@ -105,7 +105,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var userNameColumn = userTable.Columns.FirstOrDefault(c => c.Name == "UserName");
@@ -120,7 +120,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var firstNameColumn = userTable.Columns.FirstOrDefault(c => c.Name == "FirstName");
@@ -133,7 +133,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var statusTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Status");
+        var statusTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Status");
         statusTable.Should().NotBeNull();
 
         var displayOrderColumn = statusTable.Columns.FirstOrDefault(c => c.Name == "DisplayOrder");
@@ -146,7 +146,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var statusTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Status");
+        var statusTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Status");
         statusTable.Should().NotBeNull();
 
         var isActiveColumn = statusTable.Columns.FirstOrDefault(c => c.Name == "IsActive");
@@ -160,7 +160,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var taskTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Task");
         taskTable.Should().NotBeNull();
 
         var idColumn = taskTable.Columns.FirstOrDefault(c => c.Name == "Id");
@@ -175,7 +175,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var dataTypeTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "DataType");
+        var dataTypeTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "DataType");
         dataTypeTable.Should().NotBeNull();
 
         var booleanColumn = dataTypeTable.Columns.FirstOrDefault(c => c.Name == "Boolean");
@@ -220,7 +220,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var model = await GetDatabaseModelAsync(options);
 
         model.Tables.Should().HaveCount(1);
-        model.Tables[0].SchemaQualifiedName.Name.Should().Be("Status");
+        model.Tables[0].QualifiedName.Name.Should().Be("Status");
     }
 
     [Fact]
@@ -228,7 +228,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var statusTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Status");
+        var statusTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Status");
         statusTable.Should().NotBeNull();
 
         statusTable.Columns.Should().AllSatisfy(c => c.OrdinalPosition.Should().BeGreaterThan(0));
@@ -239,7 +239,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var computedTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Computed Column");
+        var computedTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Computed Column");
         computedTable.Should().NotBeNull();
 
         var fullNameColumn = computedTable.Columns.FirstOrDefault(c => c.Name == "Full Name");
@@ -253,7 +253,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var computedTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "Computed Column");
+        var computedTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "Computed Column");
         computedTable.Should().NotBeNull();
 
         var searchNameColumn = computedTable.Columns.FirstOrDefault(c => c.Name == "Search Name");

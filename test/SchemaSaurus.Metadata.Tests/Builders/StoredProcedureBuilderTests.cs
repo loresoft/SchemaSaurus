@@ -10,11 +10,11 @@ public class StoredProcedureBuilderTests
     public void WhenSchemaQualifiedNameSetThenBuildSucceeds()
     {
         var sp = new StoredProcedureBuilder()
-            .WithSchemaQualifiedName("dbo", "uspGetCustomer")
+            .WithQualifiedName("dbo", "uspGetCustomer")
             .Build();
 
-        sp.SchemaQualifiedName.Schema.Should().Be("dbo");
-        sp.SchemaQualifiedName.Name.Should().Be("uspGetCustomer");
+        sp.QualifiedName.Schema.Should().Be("dbo");
+        sp.QualifiedName.Name.Should().Be("uspGetCustomer");
         sp.Parameters.Should().BeEmpty();
         sp.Definition.Should().BeNull();
         sp.Description.Should().BeNull();
@@ -24,7 +24,7 @@ public class StoredProcedureBuilderTests
     public void WhenAllPropertiesSetThenBuildReturnsFullyPopulatedStoredProcedure()
     {
         var sp = new StoredProcedureBuilder()
-            .WithSchemaQualifiedName(new SchemaQualifiedName { Schema = "dbo", Name = "uspCreateOrder" })
+            .WithQualifiedName(new SchemaQualifiedName { Schema = "dbo", Name = "uspCreateOrder" })
             .WithDefinition("CREATE PROCEDURE dbo.uspCreateOrder AS BEGIN ... END")
             .WithDescription("Creates a new order")
             .WithAnnotation("owner", "admin")
@@ -39,7 +39,7 @@ public class StoredProcedureBuilderTests
     public void WhenParameterAddedViaBuilderActionThenParameterAppearsInProcedure()
     {
         var sp = new StoredProcedureBuilder()
-            .WithSchemaQualifiedName("dbo", "uspGetCustomer")
+            .WithQualifiedName("dbo", "uspGetCustomer")
             .AddParameter(p => p
                 .WithName("@customerId")
                 .WithOrdinal(1)
@@ -65,7 +65,7 @@ public class StoredProcedureBuilderTests
         };
 
         var sp = new StoredProcedureBuilder()
-            .WithSchemaQualifiedName("dbo", "uspDelete")
+            .WithQualifiedName("dbo", "uspDelete")
             .AddParameter(param)
             .Build();
 
@@ -82,6 +82,6 @@ public class StoredProcedureBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 }

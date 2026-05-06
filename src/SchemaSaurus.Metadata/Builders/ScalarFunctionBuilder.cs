@@ -17,7 +17,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     /// <summary>Sets the schema-qualified name of the function.</summary>
     /// <param name="name">The schema-qualified function name.</param>
     /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
-    public ScalarFunctionBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public ScalarFunctionBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -28,7 +28,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     /// <param name="name">The function name.</param>
     /// <returns>The current <see cref="ScalarFunctionBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public ScalarFunctionBuilder WithSchemaQualifiedName(string? schema, string name)
+    public ScalarFunctionBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -137,7 +137,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
     /// </summary>
     /// <returns>A fully initialized <see cref="ScalarFunction"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <see cref="WithReturnType(TypeMapping)"/> or <see cref="WithReturnType(DbType, string, Type)"/> has not been called.
@@ -147,7 +147,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         if (_returnType is null)
@@ -158,7 +158,7 @@ public sealed class ScalarFunctionBuilder : IAnnotationBuilder<ScalarFunctionBui
 
         return new ScalarFunction
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             ReturnType = _returnType,
             IsDeterministic = _isDeterministic,
             Definition = _definition,

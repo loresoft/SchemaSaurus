@@ -22,7 +22,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.StoredProcedures.Should().Contain(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        model.StoredProcedures.Should().Contain(sp => sp.QualifiedName.Name == "StatusPaged");
     }
 
     [Fact]
@@ -30,23 +30,23 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.StoredProcedures.Should().Contain(sp => sp.SchemaQualifiedName.Name == "StatusUpsert");
+        model.StoredProcedures.Should().Contain(sp => sp.QualifiedName.Name == "StatusUpsert");
     }
 
     [Fact]
     public async Task WhenReadingStatusPagedThenSchemaIsDbo()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
-        sp.SchemaQualifiedName.Schema.Should().Be("dbo");
+        sp.QualifiedName.Schema.Should().Be("dbo");
     }
 
     [Fact]
     public async Task WhenReadingStatusPagedThenParametersExist()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().HaveCount(3);
         sp.Parameters.Should().Contain(p => p.Name == "@Offset");
@@ -58,7 +58,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusPagedThenOffsetParameterIsInput()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         var offsetParam = sp.Parameters.First(p => p.Name == "@Offset");
         offsetParam.Direction.Should().Be(ParameterDirection.Input);
@@ -69,7 +69,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusPagedThenTotalParameterIsOutput()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         var totalParam = sp.Parameters.First(p => p.Name == "@Total");
         totalParam.Direction.Should().Be(ParameterDirection.Output);
@@ -80,7 +80,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStoredProcedureWithDefinitionsThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Definition.Should().NotBeNullOrWhiteSpace();
     }
@@ -102,7 +102,7 @@ public class StoredProcedureTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingParametersThenOrdinalsAreSequential()
     {
         var model = await GetDatabaseModelAsync();
-        var sp = model.StoredProcedures.First(sp => sp.SchemaQualifiedName.Name == "StatusPaged");
+        var sp = model.StoredProcedures.First(sp => sp.QualifiedName.Name == "StatusPaged");
 
         sp.Parameters.Should().AllSatisfy(p => p.Ordinal.Should().BeGreaterThan(0));
         sp.Parameters.Select(p => p.Ordinal).Should().BeInAscendingOrder();

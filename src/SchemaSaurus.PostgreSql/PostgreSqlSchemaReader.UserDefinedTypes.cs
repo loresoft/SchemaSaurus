@@ -78,7 +78,7 @@ public sealed partial class PostgreSqlSchemaReader
             builder.AddUserDefinedType(userDefinedTypeBuilder =>
             {
                 userDefinedTypeBuilder
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithKind(kind)
                     .WithDbType(dbType)
                     .WithNativeTypeName(nativeTypeName)

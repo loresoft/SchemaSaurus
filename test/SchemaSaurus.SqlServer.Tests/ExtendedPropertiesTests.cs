@@ -18,7 +18,7 @@ public class ExtendedPropertiesTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTableThenMsDescriptionIsDescription()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.Description.Should().Be("Application users.");
     }
@@ -27,7 +27,7 @@ public class ExtendedPropertiesTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTableThenCustomExtendedPropertiesAreAnnotations()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
 
         userTable.Annotations.Should().ContainKey("SchemaSaurus:AggregateRoot")
             .WhoseValue.Should().Be("True");
@@ -37,7 +37,7 @@ public class ExtendedPropertiesTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingColumnThenMsDescriptionIsDescription()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
         var emailColumn = userTable.Columns.First(c => c.Name == "EmailAddress");
 
         emailColumn.Description.Should().Be("Primary email address for the user.");
@@ -47,7 +47,7 @@ public class ExtendedPropertiesTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingColumnThenCustomExtendedPropertiesAreAnnotations()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
         var emailColumn = userTable.Columns.First(c => c.Name == "EmailAddress");
 
         emailColumn.Annotations.Should().ContainKey("SchemaSaurus:IsSensitive")
@@ -58,7 +58,7 @@ public class ExtendedPropertiesTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingIndexThenCustomExtendedPropertiesAreAnnotations()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == "User");
         var emailIndex = userTable.Indexes.First(i => i.Name == "UX_User_EmailAddress");
 
         emailIndex.Annotations.Should().ContainKey("SchemaSaurus:Purpose")

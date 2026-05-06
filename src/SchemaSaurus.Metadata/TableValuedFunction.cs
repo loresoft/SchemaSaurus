@@ -13,14 +13,28 @@ namespace SchemaSaurus.Metadata;
 /// see <see cref="ScalarFunction"/>.
 /// </remarks>
 [Equatable]
-[DebuggerDisplay("{SchemaQualifiedName}")]
-public sealed partial class TableValuedFunction : IAnnotatable
+[DebuggerDisplay("{QualifiedName}")]
+public sealed partial class TableValuedFunction : IAnnotatable, IQualifiedName
 {
     /// <summary>
     /// Schema-qualified name of the function.
     /// </summary>
-    [JsonPropertyName("schemaQualifiedName")]
-    public required SchemaQualifiedName SchemaQualifiedName { get; init; }
+    [JsonPropertyName("qualifiedName")]
+    public required SchemaQualifiedName QualifiedName { get; init; }
+
+    /// <summary>
+    /// Gets the unqualified name component of the object.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string Name => QualifiedName.Name;
+
+    /// <summary>
+    /// Gets the schema component of the qualified name, if available.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public string? Schema => QualifiedName.Schema;
 
     /// <summary>
     /// Ordered list of input parameters, sorted by <see cref="Parameter.Ordinal"/>.

@@ -59,7 +59,7 @@ public sealed partial class SqlServerSchemaReader
                 var description = reader.GetStringNull(descriptionOrdinal);
 
                 var storedProcedureBuilder = new StoredProcedureBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description);
 
@@ -128,7 +128,7 @@ public sealed partial class SqlServerSchemaReader
                 var description = reader.GetStringNull(descriptionOrdinal);
 
                 var functionBuilder = new ScalarFunctionBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description);
 
@@ -303,7 +303,7 @@ public sealed partial class SqlServerSchemaReader
                 var description = reader.GetStringNull(descriptionOrdinal);
 
                 var functionBuilder = new TableValuedFunctionBuilder()
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDefinition(definition)
                     .WithDescription(description);
 

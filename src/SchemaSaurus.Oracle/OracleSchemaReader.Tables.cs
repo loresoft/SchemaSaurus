@@ -75,7 +75,7 @@ public sealed partial class OracleSchemaReader
             var temporary = reader.GetStringNull(temporaryOrdinal);
 
             var tableBuilder = new TableBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDescription(description)
                 .WithAnnotation(OracleAnnotations.IotType, iotType)
                 .WithAnnotation(OracleAnnotations.Temporary, temporary == "Y");

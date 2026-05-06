@@ -77,7 +77,7 @@ public sealed partial class OracleSchemaReader
                 if (objectType == "PROCEDURE")
                 {
                     var storedProcedureBuilder = new StoredProcedureBuilder()
-                        .WithSchemaQualifiedName(schema, name)
+                        .WithQualifiedName(schema, name)
                         .WithDefinition(definition);
 
                     storedProcedures[(schema, name)] = storedProcedureBuilder;
@@ -85,7 +85,7 @@ public sealed partial class OracleSchemaReader
                 else
                 {
                     var functionBuilder = new ScalarFunctionBuilder()
-                        .WithSchemaQualifiedName(schema, name)
+                        .WithQualifiedName(schema, name)
                         .WithDefinition(definition);
 
                     scalarFunctions[(schema, name)] = functionBuilder;

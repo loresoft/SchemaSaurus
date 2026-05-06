@@ -10,10 +10,10 @@ public class TableValuedFunctionBuilderTests
     public void WhenSchemaQualifiedNameSetThenBuildSucceeds()
     {
         var fn = new TableValuedFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnGetOrders")
+            .WithQualifiedName("dbo", "fnGetOrders")
             .Build();
 
-        fn.SchemaQualifiedName.Name.Should().Be("fnGetOrders");
+        fn.QualifiedName.Name.Should().Be("fnGetOrders");
         fn.Parameters.Should().BeEmpty();
         fn.ReturnColumns.Should().BeEmpty();
         fn.Definition.Should().BeNull();
@@ -23,7 +23,7 @@ public class TableValuedFunctionBuilderTests
     public void WhenAllPropertiesSetThenBuildReturnsFullyPopulatedFunction()
     {
         var fn = new TableValuedFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnGetItems")
+            .WithQualifiedName("dbo", "fnGetItems")
             .WithDefinition("CREATE FUNCTION dbo.fnGetItems() RETURNS TABLE AS RETURN SELECT 1")
             .AddReturnColumn("Id", 1, DbType.Int32, "int", typeof(int))
             .AddReturnColumn("Name", 2, DbType.String, "nvarchar(100)", typeof(string), isNullable: true)
@@ -52,7 +52,7 @@ public class TableValuedFunctionBuilderTests
         };
 
         var fn = new TableValuedFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnCalc")
+            .WithQualifiedName("dbo", "fnCalc")
             .AddReturnColumn(returnCol)
             .Build();
 
@@ -69,7 +69,7 @@ public class TableValuedFunctionBuilderTests
         };
 
         var fn = new TableValuedFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnNames")
+            .WithQualifiedName("dbo", "fnNames")
             .AddReturnColumn(
                 "Name",
                 1,
@@ -95,7 +95,7 @@ public class TableValuedFunctionBuilderTests
     public void WhenParameterAddedViaBuilderActionThenParameterAppearsInFunction()
     {
         var fn = new TableValuedFunctionBuilder()
-            .WithSchemaQualifiedName("dbo", "fnSearch")
+            .WithQualifiedName("dbo", "fnSearch")
             .AddParameter(p => p
                 .WithName("@keyword")
                 .WithOrdinal(1)
@@ -117,6 +117,6 @@ public class TableValuedFunctionBuilderTests
         var act = () => builder.Build();
 
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("*WithSchemaQualifiedName*");
+            .WithMessage("*WithQualifiedName*");
     }
 }

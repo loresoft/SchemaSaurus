@@ -30,7 +30,7 @@
         }
       ],
       "options": {},
-      "schemaQualifiedName": {
+      "qualifiedName": {
         "schema": "dbo",
         "name": "Products"
       },

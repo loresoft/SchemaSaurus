@@ -11,7 +11,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         userTable.PrimaryKey.Should().NotBeNull();
@@ -22,7 +22,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var primaryKey = userTable.PrimaryKey;
@@ -36,7 +36,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var primaryKey = userTable.PrimaryKey;
@@ -49,7 +49,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userRoleTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "UserRole");
+        var userRoleTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "UserRole");
         userRoleTable.Should().NotBeNull();
 
         userRoleTable.PrimaryKey.Should().NotBeNull();
@@ -63,7 +63,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var primaryKey = userTable.PrimaryKey;
@@ -76,7 +76,7 @@ public class PrimaryKeyTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.FirstOrDefault(t => t.SchemaQualifiedName.Name == "User");
+        var userTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "User");
         userTable.Should().NotBeNull();
 
         var primaryKey = userTable.PrimaryKey;

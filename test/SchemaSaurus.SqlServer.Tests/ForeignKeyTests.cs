@@ -10,7 +10,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenForeignKeysExist()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         taskTable.ForeignKeys.Should().NotBeEmpty();
     }
@@ -19,7 +19,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenStatusForeignKeyExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         taskTable.ForeignKeys.Should().Contain(fk => fk.Name == "FK_Task_Status_StatusId");
     }
@@ -28,7 +28,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenPriorityForeignKeyExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         taskTable.ForeignKeys.Should().Contain(fk => fk.Name == "FK_Task_Priority_PriorityId");
     }
@@ -37,7 +37,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenAssignedForeignKeyExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         taskTable.ForeignKeys.Should().Contain(fk => fk.Name == "FK_Task_User_AssignedId");
     }
@@ -46,7 +46,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusForeignKeyThenPrincipalTableIsStatus()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         var fk = taskTable.ForeignKeys.First(fk => fk.Name == "FK_Task_Status_StatusId");
         fk.PrincipalTableName.Schema.Should().Be("dbo");
@@ -57,7 +57,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusForeignKeyThenColumnMappingsAreCorrect()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         var fk = taskTable.ForeignKeys.First(fk => fk.Name == "FK_Task_Status_StatusId");
         fk.ColumnMappings.Should().HaveCount(1);
@@ -69,7 +69,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingForeignKeyThenDefaultReferentialActionIsNoAction()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "Task");
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
 
         var fk = taskTable.ForeignKeys.First(fk => fk.Name == "FK_Task_Status_StatusId");
         fk.OnDelete.Should().Be(ReferentialAction.NoAction);
@@ -80,7 +80,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserRoleTableThenTwoForeignKeysExist()
     {
         var model = await GetDatabaseModelAsync();
-        var userRoleTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "UserRole");
+        var userRoleTable = model.Tables.First(t => t.QualifiedName.Name == "UserRole");
 
         userRoleTable.ForeignKeys.Should().HaveCount(2);
         userRoleTable.ForeignKeys.Should().Contain(fk => fk.Name == "FK_UserRole_User_UserId");
@@ -91,7 +91,7 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskExtendedTableThenForeignKeyToTaskExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskExtendedTable = model.Tables.First(t => t.SchemaQualifiedName.Name == "TaskExtended");
+        var taskExtendedTable = model.Tables.First(t => t.QualifiedName.Name == "TaskExtended");
 
         taskExtendedTable.ForeignKeys.Should().Contain(fk => fk.Name == "FK_TaskExtended_Task_TaskId");
         var fk = taskExtendedTable.ForeignKeys.First(fk => fk.Name == "FK_TaskExtended_Task_TaskId");

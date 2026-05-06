@@ -64,7 +64,7 @@ public sealed partial class OracleSchemaReader
             builder.AddSequence(sequenceBuilder =>
             {
                 sequenceBuilder
-                    .WithSchemaQualifiedName(schema, name)
+                    .WithQualifiedName(schema, name)
                     .WithDbType(DbType.Int64)
                     .WithSystemType(typeof(long))
                     .WithStartValue(startValue)

@@ -20,23 +20,23 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.ScalarFunctions.Should().Contain(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        model.ScalarFunctions.Should().Contain(f => f.QualifiedName.Name == "FormatAddress");
     }
 
     [Fact]
     public async Task WhenReadingFormatAddressThenSchemaIsPublic()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
-        func.SchemaQualifiedName.Schema.Should().Be("public");
+        func.QualifiedName.Schema.Should().Be("public");
     }
 
     [Fact]
     public async Task WhenReadingFormatAddressThenReturnTypeIsString()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.ReturnType.DbType.Should().Be(DbType.String);
         func.ReturnType.SystemType.Should().Be(typeof(string));
@@ -46,7 +46,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParametersExist()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().HaveCount(4);
         func.Parameters.Should().Contain(p => p.Name == "AddressLine1");
@@ -59,7 +59,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenParameterTypesAreCorrect()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Parameters.Should().AllSatisfy(p =>
         {
@@ -72,7 +72,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenDefinitionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Definition.Should().NotBeNullOrWhiteSpace();
     }
@@ -81,7 +81,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingFormatAddressThenDescriptionIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "FormatAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "FormatAddress");
 
         func.Description.Should().Be("Formats an address.");
     }
@@ -90,7 +90,7 @@ public class ScalarFunctionTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingDomainReturningFunctionThenReturnTypeUsesDomainBaseType()
     {
         var model = await GetDatabaseModelAsync();
-        var func = model.ScalarFunctions.First(f => f.SchemaQualifiedName.Name == "NormalizeEmailAddress");
+        var func = model.ScalarFunctions.First(f => f.QualifiedName.Name == "NormalizeEmailAddress");
 
         func.ReturnType.DbType.Should().Be(DbType.String);
         func.ReturnType.SystemType.Should().Be(typeof(string));

@@ -25,7 +25,7 @@ internal static class DatabaseModelFixtures
             .WithDefaultSchemaName("dbo")
             .WithServerVersion("16.0.1135.2")
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Customers")
+                .WithQualifiedName("dbo", "Customers")
                 .WithDescription("Customer master table")
                 .WithPrimaryKey("PK_Customers", true,
                     new ColumnReference { ColumnName = "Id" })
@@ -65,7 +65,7 @@ internal static class DatabaseModelFixtures
                     .WithName("IX_Customers_Name")
                     .AddColumn("Name")))
             .AddTable(t => t
-                .WithSchemaQualifiedName("dbo", "Orders")
+                .WithQualifiedName("dbo", "Orders")
                 .WithDescription("Sales order header")
                 .WithPrimaryKey("PK_Orders", true,
                     new ColumnReference { ColumnName = "Id" })
@@ -130,7 +130,7 @@ internal static class DatabaseModelFixtures
                     Definition = "CREATE TRIGGER TR_Orders_Audit ON dbo.Orders AFTER INSERT, UPDATE AS BEGIN ... END",
                 }))
             .AddView(v => v
-                .WithSchemaQualifiedName("dbo", "vw_ActiveCustomers")
+                .WithQualifiedName("dbo", "vw_ActiveCustomers")
                 .WithDefinition("SELECT Id, Name, Email FROM dbo.Customers WHERE Email IS NOT NULL")
                 .AddColumn(c => c
                     .WithName("Id")
@@ -147,7 +147,7 @@ internal static class DatabaseModelFixtures
                     .WithNativeTypeName("nvarchar(200)")
                     .WithSystemType(typeof(string))))
             .AddSequence(s => s
-                .WithSchemaQualifiedName("dbo", "InvoiceSeq")
+                .WithQualifiedName("dbo", "InvoiceSeq")
                 .WithDbType(DbType.Int64)
                 .WithSystemType(typeof(long))
                 .WithStartValue(1000)
@@ -157,7 +157,7 @@ internal static class DatabaseModelFixtures
                 .WithIsCycling(false)
                 .WithCacheSize(50))
             .AddStoredProcedure(sp => sp
-                .WithSchemaQualifiedName("dbo", "uspGetCustomerOrders")
+                .WithQualifiedName("dbo", "uspGetCustomerOrders")
                 .WithDescription("Returns all orders for a customer")
                 .WithDefinition("CREATE PROCEDURE dbo.uspGetCustomerOrders @CustomerId int AS SELECT * FROM Orders WHERE CustomerId = @CustomerId")
                 .AddParameter(p => p
@@ -167,7 +167,7 @@ internal static class DatabaseModelFixtures
                     .WithNativeTypeName("int")
                     .WithSystemType(typeof(int))))
             .AddScalarFunction(fn => fn
-                .WithSchemaQualifiedName("dbo", "fnGetOrderTotal")
+                .WithQualifiedName("dbo", "fnGetOrderTotal")
                 .WithReturnType(DbType.Decimal, "decimal(18,2)", typeof(decimal))
                 .WithIsDeterministic(true)
                 .WithDefinition("CREATE FUNCTION dbo.fnGetOrderTotal(@OrderId int) RETURNS decimal(18,2) AS BEGIN RETURN 0 END")
@@ -178,7 +178,7 @@ internal static class DatabaseModelFixtures
                     .WithNativeTypeName("int")
                     .WithSystemType(typeof(int))))
             .AddTableValuedFunction(fn => fn
-                .WithSchemaQualifiedName("dbo", "fnGetOrdersByDate")
+                .WithQualifiedName("dbo", "fnGetOrdersByDate")
                 .WithDefinition("CREATE FUNCTION dbo.fnGetOrdersByDate(@StartDate datetime2) RETURNS TABLE AS RETURN SELECT * FROM Orders WHERE OrderDate >= @StartDate")
                 .AddParameter(p => p
                     .WithName("@StartDate")
@@ -190,7 +190,7 @@ internal static class DatabaseModelFixtures
                 .AddReturnColumn("OrderDate", 2, DbType.DateTime, "datetime2", typeof(DateTime))
                 .AddReturnColumn("TotalAmount", 3, DbType.Decimal, "decimal(18,2)", typeof(decimal)))
             .AddUserDefinedType(udt => udt
-                .WithSchemaQualifiedName("dbo", "PhoneNumber")
+                .WithQualifiedName("dbo", "PhoneNumber")
                 .WithKind(UserDefinedTypeKind.Alias)
                 .WithDbType(DbType.String)
                 .WithNativeTypeName("nvarchar(20)")

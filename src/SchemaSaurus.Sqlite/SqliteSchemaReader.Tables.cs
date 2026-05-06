@@ -20,7 +20,7 @@ public sealed partial class SqliteSchemaReader
         {
             // SQLite does not expose user schemas, so tables are recorded without a schema name.
             var tableBuilder = new TableBuilder()
-                .WithSchemaQualifiedName(schema: null, tableName);
+                .WithQualifiedName(schema: null, tableName);
 
             // Add dependent table metadata before building the immutable table model.
             await ReadColumnsAsync(connection, tableName, tableBuilder, cancellationToken).ConfigureAwait(false);

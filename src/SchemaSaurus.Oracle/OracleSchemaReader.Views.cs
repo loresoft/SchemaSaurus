@@ -67,7 +67,7 @@ public sealed partial class OracleSchemaReader
             var definition = reader.GetStringNull(definitionOrdinal);
 
             var viewBuilder = new ViewBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDescription(description)
                 .WithDefinition(definition);
 

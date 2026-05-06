@@ -22,7 +22,7 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     /// <summary>Sets the schema-qualified name of the table.</summary>
     /// <param name="name">The schema-qualified table name.</param>
     /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
-    public TableBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public TableBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -33,7 +33,7 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     /// <param name="name">The table name.</param>
     /// <returns>The current <see cref="TableBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public TableBuilder WithSchemaQualifiedName(string? schema, string name)
+    public TableBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -246,19 +246,19 @@ public sealed class TableBuilder : IAnnotationBuilder<TableBuilder>
     /// </summary>
     /// <returns>A fully initialized <see cref="Table"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public Table Build()
     {
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         return new Table
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             Description = _description,
             Columns = _columns,
             Indexes = _indexes,

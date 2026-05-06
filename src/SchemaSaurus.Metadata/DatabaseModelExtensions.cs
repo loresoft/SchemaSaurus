@@ -25,8 +25,8 @@ public static class DatabaseModelExtensions
     public static Table? FindTable(this DatabaseModel model, string? schema, string name)
     {
         return model.Tables.FirstOrDefault(t =>
-            (schema is null || string.Equals(t.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(t.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(t.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(t.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -59,8 +59,8 @@ public static class DatabaseModelExtensions
     public static View? FindView(this DatabaseModel model, string? schema, string name)
     {
         return model.Views.FirstOrDefault(v =>
-            (schema is null || string.Equals(v.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(v.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(v.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(v.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -93,8 +93,8 @@ public static class DatabaseModelExtensions
     public static Sequence? FindSequence(this DatabaseModel model, string? schema, string name)
     {
         return model.Sequences.FirstOrDefault(s =>
-            (schema is null || string.Equals(s.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(s.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(s.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(s.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -127,8 +127,8 @@ public static class DatabaseModelExtensions
     public static StoredProcedure? FindStoredProcedure(this DatabaseModel model, string? schema, string name)
     {
         return model.StoredProcedures.FirstOrDefault(sp =>
-            (schema is null || string.Equals(sp.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(sp.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(sp.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(sp.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -161,8 +161,8 @@ public static class DatabaseModelExtensions
     public static ScalarFunction? FindScalarFunction(this DatabaseModel model, string? schema, string name)
     {
         return model.ScalarFunctions.FirstOrDefault(f =>
-            (schema is null || string.Equals(f.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(f.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(f.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(f.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -195,8 +195,8 @@ public static class DatabaseModelExtensions
     public static TableValuedFunction? FindTableValuedFunction(this DatabaseModel model, string? schema, string name)
     {
         return model.TableValuedFunctions.FirstOrDefault(f =>
-            (schema is null || string.Equals(f.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(f.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(f.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(f.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -229,8 +229,8 @@ public static class DatabaseModelExtensions
     public static UserDefinedType? FindUserDefinedType(this DatabaseModel model, string? schema, string name)
     {
         return model.UserDefinedTypes.FirstOrDefault(t =>
-            (schema is null || string.Equals(t.SchemaQualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
-            string.Equals(t.SchemaQualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
+            (schema is null || string.Equals(t.QualifiedName.Schema, schema, StringComparison.OrdinalIgnoreCase)) &&
+            string.Equals(t.QualifiedName.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

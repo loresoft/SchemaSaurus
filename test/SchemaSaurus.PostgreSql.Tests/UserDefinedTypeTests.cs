@@ -21,23 +21,23 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.UserDefinedTypes.Should().Contain(u => u.SchemaQualifiedName.Name == "TaskState");
+        model.UserDefinedTypes.Should().Contain(u => u.QualifiedName.Name == "TaskState");
     }
 
     [Fact]
     public async Task WhenReadingTaskStateTypeThenSchemaIsPublic()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "TaskState");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "TaskState");
 
-        udt.SchemaQualifiedName.Schema.Should().Be("public");
+        udt.QualifiedName.Schema.Should().Be("public");
     }
 
     [Fact]
     public async Task WhenReadingTaskStateTypeThenKindIsEnum()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "TaskState");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "TaskState");
 
         udt.Kind.Should().Be(UserDefinedTypeKind.Enum);
     }
@@ -46,7 +46,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskStateTypeThenLabelsExist()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "TaskState");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "TaskState");
 
         udt.EnumLabels.Should().Contain(["New", "Active", "Closed"]);
     }
@@ -55,7 +55,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingEmailAddressDomainThenBaseTypeIsString()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "EmailAddress");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "EmailAddress");
 
         udt.Kind.Should().Be(UserDefinedTypeKind.Domain);
         udt.DbType.Should().Be(DbType.String);
@@ -66,7 +66,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingIdentifierPairTypeThenKindIsComposite()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "IdentifierPair");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "IdentifierPair");
 
         udt.Kind.Should().Be(UserDefinedTypeKind.Composite);
     }

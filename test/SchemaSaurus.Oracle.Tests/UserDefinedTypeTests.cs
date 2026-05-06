@@ -21,23 +21,23 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.UserDefinedTypes.Should().Contain(u => u.SchemaQualifiedName.Name == "IdentifierObject");
+        model.UserDefinedTypes.Should().Contain(u => u.QualifiedName.Name == "IdentifierObject");
     }
 
     [Fact]
     public async Task WhenReadingIdentifierObjectTypeThenSchemaIsDefaultSchema()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "IdentifierObject");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "IdentifierObject");
 
-        udt.SchemaQualifiedName.Schema.Should().Be(model.DefaultSchemaName);
+        udt.QualifiedName.Schema.Should().Be(model.DefaultSchemaName);
     }
 
     [Fact]
     public async Task WhenReadingIdentifierObjectTypeThenKindIsComposite()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "IdentifierObject");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "IdentifierObject");
 
         udt.Kind.Should().Be(UserDefinedTypeKind.Composite);
     }
@@ -46,7 +46,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingIdentifierObjectTypeThenColumnsExist()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "IdentifierObject");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "IdentifierObject");
 
         udt.Columns.Should().NotBeNullOrEmpty();
         udt.Columns.Should().Contain(c => c.Name == "Id");
@@ -57,7 +57,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingIdentifierObjectTypeThenIdColumnIsInt32()
     {
         var model = await GetDatabaseModelAsync();
-        var udt = model.UserDefinedTypes.First(u => u.SchemaQualifiedName.Name == "IdentifierObject");
+        var udt = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "IdentifierObject");
 
         var idColumn = udt.Columns!.First(c => c.Name == "Id");
         idColumn.DbType.Should().Be(DbType.Int32);
@@ -87,7 +87,7 @@ public class UserDefinedTypeTests(DatabaseFixture databaseFixture)
             "WMSYS",
         };
 
-        model.UserDefinedTypes.Should().NotContain(u => systemSchemas.Contains(u.SchemaQualifiedName.Schema));
+        model.UserDefinedTypes.Should().NotContain(u => systemSchemas.Contains(u.QualifiedName.Schema));
     }
 
     [Fact]

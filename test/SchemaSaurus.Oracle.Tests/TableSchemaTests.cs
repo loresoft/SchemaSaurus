@@ -25,7 +25,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == UserTableName);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == UserTableName);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == StatusTableName);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == StatusTableName);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        model.Tables.Should().Contain(t => t.SchemaQualifiedName.Name == TaskTableName);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == TaskTableName);
     }
 
     [Fact]
@@ -49,15 +49,15 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     {
         var model = await GetDatabaseModelAsync();
 
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
-        userTable.SchemaQualifiedName.Schema.Should().Be(model.DefaultSchemaName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
+        userTable.QualifiedName.Schema.Should().Be(model.DefaultSchemaName);
     }
 
     [Fact]
     public async Task WhenReadingUserTableThenColumnsAreDiscovered()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         userTable.Columns.Should().NotBeEmpty();
         userTable.Columns.Should().Contain(c => c.Name == "ID");
@@ -69,7 +69,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenIdColumnIsNotIdentity()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var idColumn = userTable.Columns.First(c => c.Name == "ID");
         idColumn.IsIdentity.Should().BeFalse();
@@ -79,7 +79,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenIdColumnIsInt32()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var idColumn = userTable.Columns.First(c => c.Name == "ID");
         idColumn.DbType.Should().Be(DbType.Int32);
@@ -94,7 +94,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingInt32ColumnThenPrecisionAndScaleAreNotSet()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var idColumn = userTable.Columns.First(c => c.Name == "ID");
         idColumn.Precision.Should().BeNull();
@@ -105,7 +105,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenUserNameIsAnsiString()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var userNameColumn = userTable.Columns.First(c => c.Name == "USERNAME");
         userNameColumn.DbType.Should().Be(DbType.AnsiString);
@@ -122,7 +122,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenEmailAddressIsUnicodeString()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var emailColumn = userTable.Columns.First(c => c.Name == "EMAILADDRESS");
         emailColumn.DbType.Should().Be(DbType.String);
@@ -135,7 +135,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingUserTableThenNullableColumnIsMarkedNullable()
     {
         var model = await GetDatabaseModelAsync();
-        var userTable = model.Tables.First(t => t.SchemaQualifiedName.Name == UserTableName);
+        var userTable = model.Tables.First(t => t.QualifiedName.Name == UserTableName);
 
         var firstNameColumn = userTable.Columns.First(c => c.Name == "FIRSTNAME");
         firstNameColumn.IsNullable.Should().BeTrue();
@@ -145,7 +145,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusTableThenRowVersionColumnExists()
     {
         var model = await GetDatabaseModelAsync();
-        var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == StatusTableName);
+        var statusTable = model.Tables.First(t => t.QualifiedName.Name == StatusTableName);
 
         var rowVersionColumn = statusTable.Columns.First(c => c.Name == "ROWVERSION");
         rowVersionColumn.DbType.Should().Be(DbType.DateTime2);
@@ -156,7 +156,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusTableThenDefaultValueSqlIsPopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == StatusTableName);
+        var statusTable = model.Tables.First(t => t.QualifiedName.Name == StatusTableName);
 
         var displayOrderColumn = statusTable.Columns.First(c => c.Name == "DISPLAYORDER");
         displayOrderColumn.DefaultValueSql.Should().BeNullOrWhiteSpace();
@@ -166,7 +166,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingStatusTableThenIsActiveHasDefaultValue()
     {
         var model = await GetDatabaseModelAsync();
-        var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == StatusTableName);
+        var statusTable = model.Tables.First(t => t.QualifiedName.Name == StatusTableName);
 
         var isActiveColumn = statusTable.Columns.First(c => c.Name == "ISACTIVE");
         isActiveColumn.DefaultValueSql.Should().BeNullOrWhiteSpace();
@@ -177,7 +177,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingTaskTableThenGuidPrimaryKeyExists()
     {
         var model = await GetDatabaseModelAsync();
-        var taskTable = model.Tables.First(t => t.SchemaQualifiedName.Name == TaskTableName);
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == TaskTableName);
 
         var idColumn = taskTable.Columns.First(c => c.Name == "ID");
         idColumn.DbType.Should().Be(DbType.Guid);
@@ -189,7 +189,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingDataTypeTableThenVariousTypesAreMapped()
     {
         var model = await GetDatabaseModelAsync();
-        var dataTypeTable = model.Tables.First(t => t.SchemaQualifiedName.Name == DataTypeTableName);
+        var dataTypeTable = model.Tables.First(t => t.QualifiedName.Name == DataTypeTableName);
 
         dataTypeTable.Columns.First(c => c.Name == "BOOLEAN").DbType.Should().Be(DbType.Boolean);
         dataTypeTable.Columns.First(c => c.Name == "SHORT").DbType.Should().Be(DbType.Int16);
@@ -206,7 +206,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     public async Task WhenReadingDataTypeTableThenDecimalHasPrecisionAndScale()
     {
         var model = await GetDatabaseModelAsync();
-        var dataTypeTable = model.Tables.First(t => t.SchemaQualifiedName.Name == DataTypeTableName);
+        var dataTypeTable = model.Tables.First(t => t.QualifiedName.Name == DataTypeTableName);
 
         var decimalColumn = dataTypeTable.Columns.First(c => c.Name == "Decimal");
         decimalColumn.Precision.Should().Be(19);
@@ -224,14 +224,14 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var model = await GetDatabaseModelAsync(options);
 
         model.Tables.Should().HaveCount(1);
-        model.Tables[0].SchemaQualifiedName.Name.Should().Be(StatusTableName);
+        model.Tables[0].QualifiedName.Name.Should().Be(StatusTableName);
     }
 
     [Fact]
     public async Task WhenReadingColumnsOrdinalPositionsArePopulated()
     {
         var model = await GetDatabaseModelAsync();
-        var statusTable = model.Tables.First(t => t.SchemaQualifiedName.Name == StatusTableName);
+        var statusTable = model.Tables.First(t => t.QualifiedName.Name == StatusTableName);
 
         statusTable.Columns.Should().AllSatisfy(c => c.OrdinalPosition.Should().BeGreaterThan(0));
     }

@@ -76,7 +76,7 @@ public sealed partial class SqlServerSchemaReader
             builder.AddSequence(sequenceBuilder =>
             {
                 sequenceBuilder
-                    .WithSchemaQualifiedName(schema, seqName)
+                    .WithQualifiedName(schema, seqName)
                     .WithDbType(dbType)
                     .WithSystemType(systemType)
                     .WithStartValue(startValue)

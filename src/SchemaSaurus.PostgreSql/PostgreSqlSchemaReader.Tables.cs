@@ -90,7 +90,7 @@ public sealed partial class PostgreSqlSchemaReader
             var storageParameters = reader.GetFieldValueNull<string[]>(optionsOrdinal);
 
             var tableBuilder = new TableBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDescription(description);
 
             AddStorageParameterAnnotations(tableBuilder, storageParameters);

@@ -68,7 +68,7 @@ public sealed partial class MySqlSchemaReader
             var comment = reader.GetStringNull(commentOrdinal).NullIfEmpty();
 
             var viewBuilder = new ViewBuilder()
-                .WithSchemaQualifiedName(schema, name)
+                .WithQualifiedName(schema, name)
                 .WithDefinition(definition)
                 .WithDescription(comment);
 

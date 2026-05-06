@@ -15,7 +15,7 @@ public sealed class StoredProcedureBuilder : IAnnotationBuilder<StoredProcedureB
     /// <summary>Sets the schema-qualified name of the stored procedure.</summary>
     /// <param name="name">The schema-qualified stored procedure name.</param>
     /// <returns>The current <see cref="StoredProcedureBuilder"/> instance.</returns>
-    public StoredProcedureBuilder WithSchemaQualifiedName(SchemaQualifiedName name)
+    public StoredProcedureBuilder WithQualifiedName(SchemaQualifiedName name)
     {
         _schemaQualifiedName = name;
         return this;
@@ -26,7 +26,7 @@ public sealed class StoredProcedureBuilder : IAnnotationBuilder<StoredProcedureB
     /// <param name="name">The stored procedure name.</param>
     /// <returns>The current <see cref="StoredProcedureBuilder"/> instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    public StoredProcedureBuilder WithSchemaQualifiedName(string? schema, string name)
+    public StoredProcedureBuilder WithQualifiedName(string? schema, string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         _schemaQualifiedName = new SchemaQualifiedName { Schema = schema, Name = name };
@@ -95,19 +95,19 @@ public sealed class StoredProcedureBuilder : IAnnotationBuilder<StoredProcedureB
     /// </summary>
     /// <returns>A fully initialized <see cref="StoredProcedure"/>.</returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="WithSchemaQualifiedName(SchemaQualifiedName)"/> or <see cref="WithSchemaQualifiedName(string?, string)"/> has not been called.
+    /// Thrown when <see cref="WithQualifiedName(SchemaQualifiedName)"/> or <see cref="WithQualifiedName(string?, string)"/> has not been called.
     /// </exception>
     public StoredProcedure Build()
     {
         if (_schemaQualifiedName is null)
         {
             throw new InvalidOperationException(
-                $"A schema-qualified name is required. Call {nameof(WithSchemaQualifiedName)} before {nameof(Build)}.");
+                $"A schema-qualified name is required. Call {nameof(WithQualifiedName)} before {nameof(Build)}.");
         }
 
         return new StoredProcedure
         {
-            SchemaQualifiedName = _schemaQualifiedName.Value,
+            QualifiedName = _schemaQualifiedName.Value,
             Definition = _definition,
             Description = _description,
             Parameters = _parameters,
