@@ -68,7 +68,7 @@ public sealed partial class SqlServerSchemaReader
                 ON ep.major_id = t.object_id AND ep.minor_id = 0
                 AND ep.class = 1 AND ep.name = 'MS_Description'
             WHERE {tableFilter}
-              AND t.temporal_type <> 1
+                AND t.temporal_type <> 1
             ORDER BY SCHEMA_NAME(t.schema_id), t.name
             """;
 
@@ -142,8 +142,13 @@ public sealed partial class SqlServerSchemaReader
                 c.object_id,
                 c.column_id,
                 c.name                              AS column_name,
-                st.name                             AS system_type_name,
-                TYPE_NAME(c.user_type_id)           AS user_type_name,
+                COALESCE
+                (
+                    CASE WHEN ut.is_assembly_type = 1 AND ut.is_user_defined = 0 THEN ut.name END,
+                    st.name,
+                    ut.name
+                )                                   AS system_type_name,
+                ut.name                             AS user_type_name,
                 c.max_length,
                 c.precision,
                 c.scale,
@@ -160,7 +165,8 @@ public sealed partial class SqlServerSchemaReader
                 CAST(ep.value AS NVARCHAR(4000))    AS description
             FROM sys.columns c
             INNER JOIN sys.tables t ON c.object_id = t.object_id
-            INNER JOIN sys.types st
+            INNER JOIN sys.types ut ON c.user_type_id = ut.user_type_id
+            LEFT JOIN sys.types st
                 ON c.system_type_id = st.system_type_id
                 AND st.system_type_id = st.user_type_id
             LEFT JOIN sys.identity_columns ic

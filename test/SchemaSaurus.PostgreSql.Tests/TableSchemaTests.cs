@@ -231,4 +231,23 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
 
         auditTable.Columns.Select(c => c.Name).Should().OnlyHaveUniqueItems();
     }
+
+    [Fact]
+    public async Task WhenReadingSpatialDataTableThenSpatialColumnsAreMapped()
+    {
+        var model = await GetDatabaseModelAsync();
+        var spatialTable = model.Tables.First(t => t.QualifiedName.Name == "SpatialData");
+
+        var geometryColumn = spatialTable.Columns.First(c => c.Name == "GeometryValue");
+        geometryColumn.DbType.Should().Be(DbType.Object);
+        geometryColumn.SystemType.Should().Be(typeof(object));
+        geometryColumn.NativeTypeName.Should().Be("geometry");
+        geometryColumn.Annotations.Should().ContainKey(PostgreSqlAnnotations.NpgsqlDbType).WhoseValue.Should().Be("Geometry");
+
+        var geographyColumn = spatialTable.Columns.First(c => c.Name == "GeographyValue");
+        geographyColumn.DbType.Should().Be(DbType.Object);
+        geographyColumn.SystemType.Should().Be(typeof(object));
+        geographyColumn.NativeTypeName.Should().Be("geography");
+        geographyColumn.Annotations.Should().ContainKey(PostgreSqlAnnotations.NpgsqlDbType).WhoseValue.Should().Be("Geography");
+    }
 }

@@ -90,4 +90,21 @@ public sealed partial class ForeignKey : IAnnotatable
     [JsonPropertyName("annotations")]
     [JsonConverter(typeof(ReadOnlyDictionaryConverter<string, object?>))]
     public IReadOnlyDictionary<string, object?> Annotations { get; init; } = new Dictionary<string, object?>();
+
+
+    /// <summary>
+    /// Convenience property that returns the list of dependent columns involved in this foreign key,
+    /// in the same order as they appear in <see cref="ColumnMappings"/>.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public IReadOnlyList<Column> DependentColumns => [.. ColumnMappings.Select(p => p.DependentColumn)];
+
+    /// <summary>
+    /// Convenience property that returns the list of principal columns involved in this foreign key,
+    /// in the same order as they appear in <see cref="ColumnMappings"/>.
+    /// </summary>
+    [JsonIgnore]
+    [IgnoreEquality]
+    public IReadOnlyList<Column> PrincipalColumns => [.. ColumnMappings.Select(p => p.PrincipalColumn)];
 }

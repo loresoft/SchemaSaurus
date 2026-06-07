@@ -69,6 +69,8 @@ public static class PostgreSqlTypeMapper
             ["macaddr"] = (DbType.Object, NpgsqlDbType.MacAddr, typeof(System.Net.NetworkInformation.PhysicalAddress), null, null),
             ["macaddr8"] = (DbType.Object, NpgsqlDbType.MacAddr8, typeof(System.Net.NetworkInformation.PhysicalAddress), null, null),
             ["pg_lsn"] = (DbType.Object, NpgsqlDbType.PgLsn, typeof(NpgsqlLogSequenceNumber), null, null),
+            ["geometry"] = (DbType.Object, NpgsqlDbType.Geometry, typeof(object), null, null),
+            ["geography"] = (DbType.Object, NpgsqlDbType.Geography, typeof(object), null, null),
             ["record"] = (DbType.Object, NpgsqlDbType.Unknown, typeof(object), null, null),
             ["tid"] = (DbType.Object, NpgsqlDbType.Tid, typeof(NpgsqlTid), null, null),
         }.ToFrozenDictionary();
@@ -114,6 +116,8 @@ public static class PostgreSqlTypeMapper
             [NpgsqlDbType.Json] = DbType.String,
             [NpgsqlDbType.Jsonb] = DbType.String,
             [NpgsqlDbType.JsonPath] = DbType.String,
+            [NpgsqlDbType.Geometry] = DbType.Object,
+            [NpgsqlDbType.Geography] = DbType.Object,
             [NpgsqlDbType.Money] = DbType.Currency,
             [NpgsqlDbType.Name] = DbType.StringFixedLength,
             [NpgsqlDbType.Numeric] = DbType.Decimal,
@@ -140,7 +144,7 @@ public static class PostgreSqlTypeMapper
     /// </summary>
     /// <param name="typeName">The PostgreSQL native type name (for example, <c>varchar</c> or <c>timestamp with time zone</c>).</param>
     /// <returns>
-    /// A tuple containing mapped <see cref="DbType"/>, <see cref="NpgsqlDbType"/>, CLR <see cref="Type"/>, 
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="NpgsqlDbType"/>, CLR <see cref="Type"/>,
     /// and optional Unicode/fixed-length flags. Unknown types map to object/unknown defaults.
     /// </returns>
     public static (DbType DbType, NpgsqlDbType NpgsqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)

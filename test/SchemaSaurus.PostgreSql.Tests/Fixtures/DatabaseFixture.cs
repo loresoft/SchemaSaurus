@@ -15,7 +15,7 @@ namespace SchemaSaurus.PostgreSql.Tests.Fixtures;
 
 public class DatabaseFixture : TestApplicationFixture, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder("postgres:16")
+    private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder("postgis/postgis:16-3.4")
         .WithDatabase("SchemaSaurus")
         .Build();
 

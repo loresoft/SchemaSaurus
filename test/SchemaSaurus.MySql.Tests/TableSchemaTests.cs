@@ -269,4 +269,23 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
 
         statusTable.Columns.Should().AllSatisfy(c => c.OrdinalPosition.Should().BeGreaterThan(0));
     }
+
+    [Fact]
+    public async Task WhenReadingSpatialDataTableThenSpatialColumnsAreMapped()
+    {
+        var model = await GetDatabaseModelAsync();
+        var spatialTable = model.Tables.First(t => t.QualifiedName.Name == "SpatialData");
+
+        var geometryColumn = spatialTable.Columns.First(c => c.Name == "GeometryValue");
+        geometryColumn.DbType.Should().Be(DbType.Object);
+        geometryColumn.SystemType.Should().Be(typeof(byte[]));
+        geometryColumn.NativeTypeName.Should().Be("geometry");
+        geometryColumn.Annotations.Should().ContainKey(MySqlAnnotations.MySqlDbType).WhoseValue.Should().Be("Geometry");
+
+        var pointColumn = spatialTable.Columns.First(c => c.Name == "PointValue");
+        pointColumn.DbType.Should().Be(DbType.Object);
+        pointColumn.SystemType.Should().Be(typeof(byte[]));
+        pointColumn.NativeTypeName.Should().Be("point");
+        pointColumn.Annotations.Should().ContainKey(MySqlAnnotations.MySqlDbType).WhoseValue.Should().Be("Geometry");
+    }
 }

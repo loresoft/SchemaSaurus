@@ -38,6 +38,13 @@ public class DataTypeMapperTests
     [InlineData("json", DbType.String, MySqlDbType.JSON, typeof(string), true, false)]
     [InlineData("varchar", DbType.String, MySqlDbType.VarChar, typeof(string), true, false)]
     [InlineData("geometry", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("point", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("linestring", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("polygon", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("multipoint", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("multilinestring", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("multipolygon", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
+    [InlineData("geometrycollection", DbType.Object, MySqlDbType.Geometry, typeof(byte[]), null, null)]
     public void WhenMappingNativeTypeThenExpectedMetadataIsReturned(
         string typeName,
         DbType expectedDbType,

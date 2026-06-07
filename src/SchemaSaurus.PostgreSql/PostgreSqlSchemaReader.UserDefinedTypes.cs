@@ -43,7 +43,7 @@ public sealed partial class PostgreSqlSchemaReader
             LEFT JOIN pg_enum AS enum ON enum.enumtypid = typ.oid
             LEFT JOIN pg_class AS typecls ON typecls.oid = typ.typrelid
             WHERE ((typ.typtype = 'c' AND typecls.relkind = 'c') OR typ.typtype IN ('e', 'd'))
-              AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
+                AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
             GROUP BY typ.oid, ns.nspname, typ.typname, typ.typtype, basetyp.typname, basetyp.oid, typ.typtypmod
             ORDER BY ns.nspname, typ.typname
             """;

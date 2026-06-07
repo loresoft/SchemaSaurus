@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 using SchemaSaurus.Migrator.Providers;
+using SchemaSaurus.Sqlite.Tests.Migrations;
 
 using XUnit.Hosting.Logging;
 
@@ -33,7 +34,7 @@ public class DatabaseFixture : TestApplicationFixture
             .ConfigureRunner(rb => rb
                 .AddSQLite()
                 .WithGlobalConnectionString(connectionString)
-                .ScanIn(typeof(SqliteDefault).Assembly)
+                .ScanIn(typeof(SqliteDefault).Assembly, typeof(CreateSpatialDataTable).Assembly)
                 .For.All()
             );
 

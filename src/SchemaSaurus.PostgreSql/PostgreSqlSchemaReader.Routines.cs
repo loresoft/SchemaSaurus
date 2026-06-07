@@ -71,7 +71,8 @@ public sealed partial class PostgreSqlSchemaReader
             LEFT JOIN pg_type AS base_typ ON base_typ.oid = typ.typbasetype
             LEFT JOIN pg_description AS des ON des.objoid = proc.oid AND des.objsubid = 0
             WHERE {routineWhere}
-              AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
+                AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
+                AND NOT EXISTS (SELECT 1 FROM pg_depend dep WHERE dep.objid = proc.oid AND dep.deptype IN ('e', 'x'))
             ORDER BY ns.nspname, proc.proname
             """;
 
@@ -203,9 +204,10 @@ public sealed partial class PostgreSqlSchemaReader
             JOIN pg_type AS typ ON typ.oid = param.type_oid
             LEFT JOIN pg_type AS base_typ ON base_typ.oid = typ.typbasetype
             WHERE {routineWhere}
-              AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
-              AND param.parameter_name IS NOT NULL
-              AND param.parameter_mode <> 't'
+                AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
+                AND NOT EXISTS (SELECT 1 FROM pg_depend dep WHERE dep.objid = proc.oid AND dep.deptype IN ('e', 'x'))
+                AND param.parameter_name IS NOT NULL
+                AND param.parameter_mode <> 't'
             ORDER BY proc.oid, param.ordinal_position
             """;
 

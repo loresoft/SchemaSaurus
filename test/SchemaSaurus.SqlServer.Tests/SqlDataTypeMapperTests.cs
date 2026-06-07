@@ -37,6 +37,9 @@ public class SqlDataTypeMapperTests
     [Theory]
     [InlineData("json", DbType.String, SqlDbType.Json, typeof(string), true, false)]
     [InlineData("vector", DbType.Object, SqlDbType.Vector, typeof(float[]), null, null)]
+    [InlineData("geometry", DbType.Object, SqlDbType.Udt, typeof(object), null, null)]
+    [InlineData("geography", DbType.Object, SqlDbType.Udt, typeof(object), null, null)]
+    [InlineData("hierarchyid", DbType.Object, SqlDbType.Udt, typeof(object), null, null)]
     public void WhenMappingNativeTypeThenExpectedMetadataIsReturned(
         string typeName,
         DbType expectedDbType,

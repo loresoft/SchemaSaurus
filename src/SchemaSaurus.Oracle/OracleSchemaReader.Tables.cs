@@ -49,7 +49,7 @@ public sealed partial class OracleSchemaReader
             FROM ALL_TABLES t
             LEFT JOIN ALL_TAB_COMMENTS tc ON tc.OWNER = t.OWNER AND tc.TABLE_NAME = t.TABLE_NAME
             WHERE {filter}
-              AND t.NESTED = 'NO'
+                AND t.NESTED = 'NO'
             ORDER BY t.OWNER, t.TABLE_NAME
             """;
 
@@ -114,7 +114,7 @@ public sealed partial class OracleSchemaReader
             LEFT JOIN ALL_CONS_COLUMNS rcc
                 ON rcc.OWNER = rc.OWNER AND rcc.CONSTRAINT_NAME = rc.CONSTRAINT_NAME AND rcc.POSITION = cc.POSITION
             WHERE c.CONSTRAINT_TYPE IN ('P', 'U', 'R', 'C')
-              AND {filter}
+                AND {filter}
             ORDER BY c.OWNER, c.TABLE_NAME, c.CONSTRAINT_NAME, cc.POSITION
             """;
 
@@ -249,14 +249,14 @@ public sealed partial class OracleSchemaReader
             FROM ALL_INDEXES i
             INNER JOIN ALL_IND_COLUMNS ic ON ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME
             WHERE {filter}
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM ALL_CONSTRAINTS c
-                  WHERE c.OWNER = i.TABLE_OWNER
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM ALL_CONSTRAINTS c
+                    WHERE c.OWNER = i.TABLE_OWNER
                     AND c.TABLE_NAME = i.TABLE_NAME
                     AND c.INDEX_NAME = i.INDEX_NAME
                     AND c.CONSTRAINT_TYPE IN ('P', 'U')
-              )
+                )
             ORDER BY i.TABLE_OWNER, i.TABLE_NAME, i.INDEX_NAME, ic.COLUMN_POSITION
             """;
 

@@ -39,6 +39,8 @@ public static class OracleTypeMapper
             ["XMLTYPE"] = (DbType.Xml, OracleDbType.XmlType, typeof(string), true, false),
             ["JSON"] = (DbType.String, OracleDbType.Json, typeof(string), true, false),
             ["BFILE"] = (DbType.Object, OracleDbType.BFile, typeof(byte[]), null, false),
+            ["SDO_GEOMETRY"] = (DbType.Object, OracleDbType.Object, typeof(object), null, null),
+            ["MDSYS.SDO_GEOMETRY"] = (DbType.Object, OracleDbType.Object, typeof(object), null, null),
         }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<DbType, OracleDbType> DbTypeToOracleDbTypeMappings
@@ -106,7 +108,7 @@ public static class OracleTypeMapper
     /// </summary>
     /// <param name="typeName">The Oracle native type name (for example, <c>VARCHAR2</c> or <c>TIMESTAMP(6)</c>).</param>
     /// <returns>
-    /// A tuple containing mapped <see cref="DbType"/>, <see cref="OracleDbType"/>, CLR <see cref="Type"/>, 
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="OracleDbType"/>, CLR <see cref="Type"/>,
     /// and optional Unicode/fixed-length flags. Unknown types map to object defaults.
     /// </returns>
     public static (DbType DbType, OracleDbType OracleDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)

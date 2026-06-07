@@ -7,6 +7,19 @@ namespace SchemaSaurus.Sqlite;
 /// </summary>
 public static class SqliteTypeMapper
 {
+    private static readonly string[] SpatialTypeNames =
+    [
+        "GEOMETRY",
+        "GEOGRAPHY",
+        "POINT",
+        "LINESTRING",
+        "POLYGON",
+        "MULTIPOINT",
+        "MULTILINESTRING",
+        "MULTIPOLYGON",
+        "GEOMETRYCOLLECTION",
+    ];
+
     /// <summary>
     /// Maps a SQLite declared type name to its corresponding <see cref="DbType" /> and CLR type using SQLite type affinity rules.
     /// </summary>
@@ -21,6 +34,9 @@ public static class SqliteTypeMapper
             return (DbType.Binary, typeof(byte[]));
 
         var upper = typeName.ToUpperInvariant();
+
+        if (IsSpatialType(typeName))
+            return (DbType.Object, typeof(byte[]));
 
         // SQLite type affinity rules (https://www.sqlite.org/datatype3.html)
         if (upper.Contains("INT"))
@@ -50,5 +66,20 @@ public static class SqliteTypeMapper
 
         // Default: NUMERIC affinity
         return (DbType.String, typeof(string));
+    }
+
+    public static bool IsSpatialType(string typeName)
+    {
+        var normalizedTypeName = NormalizeTypeName(typeName);
+        return SpatialTypeNames.Contains(normalizedTypeName, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeTypeName(string typeName)
+    {
+        var parenthesisIndex = typeName.IndexOf('(', StringComparison.Ordinal);
+        if (parenthesisIndex > 0)
+            typeName = typeName[..parenthesisIndex];
+
+        return typeName.Trim();
     }
 }

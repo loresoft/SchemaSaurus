@@ -85,12 +85,13 @@ public sealed partial class SqliteSchemaReader
             var notNull = reader.GetInt32(notNullOrdinal) != 0;
 
             var (dbType, systemType) = SqliteTypeMapper.MapNativeType(typeName);
+            var nativeTypeName = string.IsNullOrEmpty(typeName) ? "BLOB" : typeName;
 
             viewBuilder.AddColumn(col => col
                 .WithName(columnName)
                 .WithOrdinalPosition(ordinalPosition)
                 .WithIsNullable(!notNull)
-                .WithNativeTypeName(string.IsNullOrEmpty(typeName) ? "BLOB" : typeName)
+                .WithNativeTypeName(nativeTypeName)
                 .WithDbType(dbType)
                 .WithSystemType(systemType));
 

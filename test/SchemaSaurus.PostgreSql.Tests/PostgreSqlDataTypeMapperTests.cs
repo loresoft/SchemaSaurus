@@ -34,6 +34,8 @@ public class PostgreSqlDataTypeMapperTests
     [InlineData(NpgsqlDbType.Json, DbType.String)]
     [InlineData(NpgsqlDbType.Jsonb, DbType.String)]
     [InlineData(NpgsqlDbType.JsonPath, DbType.String)]
+    [InlineData(NpgsqlDbType.Geometry, DbType.Object)]
+    [InlineData(NpgsqlDbType.Geography, DbType.Object)]
     [InlineData(NpgsqlDbType.Citext, DbType.Object)]
     public void WhenMappingNpgsqlDbTypeThenDbTypeIsReturned(NpgsqlDbType npgsqlDbType, DbType expectedDbType)
     {
@@ -57,6 +59,8 @@ public class PostgreSqlDataTypeMapperTests
     [InlineData("macaddr", DbType.Object, NpgsqlDbType.MacAddr, typeof(System.Net.NetworkInformation.PhysicalAddress), null, null)]
     [InlineData("pg_lsn", DbType.Object, NpgsqlDbType.PgLsn, typeof(NpgsqlLogSequenceNumber), null, null)]
     [InlineData("tid", DbType.Object, NpgsqlDbType.Tid, typeof(NpgsqlTid), null, null)]
+    [InlineData("geometry", DbType.Object, NpgsqlDbType.Geometry, typeof(object), null, null)]
+    [InlineData("geography", DbType.Object, NpgsqlDbType.Geography, typeof(object), null, null)]
     public void WhenMappingNativeTypeThenExpectedMetadataIsReturned(
         string typeName,
         DbType expectedDbType,

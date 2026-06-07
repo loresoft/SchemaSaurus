@@ -132,7 +132,7 @@ public sealed partial class PostgreSqlSchemaReader
             LEFT JOIN pg_class AS frncls ON frncls.oid = con.confrelid
             LEFT JOIN pg_namespace AS frnns ON frnns.oid = frncls.relnamespace
             WHERE con.contype IN ('p', 'u', 'f')
-              AND cls.relkind IN ('r', 'p', 'f')
+                AND cls.relkind IN ('r', 'p', 'f')
             ORDER BY con.conrelid, con.conname
             """;
 
@@ -237,12 +237,12 @@ public sealed partial class PostgreSqlSchemaReader
             JOIN pg_class AS idxcls ON idxcls.oid = idx.indexrelid
             JOIN pg_am AS am ON am.oid = idxcls.relam
             WHERE cls.relkind IN ('r', 'p', 'f')
-              AND NOT idx.indisprimary
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM pg_constraint con
-                  WHERE con.conindid = idx.indexrelid AND con.contype IN ('p', 'u')
-              )
+                AND NOT idx.indisprimary
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint con
+                    WHERE con.conindid = idx.indexrelid AND con.contype IN ('p', 'u')
+                )
             ORDER BY cls.oid, idxcls.relname
             """;
 

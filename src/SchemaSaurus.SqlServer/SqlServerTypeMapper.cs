@@ -41,6 +41,9 @@ public static class SqlServerTypeMapper
             ["rowversion"] = (DbType.Binary, SqlDbType.Timestamp, typeof(byte[]), null, null),
             ["uniqueidentifier"] = (DbType.Guid, SqlDbType.UniqueIdentifier, typeof(Guid), null, null),
             ["xml"] = (DbType.Xml, SqlDbType.Xml, typeof(string), null, null),
+            ["geometry"] = (DbType.Object, SqlDbType.Udt, typeof(object), null, null),
+            ["geography"] = (DbType.Object, SqlDbType.Udt, typeof(object), null, null),
+            ["hierarchyid"] = (DbType.Object, SqlDbType.Udt, typeof(object), null, null),
             ["vector"] = (DbType.Object, GetVectorSqlDbType(), typeof(float[]), null, null),
             ["sql_variant"] = (DbType.Object, SqlDbType.Variant, typeof(object), null, null),
 #if NET6_0_OR_GREATER
@@ -127,7 +130,7 @@ public static class SqlServerTypeMapper
     /// </summary>
     /// <param name="typeName">The SQL Server native type name (for example, <c>nvarchar</c> or <c>datetime2</c>).</param>
     /// <returns>
-    /// A tuple containing mapped <see cref="DbType"/>, <see cref="SqlDbType"/>, CLR <see cref="Type"/>, 
+    /// A tuple containing mapped <see cref="DbType"/>, <see cref="SqlDbType"/>, CLR <see cref="Type"/>,
     /// and optional Unicode/fixed-length flags. Unknown types map to object/variant defaults.
     /// </returns>
     public static (DbType DbType, SqlDbType SqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)

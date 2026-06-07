@@ -234,4 +234,31 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         temporalTable.Options.PeriodStartColumnName.Should().Be("ValidFrom");
         temporalTable.Options.PeriodEndColumnName.Should().Be("ValidTo");
     }
+
+    [Fact]
+    public async Task WhenReadingSpatialDataTableThenSpatialColumnsAreMapped()
+    {
+        var model = await GetDatabaseModelAsync();
+        var tableNames = model.Tables.Select(t => t.QualifiedName.Name).Order().ToArray();
+        var spatialTable = model.Tables.FirstOrDefault(t => t.QualifiedName.Name == "SpatialData");
+        spatialTable.Should().NotBeNull($"the schema should include SpatialData; discovered tables: {string.Join(", ", tableNames)}");
+
+        var geometryColumn = spatialTable!.Columns.First(c => c.Name == "GeometryValue");
+        geometryColumn.DbType.Should().Be(DbType.Object);
+        geometryColumn.SystemType.Should().Be(typeof(object));
+        geometryColumn.NativeTypeName.Should().Be("GEOMETRY");
+        geometryColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
+
+        var geographyColumn = spatialTable.Columns.First(c => c.Name == "GeographyValue");
+        geographyColumn.DbType.Should().Be(DbType.Object);
+        geographyColumn.SystemType.Should().Be(typeof(object));
+        geographyColumn.NativeTypeName.Should().Be("GEOGRAPHY");
+        geographyColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
+
+        var hierarchyColumn = spatialTable.Columns.First(c => c.Name == "HierarchyValue");
+        hierarchyColumn.DbType.Should().Be(DbType.Object);
+        hierarchyColumn.SystemType.Should().Be(typeof(object));
+        hierarchyColumn.NativeTypeName.Should().Be("HIERARCHYID");
+        hierarchyColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
+    }
 }

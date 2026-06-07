@@ -235,4 +235,17 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
 
         statusTable.Columns.Should().AllSatisfy(c => c.OrdinalPosition.Should().BeGreaterThan(0));
     }
+
+    [Fact]
+    public async Task WhenReadingSpatialDataTableThenSpatialColumnsAreMapped()
+    {
+        var model = await GetDatabaseModelAsync();
+        var spatialTable = model.Tables.First(t => t.QualifiedName.Name == "SPATIALDATA");
+
+        var geometryColumn = spatialTable.Columns.First(c => c.Name == "GEOMETRYVALUE");
+        geometryColumn.DbType.Should().Be(DbType.Object);
+        geometryColumn.SystemType.Should().Be(typeof(object));
+        geometryColumn.NativeTypeName.Should().Be("SDO_GEOMETRY");
+        geometryColumn.Annotations.Should().ContainKey(OracleAnnotations.OracleDbType).WhoseValue.Should().Be("Object");
+    }
 }

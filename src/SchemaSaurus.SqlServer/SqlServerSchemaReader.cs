@@ -296,7 +296,8 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
     }
 
 
-    private static string EscapeUnicodeLiteral(string value) => $"N{value.EscapeLiteral()}";
+    private static string EscapeUnicodeLiteral(string value)
+        => $"N{value.EscapeLiteral()}";
 
 
     private static string FormatNativeTypeName(string systemTypeName, string userTypeName, short maxLength, byte precision, byte scale)
@@ -350,7 +351,6 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
 
     private static bool IsTypeName(string typeName, string expected)
         => string.Equals(typeName, expected, StringComparison.OrdinalIgnoreCase);
-
 
     private static ReferentialAction MapReferentialAction(byte action) => action switch
     {
