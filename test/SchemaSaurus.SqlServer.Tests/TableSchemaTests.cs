@@ -41,6 +41,14 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingSchemaTablesThenStringListUsageTableExists()
+    {
+        var model = await GetDatabaseModelAsync();
+
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "StringListUsage");
+    }
+
+    [Fact]
     public async Task WhenReadingSchemaTablesThenTablesHaveDboSchema()
     {
         var model = await GetDatabaseModelAsync();
@@ -129,6 +137,28 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingStringListUsageTableThenValuesColumnUsesStringListType()
+    {
+        var model = await GetDatabaseModelAsync();
+        var userDefinedType = model.UserDefinedTypes.First(u => u.QualifiedName.Name == "StringList");
+        var table = model.Tables.First(t => t.QualifiedName.Name == "StringListUsage");
+
+        var valuesColumn = table.Columns.First(c => c.Name == "Values");
+        valuesColumn.NativeTypeName.Should().Be(userDefinedType.Name);
+        valuesColumn.NativeTypeName.Should().NotBe(userDefinedType.NativeTypeName);
+        valuesColumn.DbType.Should().Be(DbType.String);
+        valuesColumn.SystemType.Should().Be(typeof(string));
+        valuesColumn.MaxLength.Should().BeNull();
+        valuesColumn.IsUnicode.Should().BeTrue();
+        valuesColumn.IsFixedLength.Should().BeFalse();
+        valuesColumn.IsNullable.Should().BeTrue();
+
+        valuesColumn
+            .Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType)
+            .WhoseValue.Should().Be("NVarChar");
+    }
+
+    [Fact]
     public async Task WhenReadingStatusTableThenRowVersionColumnExists()
     {
         var model = await GetDatabaseModelAsync();
@@ -136,6 +166,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
 
         var rowVersionColumn = statusTable.Columns.First(c => c.Name == "RowVersion");
         rowVersionColumn.IsRowVersion.Should().BeTrue();
+        rowVersionColumn.NativeTypeName.Should().Be("rowversion");
         rowVersionColumn.DbType.Should().Be(DbType.Binary);
     }
 
@@ -246,19 +277,19 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var geometryColumn = spatialTable!.Columns.First(c => c.Name == "GeometryValue");
         geometryColumn.DbType.Should().Be(DbType.Object);
         geometryColumn.SystemType.Should().Be(typeof(object));
-        geometryColumn.NativeTypeName.Should().Be("GEOMETRY");
+        geometryColumn.NativeTypeName.Should().Be("geometry");
         geometryColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
 
         var geographyColumn = spatialTable.Columns.First(c => c.Name == "GeographyValue");
         geographyColumn.DbType.Should().Be(DbType.Object);
         geographyColumn.SystemType.Should().Be(typeof(object));
-        geographyColumn.NativeTypeName.Should().Be("GEOGRAPHY");
+        geographyColumn.NativeTypeName.Should().Be("geography");
         geographyColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
 
         var hierarchyColumn = spatialTable.Columns.First(c => c.Name == "HierarchyValue");
         hierarchyColumn.DbType.Should().Be(DbType.Object);
         hierarchyColumn.SystemType.Should().Be(typeof(object));
-        hierarchyColumn.NativeTypeName.Should().Be("HIERARCHYID");
+        hierarchyColumn.NativeTypeName.Should().Be("hierarchyid");
         hierarchyColumn.Annotations.Should().ContainKey(SqlServerAnnotations.SqlDbType).WhoseValue.Should().Be("Udt");
     }
 }

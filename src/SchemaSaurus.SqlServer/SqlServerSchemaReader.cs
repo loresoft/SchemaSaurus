@@ -306,25 +306,27 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         if (!string.Equals(systemTypeName, userTypeName, StringComparison.OrdinalIgnoreCase))
             return userTypeName;
 
+        // Handle special cases where the system type name doesn't match the expected native type name or where additional formatting is needed.
+        if (IsTypeName(systemTypeName, "timestamp"))
+            return "rowversion";
+
         // For system types, format the native type name with length/precision/scale as appropriate for the type.
         // For example, for character types, include the max length (e.g. varchar(50)); for decimal/numeric, include precision and scale (e.g. decimal(18, 2));
         // for datetime2/time/datetimeoffset, include fractional seconds precision if it's not the default of 7 (e.g. datetime2(3)).
 
-        var nativeTypeName = systemTypeName.ToUpperInvariant();
-
         if (IsTypeName(systemTypeName, "char") || IsTypeName(systemTypeName, "varchar") || IsTypeName(systemTypeName, "binary") || IsTypeName(systemTypeName, "varbinary"))
-            return maxLength == -1 ? $"{nativeTypeName}(MAX)" : $"{nativeTypeName}({maxLength})";
+            return maxLength == -1 ? $"{systemTypeName}(max)" : $"{systemTypeName}({maxLength})";
 
         if (IsTypeName(systemTypeName, "nchar") || IsTypeName(systemTypeName, "nvarchar"))
-            return maxLength == -1 ? $"{nativeTypeName}(MAX)" : $"{nativeTypeName}({maxLength / 2})";
+            return maxLength == -1 ? $"{systemTypeName}(max)" : $"{systemTypeName}({maxLength / 2})";
 
         if (IsTypeName(systemTypeName, "decimal") || IsTypeName(systemTypeName, "numeric"))
-            return $"{nativeTypeName}({precision}, {scale})";
+            return $"{systemTypeName}({precision}, {scale})";
 
         if (IsTypeName(systemTypeName, "datetime2") || IsTypeName(systemTypeName, "datetimeoffset") || IsTypeName(systemTypeName, "time"))
-            return scale != 7 ? $"{nativeTypeName}({scale})" : nativeTypeName;
+            return scale != 7 ? $"{systemTypeName}({scale})" : systemTypeName;
 
-        return nativeTypeName;
+        return systemTypeName;
     }
 
     private static int? NormalizeMaxLength(string systemTypeName, short maxLength)
