@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
