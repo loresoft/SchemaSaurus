@@ -145,7 +145,8 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
                 par.name                        AS param_name,
                 par.parameter_id,
                 st.name                         AS system_type_name,
-                TYPE_NAME(par.user_type_id)     AS user_type_name,
+                ut.name                         AS user_type_name,
+                uts.name                        AS user_type_schema,
                 par.max_length,
                 par.precision,
                 par.scale,
@@ -155,6 +156,8 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             INNER JOIN sys.types st
                 ON par.system_type_id = st.system_type_id
                 AND st.system_type_id = st.user_type_id
+            INNER JOIN sys.types ut ON par.user_type_id = ut.user_type_id
+            INNER JOIN sys.schemas uts ON ut.schema_id = uts.schema_id
             WHERE o.is_ms_shipped = 0 AND par.parameter_id > 0 AND {objectTypeFilter}
             ORDER BY par.object_id, par.parameter_id
             """;
@@ -169,10 +172,11 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         const int paramIdOrdinal = 2;
         const int sysTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLenOrdinal = 5;
-        const int precisionOrdinal = 6;
-        const int scaleOrdinal = 7;
-        const int outputOrdinal = 8;
+        const int userTypeSchemaOrdinal = 5;
+        const int maxLenOrdinal = 6;
+        const int precisionOrdinal = 7;
+        const int scaleOrdinal = 8;
+        const int outputOrdinal = 9;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -185,6 +189,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             var paramOrdinal = reader.GetInt32(paramIdOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
+            var userTypeSchema = reader.GetStringNull(userTypeSchemaOrdinal);
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
@@ -195,7 +200,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
-            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
+            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, userTypeSchema, maxLength, precision, scale);
 
             var direction = isOutput ? Metadata.ParameterDirection.Output : Metadata.ParameterDirection.Input;
 
@@ -300,11 +305,17 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
         => $"N{value.EscapeLiteral()}";
 
 
-    private static string FormatNativeTypeName(string systemTypeName, string userTypeName, short maxLength, byte precision, byte scale)
+    private static string FormatNativeTypeName(
+        string systemTypeName,
+        string userTypeName,
+        string? userTypeSchema,
+        short maxLength,
+        byte precision,
+        byte scale)
     {
-        // User-defined alias type — return the alias name as-is.
+        // User-defined alias type — return the schema-qualified alias name.
         if (!string.Equals(systemTypeName, userTypeName, StringComparison.OrdinalIgnoreCase))
-            return userTypeName;
+            return string.IsNullOrWhiteSpace(userTypeSchema) ? userTypeName : $"{userTypeSchema}.{userTypeName}";
 
         // Handle special cases where the system type name doesn't match the expected native type name or where additional formatting is needed.
         if (IsTypeName(systemTypeName, "timestamp"))
@@ -321,7 +332,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
             return maxLength == -1 ? $"{systemTypeName}(max)" : $"{systemTypeName}({maxLength / 2})";
 
         if (IsTypeName(systemTypeName, "decimal") || IsTypeName(systemTypeName, "numeric"))
-            return $"{systemTypeName}({precision}, {scale})";
+            return $"{systemTypeName}({precision},{scale})";
 
         if (IsTypeName(systemTypeName, "datetime2") || IsTypeName(systemTypeName, "datetimeoffset") || IsTypeName(systemTypeName, "time"))
             return scale != 7 ? $"{systemTypeName}({scale})" : systemTypeName;

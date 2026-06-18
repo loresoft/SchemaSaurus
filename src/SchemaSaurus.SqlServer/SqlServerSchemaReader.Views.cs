@@ -117,6 +117,7 @@ public sealed partial class SqlServerSchemaReader
                     ut.name
                 )                                   AS system_type_name,
                 ut.name                             AS user_type_name,
+                SCHEMA_NAME(ut.schema_id)           AS user_type_schema,
                 c.max_length,
                 c.precision,
                 c.scale,
@@ -146,12 +147,13 @@ public sealed partial class SqlServerSchemaReader
         const int colNameOrdinal = 2;
         const int sysTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLenOrdinal = 5;
-        const int precisionOrdinal = 6;
-        const int scaleOrdinal = 7;
-        const int nullableOrdinal = 8;
-        const int collationOrdinal = 9;
-        const int descOrdinal = 10;
+        const int userTypeSchemaOrdinal = 5;
+        const int maxLenOrdinal = 6;
+        const int precisionOrdinal = 7;
+        const int scaleOrdinal = 8;
+        const int nullableOrdinal = 9;
+        const int collationOrdinal = 10;
+        const int descOrdinal = 11;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -165,6 +167,7 @@ public sealed partial class SqlServerSchemaReader
             var columnName = reader.GetString(colNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
+            var userTypeSchema = reader.GetStringNull(userTypeSchemaOrdinal);
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
@@ -176,7 +179,7 @@ public sealed partial class SqlServerSchemaReader
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
 
             // Format the native type name with length/precision/scale as appropriate for the type. For user-defined types, include the user type name instead of the system type name.
-            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
+            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, userTypeSchema, maxLength, precision, scale);
 
             // Normalize max length for character types (e.g. -1 for MAX) and binary types, and set to null for types where it doesn't apply
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);

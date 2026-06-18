@@ -158,7 +158,8 @@ public sealed partial class SqlServerSchemaReader
                 par.name                        AS param_name,
                 par.parameter_id,
                 st.name                         AS system_type_name,
-                TYPE_NAME(par.user_type_id)     AS user_type_name,
+                ut.name                         AS user_type_name,
+                uts.name                        AS user_type_schema,
                 par.max_length,
                 par.precision,
                 par.scale,
@@ -168,6 +169,8 @@ public sealed partial class SqlServerSchemaReader
             INNER JOIN sys.types st
                 ON par.system_type_id = st.system_type_id
                 AND st.system_type_id = st.user_type_id
+            INNER JOIN sys.types ut ON par.user_type_id = ut.user_type_id
+            INNER JOIN sys.schemas uts ON ut.schema_id = uts.schema_id
             WHERE o.type IN ('FN', 'FS') AND o.is_ms_shipped = 0
             ORDER BY par.object_id, par.parameter_id
             """;
@@ -182,10 +185,11 @@ public sealed partial class SqlServerSchemaReader
         const int paramIdOrdinal = 2;
         const int sysTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLenOrdinal = 5;
-        const int precisionOrdinal = 6;
-        const int scaleOrdinal = 7;
-        const int outputOrdinal = 8;
+        const int userTypeSchemaOrdinal = 5;
+        const int maxLenOrdinal = 6;
+        const int precisionOrdinal = 7;
+        const int scaleOrdinal = 8;
+        const int outputOrdinal = 9;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -198,6 +202,7 @@ public sealed partial class SqlServerSchemaReader
             var paramId = reader.GetInt32(paramIdOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
+            var userTypeSchema = reader.GetStringNull(userTypeSchemaOrdinal);
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
@@ -212,7 +217,7 @@ public sealed partial class SqlServerSchemaReader
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;
 
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
-            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
+            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, userTypeSchema, maxLength, precision, scale);
 
             if (paramId == 0)
             {
@@ -335,7 +340,8 @@ public sealed partial class SqlServerSchemaReader
                 c.column_id,
                 c.name                      AS column_name,
                 st.name                     AS system_type_name,
-                TYPE_NAME(c.user_type_id)   AS user_type_name,
+                ut.name                     AS user_type_name,
+                uts.name                    AS user_type_schema,
                 c.max_length,
                 c.precision,
                 c.scale,
@@ -345,6 +351,8 @@ public sealed partial class SqlServerSchemaReader
             INNER JOIN sys.types st
                 ON c.system_type_id = st.system_type_id
                 AND st.system_type_id = st.user_type_id
+            INNER JOIN sys.types ut ON c.user_type_id = ut.user_type_id
+            INNER JOIN sys.schemas uts ON ut.schema_id = uts.schema_id
             WHERE o.type IN ('TF', 'IF', 'FT') AND o.is_ms_shipped = 0
             ORDER BY c.object_id, c.column_id
             """;
@@ -359,10 +367,11 @@ public sealed partial class SqlServerSchemaReader
         const int columnNameOrdinal = 2;
         const int sysTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLenOrdinal = 5;
-        const int precisionOrdinal = 6;
-        const int scaleOrdinal = 7;
-        const int nullableOrdinal = 8;
+        const int userTypeSchemaOrdinal = 5;
+        const int maxLenOrdinal = 6;
+        const int precisionOrdinal = 7;
+        const int scaleOrdinal = 8;
+        const int nullableOrdinal = 9;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -374,13 +383,14 @@ public sealed partial class SqlServerSchemaReader
             var columnName = reader.GetString(columnNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
+            var userTypeSchema = reader.GetStringNull(userTypeSchemaOrdinal);
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
 
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
-            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
+            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, userTypeSchema, maxLength, precision, scale);
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);
             byte? precisionValue = HasPrecision(systemTypeName) ? precision : null;
             var scaleValue = HasScale(systemTypeName) ? (int?)scale : null;

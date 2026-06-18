@@ -149,6 +149,7 @@ public sealed partial class SqlServerSchemaReader
                     ut.name
                 )                                   AS system_type_name,
                 ut.name                             AS user_type_name,
+                SCHEMA_NAME(ut.schema_id)           AS user_type_schema,
                 c.max_length,
                 c.precision,
                 c.scale,
@@ -192,20 +193,21 @@ public sealed partial class SqlServerSchemaReader
         const int columnNameOrdinal = 2;
         const int systemTypeOrdinal = 3;
         const int userTypeOrdinal = 4;
-        const int maxLengthOrdinal = 5;
-        const int precisionOrdinal = 6;
-        const int scaleOrdinal = 7;
-        const int nullableOrdinal = 8;
-        const int identityOrdinal = 9;
-        const int computedOrdinal = 10;
-        const int rowVersionOrdinal = 11;
-        const int collationOrdinal = 12;
-        const int seedOrdinal = 13;
-        const int incrementOrdinal = 14;
-        const int computedSqlOrdinal = 15;
-        const int persistedOrdinal = 16;
-        const int defaultSqlOrdinal = 17;
-        const int descriptionOrdinal = 18;
+        const int userTypeSchemaOrdinal = 5;
+        const int maxLengthOrdinal = 6;
+        const int precisionOrdinal = 7;
+        const int scaleOrdinal = 8;
+        const int nullableOrdinal = 9;
+        const int identityOrdinal = 10;
+        const int computedOrdinal = 11;
+        const int rowVersionOrdinal = 12;
+        const int collationOrdinal = 13;
+        const int seedOrdinal = 14;
+        const int incrementOrdinal = 15;
+        const int computedSqlOrdinal = 16;
+        const int persistedOrdinal = 17;
+        const int defaultSqlOrdinal = 18;
+        const int descriptionOrdinal = 19;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -217,6 +219,7 @@ public sealed partial class SqlServerSchemaReader
             var columnName = reader.GetString(columnNameOrdinal);
             var systemTypeName = reader.GetString(systemTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
+            var userTypeSchema = reader.GetStringNull(userTypeSchemaOrdinal);
             var maxLength = reader.GetInt16(maxLengthOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
@@ -236,7 +239,7 @@ public sealed partial class SqlServerSchemaReader
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
 
             // Format the native type name with length/precision/scale as appropriate for the type
-            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, maxLength, precision, scale);
+            var nativeTypeName = FormatNativeTypeName(systemTypeName, userTypeName, userTypeSchema, maxLength, precision, scale);
 
             // Normalize max length for character types (e.g. -1 for MAX) and binary types, and set to null for types where it doesn't apply
             var maxLengthValue = NormalizeMaxLength(systemTypeName, maxLength);

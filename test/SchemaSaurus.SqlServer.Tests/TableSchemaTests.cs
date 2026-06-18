@@ -144,7 +144,7 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var table = model.Tables.First(t => t.QualifiedName.Name == "StringListUsage");
 
         var valuesColumn = table.Columns.First(c => c.Name == "Values");
-        valuesColumn.NativeTypeName.Should().Be(userDefinedType.Name);
+        valuesColumn.NativeTypeName.Should().Be($"{userDefinedType.Schema}.{userDefinedType.Name}");
         valuesColumn.NativeTypeName.Should().NotBe(userDefinedType.NativeTypeName);
         valuesColumn.DbType.Should().Be(DbType.String);
         valuesColumn.SystemType.Should().Be(typeof(string));
