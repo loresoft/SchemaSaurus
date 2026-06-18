@@ -318,14 +318,10 @@ public static class DatabaseModelExtensions
                 foreach (var mapping in fk.ColumnMappings ?? [])
                 {
                     mapping.DependentColumn = table.Columns
-                        .FirstOrDefault(c => string.Equals(
-                            c.Name, mapping.DependentColumnName,
-                            StringComparison.OrdinalIgnoreCase))!;
+                        .FirstOrDefault(c => string.Equals(c.Name, mapping.DependentColumnName, StringComparison.OrdinalIgnoreCase))!;
 
                     mapping.PrincipalColumn = principalTable.Columns
-                        .FirstOrDefault(c => string.Equals(
-                            c.Name, mapping.PrincipalColumnName,
-                            StringComparison.OrdinalIgnoreCase))!;
+                        .FirstOrDefault(c => string.Equals(c.Name, mapping.PrincipalColumnName, StringComparison.OrdinalIgnoreCase))!;
                 }
             }
         }
@@ -334,20 +330,25 @@ public static class DatabaseModelExtensions
     private static void ResolveColumnRef(ColumnReference colRef, RelationBase relation)
     {
         colRef.Column = relation.Columns
-            .FirstOrDefault(c => string.Equals(
-                c.Name, colRef.ColumnName,
-                StringComparison.OrdinalIgnoreCase))!;
+            .FirstOrDefault(c => string.Equals(c.Name, colRef.ColumnName, StringComparison.OrdinalIgnoreCase))!;
     }
 
 
     /// <summary>
-    /// Serializes a <see cref="DatabaseModel"/> to a JSON string using the pre-configured
-    /// <see cref="MetadataJsonContext"/> converter set.
+    /// Serializes a <see cref="DatabaseModel"/> to a JSON string using the provided serializer options,
+    /// or the pre-configured <see cref="MetadataJsonContext"/> converter set when no options are provided.
     /// </summary>
     /// <param name="model">The database model to serialize.</param>
+    /// <param name="options">Optional serializer options to use instead of the default metadata options.</param>
     /// <returns>A JSON string representing the full metadata snapshot.</returns>
-    public static string ToJson(this DatabaseModel model)
-        => JsonSerializer.Serialize(model, MetadataJsonContext.JsonSerializerOptions.Value);
+    public static string ToJson(this DatabaseModel model, JsonSerializerOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+
+        var serializerOptions = options ?? MetadataJsonContext.JsonSerializerOptions.Value;
+
+        return JsonSerializer.Serialize(model, serializerOptions);
+    }
 
     /// <summary>
     /// Deserializes a <see cref="DatabaseModel"/> from a JSON string produced by
@@ -358,14 +359,19 @@ public static class DatabaseModelExtensions
     /// that all navigation properties are fully populated before the model is returned.
     /// </remarks>
     /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="options">Optional serializer options to use instead of the default metadata options.</param>
     /// <returns>A fully navigable <see cref="DatabaseModel"/> instance with all
     /// back-references wired.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when deserialization produces a <see langword="null"/> result.
     /// </exception>
-    public static DatabaseModel FromJson(string json)
+    public static DatabaseModel FromJson(string json, JsonSerializerOptions? options = null)
     {
-        var model = JsonSerializer.Deserialize<DatabaseModel>(json, MetadataJsonContext.JsonSerializerOptions.Value)
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+
+        var serializerOptions = options ?? MetadataJsonContext.JsonSerializerOptions.Value;
+
+        var model = JsonSerializer.Deserialize<DatabaseModel>(json, serializerOptions)
             ?? throw new InvalidOperationException(
                 "Deserialization of DatabaseModel returned null. " +
                 "Ensure the JSON represents a valid non-null object.");

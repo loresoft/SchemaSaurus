@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 
 using SchemaSaurus.Metadata.Builders;
 
@@ -85,6 +86,41 @@ public class DatabaseModelJsonTests
 
         deserialized.DatabaseName.Should().Be("EmptyDb");
         deserialized.Provider.Should().Be("Sqlite");
+    }
+
+    [Fact]
+    public void WhenCustomSerializerOptionsProvidedThenToJsonUsesOptions()
+    {
+        var model = DatabaseModelFixtures.CreateMinimalModel();
+        var options = new JsonSerializerOptions(MetadataJsonContext.JsonSerializerOptions.Value)
+        {
+            WriteIndented = false,
+        };
+
+        var json = model.ToJson(options);
+
+        json.Should().NotContain(Environment.NewLine);
+        json.Should().Contain("\"databaseName\":\"EmptyDb\"");
+    }
+
+    [Fact]
+    public void WhenCustomSerializerOptionsProvidedThenFromJsonUsesOptions()
+    {
+        const string json = """
+            {
+              "DatabaseName": "OptionsDb",
+              "Provider": "Sqlite"
+            }
+            """;
+        var options = new JsonSerializerOptions(MetadataJsonContext.JsonSerializerOptions.Value)
+        {
+            PropertyNameCaseInsensitive = true,
+        };
+
+        var model = DatabaseModelExtensions.FromJson(json, options);
+
+        model.DatabaseName.Should().Be("OptionsDb");
+        model.Provider.Should().Be("Sqlite");
     }
 
     [Fact]

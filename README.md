@@ -89,6 +89,36 @@ string json = JsonSerializer.Serialize(model, MetadataJsonContext.Default.Databa
 DatabaseModel restored = JsonSerializer.Deserialize(json, MetadataJsonContext.Default.DatabaseModel)!;
 ```
 
+## Command Line Export
+
+Install SchemaSaurus as a .NET tool, then use the `export` command to capture database metadata as JSON.
+
+```powershell
+dotnet tool install --global SchemaSaurus
+```
+
+Write JSON to a file with `-o` / `--output`:
+
+```powershell
+SchemaSaurus export -c "Server=.;Database=AdventureWorks;Integrated Security=true;TrustServerCertificate=true" -p SqlServer -o .\schema.json
+```
+
+When `--output` is omitted, JSON is written to stdout for piping or redirection:
+
+```powershell
+SchemaSaurus export -c "Data Source=.\sample.db" -p SQLite | jq .databaseName
+```
+
+Supported providers are `SqlServer`, `PostgreSQL`, `MySQL`, `Oracle`, and `SQLite`.
+
+Filter the exported metadata with `--schema` and `--table`, and exclude object types with boolean switches:
+
+```powershell
+SchemaSaurus export -c "Server=.;Database=AdventureWorks;Integrated Security=true;TrustServerCertificate=true" -p SqlServer -o .\schema.json --schema dbo --table Customer --exclude-stored-procedures --exclude-sequences
+```
+
+Available exclusion switches are `--exclude-views`, `--exclude-stored-procedures`, `--exclude-scalar-functions`, `--exclude-table-valued-functions`, `--exclude-sequences`, and `--exclude-user-defined-types`.
+
 ### Visitor
 
 Walk the model to drive code generation or analysis:

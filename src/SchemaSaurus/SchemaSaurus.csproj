@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ToolCommandName>SchemaSaurus</ToolCommandName>
+    <RollForward>Major</RollForward>
+    <PackAsTool>true</PackAsTool>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console.Cli" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SchemaSaurus.MySql\SchemaSaurus.MySql.csproj" />
+    <ProjectReference Include="..\SchemaSaurus.Oracle\SchemaSaurus.Oracle.csproj" />
+    <ProjectReference Include="..\SchemaSaurus.PostgreSql\SchemaSaurus.PostgreSql.csproj" />
+    <ProjectReference Include="..\SchemaSaurus.Sqlite\SchemaSaurus.Sqlite.csproj" />
+    <ProjectReference Include="..\SchemaSaurus.SqlServer\SchemaSaurus.SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>

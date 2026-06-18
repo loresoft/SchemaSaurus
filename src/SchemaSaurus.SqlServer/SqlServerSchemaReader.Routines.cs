@@ -370,13 +370,13 @@ public sealed partial class SqlServerSchemaReader
             if (!funcs.TryGetValue(objectId, out var functionBuilder))
                 continue;
 
+            var columnId = reader.GetInt32(columnIdOrdinal);
+            var columnName = reader.GetString(columnNameOrdinal);
             var systemTypeName = reader.GetString(sysTypeOrdinal);
             var userTypeName = reader.GetStringNull(userTypeOrdinal) ?? systemTypeName;
             var maxLength = reader.GetInt16(maxLenOrdinal);
             var precision = reader.GetByte(precisionOrdinal);
             var scale = reader.GetByte(scaleOrdinal);
-            var columnName = reader.GetString(columnNameOrdinal);
-            var columnId = reader.GetInt32(columnIdOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
 
             var (dbType, sqlDbType, systemType, isUnicode, isFixedLength) = SqlServerTypeMapper.MapNativeType(systemTypeName);
