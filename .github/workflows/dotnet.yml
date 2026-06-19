@@ -6,11 +6,9 @@ env:
   DOTNET_ENVIRONMENT: github
   ASPNETCORE_ENVIRONMENT: github
   BUILD_PATH: "${{github.workspace}}/artifacts"
-  COVERAGE_PATH: "${{github.workspace}}/coverage"
 
 permissions:
   contents: read
-  code-quality: write
 
 on:
   push:
@@ -32,7 +30,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Install .NET
@@ -47,21 +44,22 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Run Test
-        run: dotnet test --no-build --configuration Release --results-directory "${{env.COVERAGE_PATH}}" --coverlet --coverlet-output-format cobertura
+        run: dotnet test --no-build --configuration Release --coverlet --coverlet-output-format lcov
 
-      - name: Merge Coverage
+      - name: Collect Coverage
         if: success()
+        id: coverage
         run: |
-          mapfile -t files < <(find "${{env.COVERAGE_PATH}}" -name 'coverage.cobertura.*.xml' -print)
-          dnx dotnet-coverage -- merge "${files[@]}" -f cobertura -o "${{env.COVERAGE_PATH}}/coverage.cobertura.xml"
+          FILES=$(find ${{github.workspace}} -name 'coverage.*.info' -print | tr '\n' ' ')
+          echo "files=$FILES" >> $GITHUB_OUTPUT
 
-      - name: Upload Coverage
-        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: actions/upload-code-coverage@v1
+      - name: Report Coverage
+        if: success() && steps.coverage.outputs.files != ''
+        uses: coverallsapp/github-action@v2
+        continue-on-error: true
         with:
-          file: ${{ env.COVERAGE_PATH }}/coverage.cobertura.xml
-          language: "C#"
-          label: code-coverage/dotnet
+          files: ${{ steps.coverage.outputs.files }}
+          format: lcov
 
       - name: Create Packages
         if: success() && github.event_name != 'pull_request'
