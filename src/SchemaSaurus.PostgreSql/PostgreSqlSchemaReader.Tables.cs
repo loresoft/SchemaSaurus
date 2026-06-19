@@ -347,7 +347,7 @@ public sealed partial class PostgreSqlSchemaReader
 
             var name = reader.GetString(nameOrdinal);
 
-            var enabled = reader.GetString(enabledOrdinal);
+            var enabled = reader.GetChar(enabledOrdinal);
             var definition = reader.GetStringNull(definitionOrdinal);
             var isBefore = reader.GetBoolean(beforeOrdinal);
             var isInstead = reader.GetBoolean(insteadOrdinal);
@@ -376,7 +376,7 @@ public sealed partial class PostgreSqlSchemaReader
                 Timing = timing,
                 Events = events,
                 Definition = definition,
-                IsDisabled = enabled == "D",
+                IsDisabled = enabled == 'D',
             };
 
             tableBuilder.AddTrigger(trigger);
