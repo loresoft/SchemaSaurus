@@ -238,6 +238,52 @@ public class DatabaseInitializer : IHostedService
             FROM "User"
             WHERE "IsDeleted" = 0
             """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "UniqueConstraint" (
+                "Id" INTEGER PRIMARY KEY,
+                "TenantId" INTEGER NOT NULL,
+                "Code" TEXT NOT NULL,
+                "ExternalId" TEXT NOT NULL,
+                UNIQUE ("Code"),
+                UNIQUE ("TenantId", "ExternalId")
+            )
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "TriggerTarget" (
+                "Id" INTEGER PRIMARY KEY,
+                "Name" TEXT NOT NULL,
+                "AuditCount" INTEGER NOT NULL DEFAULT 0
+            )
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TRIGGER IF NOT EXISTS "TR_TriggerTarget_AfterInsert"
+            AFTER INSERT ON "TriggerTarget"
+            FOR EACH ROW
+            BEGIN
+                SELECT 1;
+            END
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TRIGGER IF NOT EXISTS "TR_TriggerTarget_BeforeUpdate"
+            BEFORE UPDATE ON "TriggerTarget"
+            FOR EACH ROW
+            BEGIN
+                SELECT 1;
+            END
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TRIGGER IF NOT EXISTS "TR_TriggerTarget_AfterDelete"
+            AFTER DELETE ON "TriggerTarget"
+            FOR EACH ROW
+            BEGIN
+                SELECT 1;
+            END
+            """);
     }
 
 
