@@ -284,6 +284,38 @@ public class DatabaseInitializer : IHostedService
                 SELECT 1;
             END
             """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "PrimaryKeyTarget" (
+                "Id" INTEGER PRIMARY KEY,
+                "Code" TEXT NOT NULL
+            )
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "ImplicitForeignKey" (
+                "Id" INTEGER PRIMARY KEY,
+                "TargetId" INTEGER NOT NULL,
+                FOREIGN KEY ("TargetId") REFERENCES "PrimaryKeyTarget"
+            )
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "CompositePrimaryKeyTarget" (
+                "TenantId" INTEGER NOT NULL,
+                "ExternalId" TEXT NOT NULL,
+                "Name" TEXT NOT NULL,
+                PRIMARY KEY ("TenantId", "ExternalId")
+            )
+            """);
+
+        _migrationRunner.Processor.Execute("""
+            CREATE TABLE IF NOT EXISTS "CompositeImplicitForeignKey" (
+                "TenantId" INTEGER NOT NULL,
+                "ExternalId" TEXT NOT NULL,
+                FOREIGN KEY ("TenantId", "ExternalId") REFERENCES "CompositePrimaryKeyTarget"
+            )
+            """);
     }
 
 

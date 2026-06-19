@@ -1,4 +1,5 @@
 using SchemaSaurus.Metadata;
+using SchemaSaurus.Metadata.Provider;
 using SchemaSaurus.Sqlite.Tests.Fixtures;
 
 namespace SchemaSaurus.Sqlite.Tests;
@@ -96,5 +97,47 @@ public class ForeignKeyTests(DatabaseFixture databaseFixture)
         taskExtendedTable.ForeignKeys.Should().Contain(fk => fk.Name == "fk_TaskExtended_Task_TaskId");
         var fk = taskExtendedTable.ForeignKeys.First(fk => fk.Name == "fk_TaskExtended_Task_TaskId");
         fk.PrincipalTableName.Name.Should().Be("Task");
+    }
+
+    [Fact]
+    public async Task WhenReadingImplicitForeignKeyThenPrincipalColumnUsesPrimaryKeyColumn()
+    {
+        var model = await GetImplicitForeignKeyModelAsync("ImplicitForeignKey");
+        var table = model.Tables.Single(t => t.QualifiedName.Name == "ImplicitForeignKey");
+        var fk = table.ForeignKeys.Single(fk => fk.Name == "fk_ImplicitForeignKey_PrimaryKeyTarget_TargetId");
+
+        fk.ColumnMappings.Should().ContainSingle();
+        fk.ColumnMappings[0].DependentColumnName.Should().Be("TargetId");
+        fk.ColumnMappings[0].PrincipalColumnName.Should().Be("Id");
+    }
+
+    [Fact]
+    public async Task WhenReadingCompositeImplicitForeignKeyThenPrincipalColumnsUsePrimaryKeyOrdinalOrder()
+    {
+        var model = await GetImplicitForeignKeyModelAsync("CompositeImplicitForeignKey");
+        var table = model.Tables.Single(t => t.QualifiedName.Name == "CompositeImplicitForeignKey");
+        var fk = table.ForeignKeys.Single(fk => fk.Name == "fk_CompositeImplicitForeignKey_CompositePrimaryKeyTarget_TenantId_ExternalId");
+
+        fk.ColumnMappings.Should().HaveCount(2);
+        fk.ColumnMappings[0].DependentColumnName.Should().Be("TenantId");
+        fk.ColumnMappings[0].PrincipalColumnName.Should().Be("TenantId");
+        fk.ColumnMappings[1].DependentColumnName.Should().Be("ExternalId");
+        fk.ColumnMappings[1].PrincipalColumnName.Should().Be("ExternalId");
+    }
+
+    private Task<DatabaseModel> GetImplicitForeignKeyModelAsync(string tableName)
+    {
+        var options = new SchemaReaderOptions
+        {
+            Tables = [tableName],
+            IncludeViews = false,
+            IncludeStoredProcedures = false,
+            IncludeScalarFunctions = false,
+            IncludeTableValuedFunctions = false,
+            IncludeSequences = false,
+            IncludeUserDefinedTypes = false,
+        };
+
+        return GetDatabaseModelAsync(options);
     }
 }
