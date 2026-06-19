@@ -79,6 +79,48 @@ public class PostgreSqlDataTypeMapperTests
     }
 
     [Fact]
+    public void WhenMappingIntegerArrayNativeTypeThenExpectedMetadataIsReturned()
+    {
+        var expectedNpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Integer;
+
+        var mapping = PostgreSqlTypeMapper.MapArrayNativeType("int4");
+
+        mapping.DbType.Should().Be(DbType.Object);
+        mapping.NpgsqlDbType.Should().Be(expectedNpgsqlDbType);
+        mapping.SystemType.Should().Be(typeof(int[]));
+        mapping.IsUnicode.Should().BeNull();
+        mapping.IsFixedLength.Should().BeNull();
+    }
+
+    [Fact]
+    public void WhenMappingTextArrayNativeTypeThenExpectedMetadataIsReturned()
+    {
+        var expectedNpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Text;
+
+        var mapping = PostgreSqlTypeMapper.MapNativeType("text[]");
+
+        mapping.DbType.Should().Be(DbType.Object);
+        mapping.NpgsqlDbType.Should().Be(expectedNpgsqlDbType);
+        mapping.SystemType.Should().Be(typeof(string[]));
+        mapping.IsUnicode.Should().BeTrue();
+        mapping.IsFixedLength.Should().BeFalse();
+    }
+
+    [Fact]
+    public void WhenMappingUnknownArrayNativeTypeThenObjectArrayMetadataIsReturned()
+    {
+        var expectedNpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Unknown;
+
+        var mapping = PostgreSqlTypeMapper.MapArrayNativeType("custom_type");
+
+        mapping.DbType.Should().Be(DbType.Object);
+        mapping.NpgsqlDbType.Should().Be(expectedNpgsqlDbType);
+        mapping.SystemType.Should().Be(typeof(object[]));
+        mapping.IsUnicode.Should().BeNull();
+        mapping.IsFixedLength.Should().BeNull();
+    }
+
+    [Fact]
     public void WhenMappingUnsupportedDbTypeThenUnknownIsReturned()
     {
         var npgsqlDbType = PostgreSqlTypeMapper.ToNpgsqlDbType(DbType.SByte);

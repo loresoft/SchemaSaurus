@@ -1,5 +1,7 @@
 using System.Data;
 
+using NpgsqlTypes;
+
 using SchemaSaurus.PostgreSql.Tests.Fixtures;
 using SchemaSaurus.PostgreSql;
 
@@ -198,6 +200,39 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
         var decimalColumn = dataTypeTable.Columns.First(c => c.Name == "Decimal");
         decimalColumn.Precision.Should().Be(19);
         decimalColumn.Scale.Should().Be(4);
+    }
+
+    [Fact]
+    public async Task WhenReadingDataTypeTableThenArrayColumnsAreMapped()
+    {
+        var model = await GetDatabaseModelAsync();
+        var dataTypeTable = model.Tables.First(t => t.QualifiedName.Name == "DataType");
+
+        var integerArrayColumn = dataTypeTable.Columns.First(c => c.Name == "IntegerArray");
+        var expectedIntegerArrayType = NpgsqlDbType.Array | NpgsqlDbType.Integer;
+        integerArrayColumn.NativeTypeName.Should().Be("integer[]");
+        integerArrayColumn.DbType.Should().Be(DbType.Object);
+        integerArrayColumn.SystemType.Should().Be(typeof(int[]));
+        integerArrayColumn.IsNullable.Should().BeFalse();
+        integerArrayColumn.MaxLength.Should().BeNull();
+        integerArrayColumn.Annotations.Should().ContainKey(PostgreSqlAnnotations.NpgsqlDbType).WhoseValue.Should().Be(expectedIntegerArrayType.ToString());
+
+        var textArrayColumn = dataTypeTable.Columns.First(c => c.Name == "TextArray");
+        var expectedTextArrayType = NpgsqlDbType.Array | NpgsqlDbType.Text;
+        textArrayColumn.NativeTypeName.Should().Be("text[]");
+        textArrayColumn.DbType.Should().Be(DbType.Object);
+        textArrayColumn.SystemType.Should().Be(typeof(string[]));
+        textArrayColumn.IsNullable.Should().BeFalse();
+        textArrayColumn.Annotations.Should().ContainKey(PostgreSqlAnnotations.NpgsqlDbType).WhoseValue.Should().Be(expectedTextArrayType.ToString());
+
+        var nullableVarcharArrayColumn = dataTypeTable.Columns.First(c => c.Name == "NullableVarcharArray");
+        var expectedVarcharArrayType = NpgsqlDbType.Array | NpgsqlDbType.Varchar;
+        nullableVarcharArrayColumn.NativeTypeName.Should().Be("character varying(50)[]");
+        nullableVarcharArrayColumn.DbType.Should().Be(DbType.Object);
+        nullableVarcharArrayColumn.SystemType.Should().Be(typeof(string[]));
+        nullableVarcharArrayColumn.IsNullable.Should().BeTrue();
+        nullableVarcharArrayColumn.MaxLength.Should().BeNull();
+        nullableVarcharArrayColumn.Annotations.Should().ContainKey(PostgreSqlAnnotations.NpgsqlDbType).WhoseValue.Should().Be(expectedVarcharArrayType.ToString());
     }
 
     [Fact]

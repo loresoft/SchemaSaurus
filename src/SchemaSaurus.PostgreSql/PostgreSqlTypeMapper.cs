@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 using NpgsqlTypes;
@@ -149,10 +150,47 @@ public static class PostgreSqlTypeMapper
     /// </returns>
     public static (DbType DbType, NpgsqlDbType NpgsqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapNativeType(string typeName)
     {
+        if (TryGetArrayElementTypeName(typeName, out var elementTypeName))
+            return MapArrayNativeType(elementTypeName);
+
         if (PostgreSqlTypeMappings.TryGetValue(typeName, out var mapping))
             return mapping;
 
         return (DbType.Object, NpgsqlDbType.Unknown, typeof(object), null, null);
+    }
+
+    /// <summary>
+    /// Maps a PostgreSQL array element native data type name to array metadata.
+    /// </summary>
+    /// <param name="elementTypeName">The PostgreSQL native element type name (for example, <c>int4</c> or <c>text</c>).</param>
+    /// <returns>
+    /// A tuple containing mapped array <see cref="DbType"/>, array <see cref="NpgsqlDbType"/>, CLR array <see cref="Type"/>,
+    /// and optional Unicode/fixed-length flags inherited from the element type.
+    /// </returns>
+    public static (DbType DbType, NpgsqlDbType NpgsqlDbType, Type SystemType, bool? IsUnicode, bool? IsFixedLength) MapArrayNativeType(string elementTypeName)
+    {
+        if (TryGetArrayElementTypeName(elementTypeName, out var nestedElementTypeName))
+            elementTypeName = nestedElementTypeName;
+
+        var elementMapping = MapNativeType(elementTypeName);
+        var npgsqlDbType = NpgsqlDbType.Array | elementMapping.NpgsqlDbType;
+        var systemType = elementMapping.SystemType.MakeArrayType();
+
+        return (DbType.Object, npgsqlDbType, systemType, elementMapping.IsUnicode, elementMapping.IsFixedLength);
+    }
+
+    private static bool TryGetArrayElementTypeName(string typeName, [NotNullWhen(true)] out string? elementTypeName)
+    {
+        const string suffix = "[]";
+
+        if (typeName.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            elementTypeName = typeName[..^suffix.Length];
+            return elementTypeName.Length > 0;
+        }
+
+        elementTypeName = null;
+        return false;
     }
 
     /// <summary>

@@ -77,6 +77,10 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
                 basetyp.typname AS basetypname,
                 format_type(typ.oid, attr.atttypmod) AS formatted_typname,
                 format_type(basetyp.oid, typ.typtypmod) AS formatted_basetypname,
+                elemtyp.typname AS elemtypname,
+                elem_basetyp.typname AS elem_basetypname,
+                base_elemtyp.typname AS base_elemtypname,
+                base_elem_basetyp.typname AS base_elem_basetypname,
                 NOT (attr.attnotnull OR typ.typnotnull) AS nullable,
                 CASE WHEN attr.atthasdef THEN pg_get_expr(def.adbin, cls.oid) END AS default_sql,
                 attr.attidentity::text,
@@ -90,6 +94,10 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             JOIN pg_attribute AS attr ON attr.attrelid = cls.oid
             JOIN pg_type AS typ ON attr.atttypid = typ.oid
             LEFT JOIN pg_type AS basetyp ON basetyp.oid = typ.typbasetype
+            LEFT JOIN pg_type AS elemtyp ON elemtyp.oid = typ.typelem AND typ.typelem <> 0
+            LEFT JOIN pg_type AS elem_basetyp ON elem_basetyp.oid = elemtyp.typbasetype
+            LEFT JOIN pg_type AS base_elemtyp ON base_elemtyp.oid = basetyp.typelem AND basetyp.typelem <> 0
+            LEFT JOIN pg_type AS base_elem_basetyp ON base_elem_basetyp.oid = base_elemtyp.typbasetype
             LEFT JOIN pg_attrdef AS def ON def.adrelid = cls.oid AND def.adnum = attr.attnum
             LEFT JOIN pg_description AS des ON des.objoid = cls.oid AND des.objsubid = attr.attnum
             LEFT JOIN pg_collation AS coll ON coll.oid = attr.attcollation
@@ -122,14 +130,18 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
         const int baseTypeNameOrdinal = 4;
         const int formattedTypeOrdinal = 5;
         const int formattedBaseTypeOrdinal = 6;
-        const int nullableOrdinal = 7;
-        const int defaultOrdinal = 8;
-        const int identityOrdinal = 9;
-        const int generatedOrdinal = 10;
-        const int descriptionOrdinal = 11;
-        const int collationOrdinal = 12;
-        const int identitySeedOrdinal = 13;
-        const int identityIncrementOrdinal = 14;
+        const int elementTypeNameOrdinal = 7;
+        const int elementBaseTypeNameOrdinal = 8;
+        const int baseElementTypeNameOrdinal = 9;
+        const int baseElementBaseTypeNameOrdinal = 10;
+        const int nullableOrdinal = 11;
+        const int defaultOrdinal = 12;
+        const int identityOrdinal = 13;
+        const int generatedOrdinal = 14;
+        const int descriptionOrdinal = 15;
+        const int collationOrdinal = 16;
+        const int identitySeedOrdinal = 17;
+        const int identityIncrementOrdinal = 18;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -144,6 +156,10 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             var baseTypeName = reader.GetStringNull(baseTypeNameOrdinal);
             var rawFormattedTypeName = reader.GetString(formattedTypeOrdinal);
             var rawFormattedBaseTypeName = reader.GetStringNull(formattedBaseTypeOrdinal);
+            var elementTypeName = reader.GetStringNull(elementTypeNameOrdinal);
+            var elementBaseTypeName = reader.GetStringNull(elementBaseTypeNameOrdinal);
+            var baseElementTypeName = reader.GetStringNull(baseElementTypeNameOrdinal);
+            var baseElementBaseTypeName = reader.GetStringNull(baseElementBaseTypeNameOrdinal);
             var isNullable = reader.GetBoolean(nullableOrdinal);
             var defaultSql = reader.GetStringNull(defaultOrdinal);
             var identityKind = reader.GetString(identityOrdinal);
@@ -163,16 +179,24 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             var isIdentity = !string.IsNullOrWhiteSpace(identityKind);
             var isComputed = string.Equals(generatedKind, "s", StringComparison.Ordinal);
 
+            var isArray = elementTypeName is not null || baseElementTypeName is not null;
+            var arrayElementTypeName = baseElementBaseTypeName
+                ?? baseElementTypeName
+                ?? elementBaseTypeName
+                ?? elementTypeName;
+
             var systemTypeName = hasBaseType ? baseTypeName! : typeName;
             var nativeTypeName = formattedBaseTypeName ?? formattedTypeName;
 
-            var (dbType, npgsqlDbType, systemType, isUnicode, isFixedLength) = PostgreSqlTypeMapper.MapNativeType(systemTypeName);
+            var (dbType, npgsqlDbType, systemType, isUnicode, isFixedLength) = isArray && arrayElementTypeName is not null
+                ? PostgreSqlTypeMapper.MapArrayNativeType(arrayElementTypeName)
+                : PostgreSqlTypeMapper.MapNativeType(systemTypeName);
 
-            var maxLength = GetMaxLength(nativeTypeName);
+            int? maxLength = isArray ? null : GetMaxLength(nativeTypeName);
 
-            var precision = GetPrecision(nativeTypeName);
+            int? precision = isArray ? null : GetPrecision(nativeTypeName);
 
-            var scale = GetScale(nativeTypeName);
+            int? scale = isArray ? null : GetScale(nativeTypeName);
 
             var computedSql = isComputed ? defaultSql : null;
             var columnDefaultSql = isComputed ? null : defaultSql;
