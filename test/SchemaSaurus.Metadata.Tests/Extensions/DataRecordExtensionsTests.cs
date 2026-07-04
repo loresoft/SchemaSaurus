@@ -248,7 +248,7 @@ public class DataRecordExtensionsTests
 
     private static DbDataReader CreateReader(params object?[] typeAndValuePairs)
     {
-        var table = new DataTable();
+        using var table = new DataTable();
         var values = new object?[typeAndValuePairs.Length / 2];
 
         for (var pairIndex = 0; pairIndex < typeAndValuePairs.Length; pairIndex += 2)

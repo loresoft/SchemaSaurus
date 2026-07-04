@@ -55,7 +55,7 @@ public class StringExtensionsTests
     [Fact]
     public void WhenNullLiteralEscapedThenSqlNullLiteralReturned()
     {
-        string? value = null;
+        const string? value = null;
 
         var result = value.EscapeLiteral();
 
