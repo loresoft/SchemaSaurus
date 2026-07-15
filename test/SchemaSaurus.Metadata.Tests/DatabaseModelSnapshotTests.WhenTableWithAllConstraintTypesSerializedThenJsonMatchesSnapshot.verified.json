@@ -1,4 +1,4 @@
-﻿{
+{
   "databaseName": "ConstraintDb",
   "defaultSchemaName": "dbo",
   "provider": "SqlServer",
