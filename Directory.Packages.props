@@ -16,7 +16,7 @@
     <PackageVersion Include="FluentMigrator.Runner.SqlServer" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.2" />
     <PackageVersion Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.0.2" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
     <PackageVersion Include="MinVer" Version="7.0.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.1" />
