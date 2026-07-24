@@ -21,7 +21,7 @@
     <PackageVersion Include="MinVer" Version="7.0.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.1" />
     <PackageVersion Include="Npgsql" Version="10.0.3" />
-    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.300" />
     <PackageVersion Include="Polyfill" Version="11.0.1" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="10.0.10" />
