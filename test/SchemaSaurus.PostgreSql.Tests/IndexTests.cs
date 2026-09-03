@@ -119,6 +119,32 @@ public class IndexTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenReadingCoveringIndexThenKeyColumnsKeepTheirSortOrder()
+    {
+        var model = await GetDatabaseModelAsync();
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
+
+        var index = taskTable.Indexes.First(i => i.Name == "IX_Task_Covering");
+        var keyColumns = index.Columns.Where(c => !c.IsIncludedColumn).ToList();
+
+        keyColumns.Select(c => c.ColumnName).Should().Equal("StatusId", "PriorityId");
+        keyColumns[0].SortDirection.Should().Be(SortDirection.Ascending);
+        keyColumns[1].SortDirection.Should().Be(SortDirection.Descending);
+    }
+
+    [Fact]
+    public async Task WhenReadingCoveringIndexThenIncludedColumnsAreMarked()
+    {
+        var model = await GetDatabaseModelAsync();
+        var taskTable = model.Tables.First(t => t.QualifiedName.Name == "Task");
+
+        var index = taskTable.Indexes.First(i => i.Name == "IX_Task_Covering");
+        var includedColumns = index.Columns.Where(c => c.IsIncludedColumn).ToList();
+
+        includedColumns.Select(c => c.ColumnName).Should().Equal("Title", "Created");
+    }
+
+    [Fact]
     public async Task WhenReadingExpressionIndexThenIndexIsReturnedWithExpressionAnnotation()
     {
         var model = await GetDatabaseModelAsync();
