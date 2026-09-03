@@ -206,7 +206,6 @@ public sealed partial class PostgreSqlSchemaReader
             WHERE {routineWhere}
                 AND ns.nspname NOT IN ('pg_catalog', 'information_schema'){schemaWhere}
                 AND NOT EXISTS (SELECT 1 FROM pg_depend dep WHERE dep.objid = proc.oid AND dep.deptype IN ('e', 'x'))
-                AND param.parameter_name IS NOT NULL
                 AND param.parameter_mode <> 't'
             ORDER BY proc.oid, param.ordinal_position
             """;
@@ -231,7 +230,12 @@ public sealed partial class PostgreSqlSchemaReader
                 continue;
 
             var ordinal = (int)reader.GetInt64(positionOrdinal);
-            var parameterName = reader.GetString(nameOrdinal);
+            var parameterName = reader.GetStringNull(nameOrdinal);
+
+            // PostgreSQL leaves unnamed arguments as NULL or an empty string in proargnames; name them positionally
+            if (string.IsNullOrEmpty(parameterName))
+                parameterName = $"${ordinal}";
+
             var direction = MapParameterDirection(reader.GetString(directionOrdinal));
             var typeName = reader.GetString(typeNameOrdinal);
             var formattedTypeName = AdjustFormattedTypeName(reader.GetString(formattedTypeOrdinal));
