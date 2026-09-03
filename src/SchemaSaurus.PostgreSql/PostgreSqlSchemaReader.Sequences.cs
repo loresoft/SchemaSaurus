@@ -45,7 +45,9 @@ public sealed partial class PostgreSqlSchemaReader
             WHERE NOT EXISTS (
                 SELECT 1
                 FROM pg_depend AS dep
-                WHERE dep.objid = cls.oid AND dep.deptype IN ('i', 'I', 'a')
+                WHERE dep.classid = 'pg_class'::regclass
+                  AND dep.objid = cls.oid
+                  AND dep.deptype IN ('i', 'I', 'a')
             ){schemaWhere}
             ORDER BY ns.nspname, cls.relname
             """;

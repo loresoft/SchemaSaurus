@@ -44,7 +44,10 @@ public sealed partial class PostgreSqlSchemaReader
               AND NOT EXISTS (
                   SELECT 1
                   FROM pg_depend dep
-                  WHERE dep.objid = cls.oid AND dep.deptype IN ('e', 'x')
+                  WHERE dep.classid = 'pg_class'::regclass
+                    AND dep.objid = cls.oid
+                    AND dep.objsubid = 0
+                    AND dep.deptype IN ('e', 'x')
               )
             ORDER BY ns.nspname, cls.relname
             """;
