@@ -213,17 +213,25 @@ public sealed partial class PostgreSqlSchemaReader
                 am.amname,
                 ARRAY(
                     SELECT attr.attname
-                    FROM unnest(idx.indkey, idx.indoption) WITH ORDINALITY AS key_column(attnum, option, ordinal_position)
-                    LEFT JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = key_column.attnum
+                    FROM unnest(idx.indkey) WITH ORDINALITY AS key_column(attnum, ordinal_position)
+                    JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = key_column.attnum
                     WHERE key_column.attnum > 0
                     ORDER BY key_column.ordinal_position
                 ) AS columns,
                 ARRAY(
-                    SELECT (key_column.option & 1) <> 0
-                    FROM unnest(idx.indkey, idx.indoption) WITH ORDINALITY AS key_column(attnum, option, ordinal_position)
+                    SELECT (COALESCE(idx.indoption[key_column.ordinal_position - 1], 0) & 1) <> 0
+                    FROM unnest(idx.indkey) WITH ORDINALITY AS key_column(attnum, ordinal_position)
+                    JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = key_column.attnum
                     WHERE key_column.attnum > 0
                     ORDER BY key_column.ordinal_position
                 ) AS descending_columns,
+                ARRAY(
+                    SELECT key_column.ordinal_position > idx.indnkeyatts
+                    FROM unnest(idx.indkey) WITH ORDINALITY AS key_column(attnum, ordinal_position)
+                    JOIN pg_attribute AS attr ON attr.attrelid = cls.oid AND attr.attnum = key_column.attnum
+                    WHERE key_column.attnum > 0
+                    ORDER BY key_column.ordinal_position
+                ) AS included_columns,
                 ARRAY(
                     SELECT pg_get_indexdef(idx.indexrelid, key_column.ordinal_position::integer, false)
                     FROM unnest(idx.indkey) WITH ORDINALITY AS key_column(attnum, ordinal_position)
@@ -257,9 +265,10 @@ public sealed partial class PostgreSqlSchemaReader
         const int methodOrdinal = 5;
         const int columnsOrdinal = 6;
         const int descendingOrdinal = 7;
-        const int expressionsOrdinal = 8;
-        const int predicateOrdinal = 9;
-        const int optionsOrdinal = 10;
+        const int includedOrdinal = 8;
+        const int expressionsOrdinal = 9;
+        const int predicateOrdinal = 10;
+        const int optionsOrdinal = 11;
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -272,6 +281,7 @@ public sealed partial class PostgreSqlSchemaReader
             var indexType = reader.GetString(methodOrdinal);
             var columns = reader.GetFieldValue<string[]>(columnsOrdinal);
             var descendingColumns = reader.GetFieldValue<bool[]>(descendingOrdinal);
+            var includedColumns = reader.GetFieldValue<bool[]>(includedOrdinal);
             var expressions = reader.GetFieldValue<string[]>(expressionsOrdinal);
             var predicate = reader.GetStringNull(predicateOrdinal);
             var storageParameters = reader.GetFieldValueNull<string[]>(optionsOrdinal);
@@ -287,6 +297,12 @@ public sealed partial class PostgreSqlSchemaReader
 
             for (var i = 0; i < columns.Length; i++)
             {
+                if (includedColumns[i])
+                {
+                    indexBuilder.AddIncludedColumn(columns[i]);
+                    continue;
+                }
+
                 var sortDirection = descendingColumns[i]
                     ? SortDirection.Descending
                     : SortDirection.Ascending;

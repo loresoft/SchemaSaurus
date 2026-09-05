@@ -14,3 +14,5 @@ $$;
 COMMENT ON PROCEDURE public."StatusPaged"(integer, integer) IS 'Reads a page of statuses.';
 COMMENT ON FUNCTION public."FormatAddress"(text, text, text, text) IS 'Formats an address.';
 COMMENT ON FUNCTION public."NormalizeEmailAddress"(public."EmailAddress") IS 'Normalizes an email address.';
+
+CREATE INDEX "IX_Task_Covering" ON public."Task" ("StatusId", "PriorityId" DESC) INCLUDE ("Title", "Created");
