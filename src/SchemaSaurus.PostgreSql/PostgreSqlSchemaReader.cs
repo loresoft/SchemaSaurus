@@ -5,6 +5,7 @@ using Npgsql;
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
+using SchemaSaurus.Metadata.Internal;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.PostgreSql;
@@ -244,12 +245,15 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             conditions.Add(schemaFilter);
 
         if (options.Tables.Count > 0)
-        {
-            var list = string.Join(", ", options.Tables.Select(value => value.EscapeLiteral()));
-            conditions.Add($"{tableExpression} IN ({list})");
-        }
+            conditions.Add(TableFilter.Build(options.Tables, schemaExpression, tableExpression, BuildInClause));
 
         return string.Join("\n              AND ", conditions);
+    }
+
+    private static string BuildInClause(IReadOnlyCollection<string> values, string expression)
+    {
+        var list = string.Join(", ", values.Select(value => value.EscapeLiteral()));
+        return $"{expression} IN ({list})";
     }
 
     private static string? BuildSchemaFilter(IReadOnlyCollection<string> schemas, string schemaExpression)
