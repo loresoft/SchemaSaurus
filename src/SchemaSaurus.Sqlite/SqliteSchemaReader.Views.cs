@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Internal;
 using SchemaSaurus.Metadata.Extensions;
 using SchemaSaurus.Metadata.Provider;
 
@@ -34,7 +35,7 @@ public sealed partial class SqliteSchemaReader
         {
             var viewName = reader.GetString(viewNameOrdinal);
             if (IsSpatialiteObject(viewName)
-                || (options.Tables.Count > 0 && !options.Tables.Contains(viewName, StringComparer.OrdinalIgnoreCase)))
+                || !TableFilter.IsMatch(options.Tables, MainSchemaName, viewName))
             {
                 continue;
             }

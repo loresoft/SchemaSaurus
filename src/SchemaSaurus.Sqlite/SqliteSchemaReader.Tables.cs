@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 
 using SchemaSaurus.Metadata.Builders;
+using SchemaSaurus.Metadata.Internal;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.Sqlite;
@@ -68,9 +69,7 @@ public sealed partial class SqliteSchemaReader
                 continue;
             }
 
-            // Keep the provider-side filter case-insensitive to match SQLite object lookup behavior.
-            if (options.Tables.Count > 0
-                && !options.Tables.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (!TableFilter.IsMatch(options.Tables, MainSchemaName, name))
             {
                 continue;
             }

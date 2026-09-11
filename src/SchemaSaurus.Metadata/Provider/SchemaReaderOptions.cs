@@ -5,7 +5,8 @@ namespace SchemaSaurus.Metadata.Provider;
 /// <see cref="IDatabaseSchemaReader"/> reads a database schema.
 /// </summary>
 /// <remarks>
-/// All filter lists use ordinal case-insensitive matching. An empty list means "include all."
+/// Filter list entries are passed to the provider as written and compared with the
+/// database's own identifier rules. An empty list means "include all."
 /// Boolean flags default to <see langword="true"/> so that a default-constructed instance
 /// captures a complete snapshot.
 /// </remarks>
@@ -19,8 +20,10 @@ public sealed class SchemaReaderOptions
 
     /// <summary>
     /// Table names to include. When empty, all tables are included.
-    /// Names are matched without schema qualification; combine with
-    /// <see cref="Schemas"/> for scoped filtering.
+    /// Entries may be schema qualified (<c>"sales.orders"</c>), which pins the table to that
+    /// schema; the first dot separates the schema from the table name. Unqualified entries
+    /// (<c>"orders"</c>) match the name in any schema; combine with <see cref="Schemas"/> for
+    /// scoped filtering.
     /// </summary>
     public IReadOnlyList<string> Tables { get; init; } = [];
 
