@@ -110,6 +110,9 @@ public sealed partial class SqliteSchemaReader : DatabaseSchemaReader<SqliteConn
 
     // Note: SQLite does not support sequences, stored procedures, functions, or user-defined types.
 
+    // Schema qualified filter entries are matched against SQLite's default attached database.
+    private const string MainSchemaName = "main";
+
     private static bool IsSpatialiteObject(string name)
         => SpatialiteObjectNames.Contains(name, StringComparer.Ordinal);
 }

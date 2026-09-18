@@ -224,6 +224,33 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringByMainSchemaQualifiedTableNameThenTableReturned()
+    {
+        var options = new SchemaReaderOptions
+        {
+            Tables = ["main.Status"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().ContainSingle()
+            .Which.QualifiedName.Name.Should().Be("Status");
+    }
+
+    [Fact]
+    public async Task WhenFilteringByOtherSchemaQualifiedTableNameThenNoTablesReturned()
+    {
+        var options = new SchemaReaderOptions
+        {
+            Tables = ["other.Status"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task WhenReadingColumnsOrdinalPositionsArePopulated()
     {
         var model = await GetDatabaseModelAsync();

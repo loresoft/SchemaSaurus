@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using SchemaSaurus.Metadata;
 using SchemaSaurus.Metadata.Builders;
 using SchemaSaurus.Metadata.Extensions;
+using SchemaSaurus.Metadata.Internal;
 using SchemaSaurus.Metadata.Provider;
 
 namespace SchemaSaurus.SqlServer;
@@ -276,10 +277,7 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
 
         // If specific tables are specified in the options, add a filter condition to include only those tables.
         if (options.Tables.Count > 0)
-        {
-            var list = string.Join(", ", options.Tables.Select(EscapeUnicodeLiteral));
-            conditions.Add($"t.name IN ({list})");
-        }
+            conditions.Add(TableFilter.Build(options.Tables, "SCHEMA_NAME(t.schema_id)", "t.name", BuildInClause));
 
         // Combine all conditions into a single WHERE clause string, joining them with "AND".
         return string.Join("\n    AND ", conditions);
@@ -298,6 +296,13 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
 
         // Return a filter condition like "SCHEMA_NAME(o.schema_id) IN ('schema1', 'schema2')".
         return $"{schemaExpression} IN ({list})";
+    }
+
+
+    private static string BuildInClause(IReadOnlyCollection<string> values, string expression)
+    {
+        var list = string.Join(", ", values.Select(EscapeUnicodeLiteral));
+        return $"{expression} IN ({list})";
     }
 
 
