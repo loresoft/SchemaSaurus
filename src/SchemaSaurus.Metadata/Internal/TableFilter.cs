@@ -42,7 +42,7 @@ public static class TableFilter
             var entry = SchemaQualifiedName.Parse(table);
             var schema = entry.Schema;
 
-            if (string.IsNullOrEmpty(schema))
+            if (schema is null || string.IsNullOrEmpty(schema))
             {
                 unqualified.Add(entry.Name);
                 continue;

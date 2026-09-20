@@ -244,6 +244,23 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringByMixedQualifiedAndUnqualifiedNamesThenAllMatchingTablesReturned()
+    {
+        var qualified = (await GetDatabaseModelAsync()).Tables.First(t => t.QualifiedName.Name == TaskTableName);
+
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = ["Status", $"{qualified.QualifiedName.Schema}.Task"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().HaveCount(2);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == StatusTableName);
+        model.Tables.Should().Contain(t => t.QualifiedName == qualified.QualifiedName);
+    }
+
+    [Fact]
     public async Task WhenFilteringByUnknownSchemaThenNoTablesReturned()
     {
         var options = new Metadata.Provider.SchemaReaderOptions

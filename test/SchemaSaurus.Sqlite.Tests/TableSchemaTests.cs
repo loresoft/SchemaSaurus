@@ -238,6 +238,21 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringByMixedQualifiedAndUnqualifiedNamesThenAllMatchingTablesReturned()
+    {
+        var options = new SchemaReaderOptions
+        {
+            Tables = ["Status", "main.Task"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().HaveCount(2);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Status");
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Task");
+    }
+
+    [Fact]
     public async Task WhenFilteringByOtherSchemaQualifiedTableNameThenNoTablesReturned()
     {
         var options = new SchemaReaderOptions

@@ -190,7 +190,10 @@ public sealed partial class OracleSchemaReader : DatabaseSchemaReader<OracleConn
         List<string> conditions = [BuildSchemaFilter(options.Schemas, schemaExpression)];
 
         if (options.Tables.Count > 0)
-            conditions.Add(TableFilter.Build(options.Tables, schemaExpression, objectExpression, BuildCaseInsensitiveFilter));
+        {
+            var filter = TableFilter.Build(options.Tables, schemaExpression, objectExpression, BuildCaseInsensitiveFilter);
+            conditions.Add(filter);
+        }
 
         return string.Join("\n              AND ", conditions);
     }

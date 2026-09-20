@@ -277,7 +277,10 @@ public sealed partial class SqlServerSchemaReader : DatabaseSchemaReader<SqlConn
 
         // If specific tables are specified in the options, add a filter condition to include only those tables.
         if (options.Tables.Count > 0)
-            conditions.Add(TableFilter.Build(options.Tables, "SCHEMA_NAME(t.schema_id)", "t.name", BuildInClause));
+        {
+            var filter = TableFilter.Build(options.Tables, "SCHEMA_NAME(t.schema_id)", "t.name", BuildInClause);
+            conditions.Add(filter);
+        }
 
         // Combine all conditions into a single WHERE clause string, joining them with "AND".
         return string.Join("\n    AND ", conditions);

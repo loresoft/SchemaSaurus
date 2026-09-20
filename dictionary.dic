@@ -7,6 +7,7 @@ clr
 csv
 deconstruct
 deserialization
+deserialize
 deserialized
 deserializer
 deserializing
@@ -19,8 +20,9 @@ mvc
 nullable
 queryable
 serialization
-serialized
+serialize
 serializer
+serializing
 sql
 sqlite
 upsert

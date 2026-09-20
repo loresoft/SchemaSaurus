@@ -278,6 +278,24 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringByMixedQualifiedAndUnqualifiedNamesThenAllMatchingTablesReturned()
+    {
+        var qualified = (await GetDatabaseModelAsync()).Tables
+            .First(t => t.QualifiedName.Name == "Duplicate" && t.QualifiedName.Schema != "dbo");
+
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = ["Status", $"{qualified.QualifiedName.Schema}.Duplicate"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().HaveCount(2);
+        model.Tables.Should().Contain(t => t.QualifiedName.Name == "Status");
+        model.Tables.Should().Contain(t => t.QualifiedName == qualified.QualifiedName);
+    }
+
+    [Fact]
     public async Task WhenFilteringByUnknownSchemaThenNoTablesReturned()
     {
         var options = new Metadata.Provider.SchemaReaderOptions

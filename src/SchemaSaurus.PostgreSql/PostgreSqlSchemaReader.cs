@@ -245,7 +245,10 @@ public sealed partial class PostgreSqlSchemaReader : DatabaseSchemaReader<Npgsql
             conditions.Add(schemaFilter);
 
         if (options.Tables.Count > 0)
-            conditions.Add(TableFilter.Build(options.Tables, schemaExpression, tableExpression, BuildInClause));
+        {
+            var filter = TableFilter.Build(options.Tables, schemaExpression, tableExpression, BuildInClause);
+            conditions.Add(filter);
+        }
 
         return string.Join("\n              AND ", conditions);
     }

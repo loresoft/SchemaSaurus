@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Magnolia": {
+      "commandName": "Project",
+      "commandLineArgs": "export -c \"Data Source=(local);Initial Catalog=Magnolia;Integrated Security=True;TrustServerCertificate=True;\" -p SqlServer -o Magnolia.json"
+    },
+    "Bristol": {
+      "commandName": "Project",
+      "commandLineArgs": "export -c \"Data Source=(local);Initial Catalog=BristolPlaceCaseManagement;Integrated Security=True;TrustServerCertificate=True;\" -p SqlServer -o Bristol.json"
+    }
+  }
+}
