@@ -262,6 +262,35 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringBySchemaQualifiedTableNameThenOnlyThatSchemaMatched()
+    {
+        var expected = (await GetDatabaseModelAsync()).Tables.First(t => t.QualifiedName.Name == "Status");
+
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = [$"{expected.QualifiedName.Schema}.Status"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().ContainSingle()
+            .Which.QualifiedName.Should().Be(expected.QualifiedName);
+    }
+
+    [Fact]
+    public async Task WhenFilteringByUnknownSchemaThenNoTablesReturned()
+    {
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = ["Missing.Status"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task WhenReadingColumnsOrdinalPositionsArePopulated()
     {
         var model = await GetDatabaseModelAsync();

@@ -70,12 +70,21 @@ Console.WriteLine($"Tables: {model.Tables.Count}, Views: {model.Views.Count}");
 var options = new SchemaReaderOptions
 {
     Schemas = ["dbo", "Sales"],
+    Tables = ["Customer", "Sales.Orders"],
     IncludeStoredProcedures = false,
     IncludeScalarFunctions = false,
 };
 
 var model = await reader.ReadAsync(connectionString, options);
 ```
+
+`Tables` entries may be schema qualified (`"Sales.Orders"`), which pins the table to that
+schema; the first dot separates the schema from the table name. Unqualified entries
+(`"Customer"`) match that name in any schema.
+
+Names are passed to the database as written and compared with its own identifier rules.
+A PostgreSQL table created unquoted as `Sales.Orders` is stored as `sales.orders` and has
+to be filtered with that spelling; quoted identifiers keep their case.
 
 ### JSON Serialization
 
@@ -114,7 +123,7 @@ Supported providers are `SqlServer`, `PostgreSQL`, `MySQL`, `Oracle`, and `SQLit
 Filter the exported metadata with `--schema` and `--table`, and exclude object types with boolean switches:
 
 ```powershell
-SchemaSaurus export -c "Server=.;Database=AdventureWorks;Integrated Security=true;TrustServerCertificate=true" -p SqlServer -o .\schema.json --schema dbo --table Customer --exclude-stored-procedures --exclude-sequences
+SchemaSaurus export -c "Server=.;Database=AdventureWorks;Integrated Security=true;TrustServerCertificate=true" -p SqlServer -o .\schema.json --schema dbo --table Customer --table Sales.Orders --exclude-stored-procedures --exclude-sequences
 ```
 
 Available exclusion switches are `--exclude-views`, `--exclude-stored-procedures`, `--exclude-scalar-functions`, `--exclude-table-valued-functions`, `--exclude-sequences`, and `--exclude-user-defined-types`.

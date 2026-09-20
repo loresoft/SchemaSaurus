@@ -246,6 +246,51 @@ public class TableSchemaTests(DatabaseFixture databaseFixture)
     }
 
     [Fact]
+    public async Task WhenFilteringByUnqualifiedTableNameThenAllSchemasMatched()
+    {
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = ["Duplicate"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().HaveCount(2);
+        model.Tables.Should().Contain(t => t.QualifiedName.Schema == "dbo");
+        model.Tables.Select(t => t.QualifiedName.Schema).Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task WhenFilteringBySchemaQualifiedTableNameThenOnlyThatSchemaMatched()
+    {
+        var expected = (await GetDatabaseModelAsync()).Tables
+            .First(t => t.QualifiedName.Name == "Duplicate" && t.QualifiedName.Schema != "dbo");
+
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = [$"{expected.QualifiedName.Schema}.Duplicate"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().ContainSingle()
+            .Which.QualifiedName.Should().Be(expected.QualifiedName);
+    }
+
+    [Fact]
+    public async Task WhenFilteringByUnknownSchemaThenNoTablesReturned()
+    {
+        var options = new Metadata.Provider.SchemaReaderOptions
+        {
+            Tables = ["Missing.Duplicate"]
+        };
+
+        var model = await GetDatabaseModelAsync(options);
+
+        model.Tables.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task WhenReadingColumnsOrdinalPositionsArePopulated()
     {
         var model = await GetDatabaseModelAsync();
