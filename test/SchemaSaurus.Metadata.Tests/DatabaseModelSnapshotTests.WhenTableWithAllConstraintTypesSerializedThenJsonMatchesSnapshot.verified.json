@@ -73,7 +73,7 @@
           "isStored": true,
           "dbType": "Decimal",
           "nativeTypeName": "decimal(18,2)",
-          "systemType": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+          "systemType": "System.Nullable\u00601[[System.Decimal, System.Private.CoreLib, Version=11.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
         }
       ],
       "indexes": [
