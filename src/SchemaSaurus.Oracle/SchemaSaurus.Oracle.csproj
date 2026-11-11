@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net10.0;net11.0</TargetFrameworks>
     <Description>Oracle schema reader for SchemaSaurus supporting Oracle 12c and later.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" />
     <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 

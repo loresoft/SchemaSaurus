@@ -21,7 +21,7 @@ internal sealed class ExportCommand : AsyncCommand<ExportCommandSettings>
     private static readonly IAnsiConsole ErrorConsole = CreateErrorConsole();
 
 
-    protected override async Task<int> ExecuteAsync(
+    public override async Task<int> ExecuteAsync(
         CommandContext context,
         ExportCommandSettings settings,
         CancellationToken cancellationToken)
