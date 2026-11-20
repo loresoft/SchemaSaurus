@@ -7,9 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" />
-    <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
